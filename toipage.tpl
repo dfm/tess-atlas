@@ -1,7 +1,13 @@
-%%writefile toipage.tpl
-
 {% extends 'full.tpl'%}
-
 {% block header %}
-    <img width = "450" src="docs/atlas_logo.png" /> %}
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width" />
+
+<p align="center">
+  <img width = "200" src="../../atlas_logo.png" />
+  <br>
+  <a href="http://tess.world">Homepage</a>
+</p>
+{{ super() }}
 {% endblock header %}

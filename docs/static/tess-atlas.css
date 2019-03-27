@@ -1,0 +1,54 @@
+html, body {
+    font-size: 11pt;
+}
+
+h1 {
+    display: block;
+    font-size: 20pt;
+    margin: 0;
+    text-align: center;
+}
+
+h2 {
+    font-size: 14pt;
+    margin: 25pt 0 14pt 0;
+}
+
+h3 {
+    font-size: 12pt;
+    margin: 0pt 0 25pt 0;
+    text-align: center;
+}
+
+p {
+    text-align: justify;
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+}
+
+.container {
+    width: 700px;
+    margin: 50px auto;
+}
+
+.footer {
+    font-size: 9pt;
+    margin: 25pt 0 25pt 0;
+    padding: 11pt 0 0 0;
+    border-top: 1px solid #aaa;
+    color: #aaa;
+}
+
+#header {
+    text-align: center;
+}
+
+#logo {
+    display: block;
+}
+
+#logo img {
+    width: 200px;
+    padding: 20px 0 20px 0;
+}

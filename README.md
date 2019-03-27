@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/atlas_logo.png" />
+  <img width = "450" src="docs/atlas_logo.png" />
   <br>
-  TESS Atlas
+  <b>TESS Atlas</b>
 </p>

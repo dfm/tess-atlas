@@ -36,12 +36,12 @@ p {
     font-size: 9pt;
     margin: 25pt 0 25pt 0;
     padding: 11pt 0 0 0;
-    border-top: 1px solid #aaa;
     color: #aaa;
 }
 
 #header {
     text-align: center;
+    margin: 0 0 50px;
 }
 
 #logo {

@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width" />
 
 <p align="center">
-  <img width = "200" src="../../atlas_logo.png" />
+  <img width = "200" src="../../static/atlas_logo.png" />
   <br>
-  <a href="http://tess.world">Homepage</a>
+  <a href="http://tess.world"><b>Homepage</b></a>
 </p>
 {{ super() }}
 {% endblock header %}

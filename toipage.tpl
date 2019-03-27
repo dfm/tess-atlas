@@ -10,4 +10,7 @@
   <a href="http://tess.world"><b>Homepage</b></a>
 </p>
 {{ super() }}
+
+<link rel="stylesheet" href="../../css/main.css" />
+
 {% endblock header %}

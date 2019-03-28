@@ -10,7 +10,7 @@ import nbformat
 import subprocess
 from nbconvert.preprocessors import ExecutePreprocessor, CellExecutionError
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 if len(sys.argv) < 2:
     raise RuntimeError("you must give a TOI number")

@@ -1,0 +1,52 @@
+@-ms-viewport {
+	width: device-width;
+}
+
+body {
+	-ms-overflow-style: scrollbar;
+}
+
+@media screen and (max-width: 480px) {
+	html, body {
+		min-width: 320px;
+	}
+}
+
+body {
+	background: #ffffff;
+}
+
+#main {
+  padding: 4em 0 2em 0;
+}
+
+#notebook-container {
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.prompt {
+  display: none;
+}
+
+div.input_area {
+  overflow-x: hidden;
+}
+
+@media (max-width: 540px) {
+  div.input {
+    /* Old browsers */
+    /* display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-box-align: stretch;
+    display: -moz-box;
+    -moz-box-orient: vertical;
+    -moz-box-align: stretch; */
+    display: block;
+    /* box-orient: vertical;
+    box-align: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; */
+  }
+}

@@ -47,5 +47,3 @@ finally:
         nbformat.write(notebook, f)
 
 subprocess.check_call("git add {0}".format(filename), shell=True)
-subprocess.check_call("git commit -m \"adding '{0}'\"".format(filename),
-                      shell=True)

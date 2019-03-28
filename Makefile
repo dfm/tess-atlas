@@ -7,6 +7,5 @@ docs/notebooks/${VERSION}/%.html: notebooks/${VERSION}/%.ipynb toipage.tpl
 
 html: $(NOTEBOOKS)
 	git add docs/notebooks/${VERSION}/*.html
-	git commit -m "updating notebooks"
 
 .PHONY: html

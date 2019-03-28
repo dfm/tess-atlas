@@ -3,12 +3,15 @@
 
 from __future__ import division, print_function
 
+import os
 import numpy as np
 import pandas as pd
 from multiprocessing import Pool
 from subprocess import check_call
 
 def run_toi(toi_id):
+    print("running {0}".format(toi_id))
+    os.environ["THEANO_FLAGS"] = "compiledir=./cache/{0}".format(os.getpid())
     check_call("python run_toi.py {0}".format(toi_id), shell=True)
 
 tois = pd.read_csv("https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv")

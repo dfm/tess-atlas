@@ -29,10 +29,6 @@ body {
   display: none;
 }
 
-div.input_area {
-  overflow-x: hidden;
-}
-
 @media (max-width: 540px) {
   div.input {
     /* Old browsers */

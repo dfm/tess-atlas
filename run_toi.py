@@ -41,9 +41,10 @@ try:
 except CellExecutionError as e:
     msg = "error while running: {0}\n\n".format(filename)
     msg += e.traceback
+    msg += "removing: {0}\n\n".format(filename)
     print(msg)
-finally:
+    os.remove(filename)
+else:
     with open(filename, mode="wt") as f:
         nbformat.write(notebook, f)
-
-subprocess.check_call("git add {0}".format(filename), shell=True)
+    subprocess.check_call("git add {0}".format(filename), shell=True)

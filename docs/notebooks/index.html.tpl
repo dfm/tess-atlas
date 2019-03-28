@@ -21,12 +21,7 @@ See the fits from The TESS Atlas:
 </p>
 
 <ul>
-<li><a href="toi-143.html">TOI 143</a></li>
-<li><a href="toi-191.html">TOI 191</a></li>
-<li><a href="toi-425.html">TOI 425</a></li>
-<li><a href="toi-440.html">TOI 440</a></li>
-<li><a href="toi-467.html">TOI 467</a></li>
-<li><a href="toi-524.html">TOI 524</a></li>
+{{{TOILIST}}}
 </ul>
 
 <div class="footer">

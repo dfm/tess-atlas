@@ -3,3 +3,4 @@
 cache
 *.log
 build
+docs/notebooks/*/*.html

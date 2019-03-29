@@ -10,17 +10,7 @@ html: $(NOTEBOOKS)
 	git add docs/notebooks/${VERSION}/*.html
 
 website:
-	rm -rf build
-	git clone . build
-	cd build
-	make html
-	git checkout --orphan gh-pages
-	git rm --cached -rf .
-	cp -R docs/* .
-	cp docs/.nojekyll .
-	git add -f CNAME css static index.html notebooks .nojekyll
-	git commit -m "updating the site"
-	git push -f origin gh-pages
+	./build_website.sh
 
 .PHONY: html website
 default: html

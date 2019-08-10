@@ -51,7 +51,8 @@ def run_fit(kicid):
         "RP": (rp_mag, np.clip(rp_mag_err, 0.01, np.inf)),
         "parallax": (plx, plx_err),
     }
-    mod = isochrones.SingleStarModel(mist, max_distance=2000 / plx, **params)
+    mod = isochrones.SingleStarModel(
+        mist, max_distance=np.clip(2000 / plx, 100, np.inf), **params)
 
     # These functions wrap isochrones so that they can be used with dynesty:
     def prior_transform(u):

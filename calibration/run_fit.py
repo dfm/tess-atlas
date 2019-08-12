@@ -32,6 +32,9 @@ def run_fit(kicid):
     # Parallax offset reference: https://arxiv.org/abs/1805.03526
     plx = r["parallax"] + 0.082
     plx_err = np.sqrt(r["parallax_error"] ** 2 + 0.033 ** 2)
+    if not (np.isfinite(plx) and np.isfinite(plx_err)):
+        print("non finite parallax: {0}".format(kicid))
+        return
 
     factor = 2.5 / np.log(10)
     params = {"parallax": (float(plx), float(plx_err))}

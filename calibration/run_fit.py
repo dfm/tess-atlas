@@ -37,8 +37,9 @@ def run_fit(kicid):
     bp_mag_err = r["phot_bp_mean_flux_error"] / r["phot_bp_mean_flux"]
     rp_mag = r["phot_rp_mean_mag"]
     rp_mag_err = r["phot_rp_mean_flux_error"] / r["phot_rp_mean_flux"]
-    if not all(map(np.isfinite, (plx, plx_err, bp_mag, bp_mag_err, rp_mag,
-                                 rp_mag_err))):
+    if not all(
+        map(np.isfinite, (plx, plx_err, bp_mag, bp_mag_err, rp_mag, rp_mag_err))
+    ):
         print("non finite params: {0}".format(kicid))
         return
 
@@ -55,24 +56,37 @@ def run_fit(kicid):
         "RP": (rp_mag, np.clip(rp_mag_err, 0.01, np.inf)),
         "parallax": (plx, plx_err),
     }
-    print(params)
+    jitter_vars = list(sorted(params.keys()))
     mod = isochrones.SingleStarModel(
-        mist, max_distance=np.clip(2000 / plx, 100, np.inf), **params)
+        mist, max_distance=np.clip(2000 / plx, 100, np.inf), **params
+    )
 
     # These functions wrap isochrones so that they can be used with dynesty:
     def prior_transform(u):
         cube = np.copy(u)
-        mod.mnest_prior(cube, None, None)
+        mod.mnest_prior(cube[: mod.n_params], None, None)
+        cube[mod.n_params:] = -10 + 20 * cube[mod.n_params:]
         return cube
 
     def loglike(theta):
-        lp = mod.lnpost(theta)
+        ind0 = mod.n_params
+        lp0 = 0.0
+        for i, k in enumerate(jitter_vars):
+            err = np.sqrt(params[k][1] ** 2 + np.exp(theta[ind0 + i]))
+            lp0 -= 2 * np.log(err)  # This is to fix a bug in isochrones
+            mod.kwargs[k] = (
+                params[k][0],
+                err,
+            )
+        lp = lp0 + mod.lnpost(theta[: mod.n_params])
         if np.isfinite(lp):
             return np.clip(lp, -1e10, np.inf)
         return -1e10
 
     # Run nested sampling on this model
-    sampler = dynesty.NestedSampler(loglike, prior_transform, mod.n_params)
+    sampler = dynesty.NestedSampler(
+        loglike, prior_transform, mod.n_params + len(jitter_vars)
+    )
     strt = time.time()
     sampler.run_nested()
     print("Sampling took {0} minutes".format((time.time() - strt) / 60.0))
@@ -83,7 +97,12 @@ def run_fit(kicid):
     samples = dynesty.utils.resample_equal(
         results.samples, np.exp(results.logwt - results.logz[-1])
     )
-    df = mod._samples = pd.DataFrame(dict(zip(mod.param_names, samples.T)))
+    df = mod._samples = pd.DataFrame(
+        dict(zip(
+            list(mod.param_names) + ["log_jitter_" + k for k in jitter_vars],
+            samples.T
+        ))
+    )
     mod._derived_samples = mod.ic(*[df[c].values for c in mod.param_names])
     mod._derived_samples["parallax"] = 1000.0 / df["distance"]
     mod._derived_samples["distance"] = df["distance"]

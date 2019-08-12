@@ -37,6 +37,10 @@ def run_fit(kicid):
     bp_mag_err = r["phot_bp_mean_flux_error"] / r["phot_bp_mean_flux"]
     rp_mag = r["phot_rp_mean_mag"]
     rp_mag_err = r["phot_rp_mean_flux_error"] / r["phot_rp_mean_flux"]
+    if not all(map(np.isfinite, (plx, plx_err, bp_mag, bp_mag_err, rp_mag,
+                                 rp_mag_err))):
+        print("non finite params: {0}".format(kicid))
+        return
 
     output_dir = "results"
     os.makedirs(output_dir, exist_ok=True)
@@ -51,6 +55,7 @@ def run_fit(kicid):
         "RP": (rp_mag, np.clip(rp_mag_err, 0.01, np.inf)),
         "parallax": (plx, plx_err),
     }
+    print(params)
     mod = isochrones.SingleStarModel(
         mist, max_distance=np.clip(2000 / plx, 100, np.inf), **params)
 

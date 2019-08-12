@@ -47,6 +47,8 @@ def run_fit(kicid):
             print("non finite params: {0}".format(kicid))
             return
         params[band] = (mag, err)
+    for k, v in params.items():
+        params[k] = np.array(v, dtype=np.float64)
     print(params)
 
     output_dir = "results"

@@ -33,15 +33,18 @@ def run_fit(kicid):
     plx = r["parallax"] + 0.082
     plx_err = np.sqrt(r["parallax_error"] ** 2 + 0.033 ** 2)
 
-    bp_mag = r["phot_bp_mean_mag"]
-    bp_mag_err = r["phot_bp_mean_flux_error"] / r["phot_bp_mean_flux"]
-    rp_mag = r["phot_rp_mean_mag"]
-    rp_mag_err = r["phot_rp_mean_flux_error"] / r["phot_rp_mean_flux"]
-    if not all(
-        map(np.isfinite, (plx, plx_err, bp_mag, bp_mag_err, rp_mag, rp_mag_err))
-    ):
-        print("non finite params: {0}".format(kicid))
-        return
+    factor = 2.5 / np.log(10)
+    params = {"parallax": (float(plx), float(plx_err))}
+    for band in ["G", "BP", "RP"]:
+        mag = float(r["phot_{0}_mean_mag".format(band.lower())])
+        err = float(r["phot_{0}_mean_flux_error".format(band.lower())])
+        err /= float(r["phot_{0}_mean_flux".format(band.lower())])
+        err *= factor
+        if not (np.isfinite(mag) and np.isfinite(err)):
+            print("non finite params: {0}".format(kicid))
+            return
+        params[band] = (mag, err)
+    print(params)
 
     output_dir = "results"
     os.makedirs(output_dir, exist_ok=True)
@@ -50,12 +53,7 @@ def run_fit(kicid):
         return
 
     # Set up an isochrones model using the MIST tracks
-    mist = isochrones.get_ichrone("mist", bands=["BP", "RP"])
-    params = {
-        "BP": (bp_mag, np.clip(bp_mag_err, 0.01, np.inf)),
-        "RP": (rp_mag, np.clip(rp_mag_err, 0.01, np.inf)),
-        "parallax": (plx, plx_err),
-    }
+    mist = isochrones.get_ichrone("mist", bands=["G", "BP", "RP"])
     jitter_vars = list(sorted(params.keys()))
     mod = isochrones.SingleStarModel(
         mist, max_distance=np.clip(2000 / plx, 100, np.inf), **params

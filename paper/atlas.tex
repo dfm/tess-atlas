@@ -1,0 +1,79 @@
+\documentclass[modern]{aastex63}
+
+\input{dfmstyle}
+\input{dfmsymbols}
+
+\shorttitle{The \tess\ Atlas}
+\shortauthors{Foreman-Mackey et al.}
+
+\begin{document}
+
+\title{The \tess\ Atlas}
+
+\correspondingauthor{Daniel Foreman-Mackey}
+\email{foreman.mackey@gmail.com}
+
+\author[0000-0002-9328-5652]{Daniel Foreman-Mackey}
+\affiliation{Center for Computational Astrophysics,
+             Flatiron Institute,
+             162 5th Ave,
+             New York, NY 10010}
+
+\author{others}
+
+\begin{abstract}
+
+This is the \tess\ Atlas.
+
+\end{abstract}
+
+% \keywords{editorials, notices ---
+% miscellaneous --- catalogs --- surveys}
+
+\section{Introduction} \label{sec:intro}
+
+This is some text.
+
+\section{Stellar properties}
+
+To fit for the properties of our stellar targets in a consistent manner, we fit stellar evolution and atmosphere models to the magnitudes and parallaxes measured by \gaia\ using the \isochrones\ software package \citep{Morton:2015}.
+This package wraps the \mist\ isochrones and bolometric corrections to provide a model that can be used for inferring stellar properties based on magnitudes, parallaxes, and spectroscopic constraints.
+We combine \isochrones\ with the \dynesty\ package to perform posterior inference using nested sampling which can be more robust than MCMC methods for inferences with potentially multimodal posteriors.
+
+For consistency across the data set, we use only the information from the \gaia\ catalog as constraints because these are available for all targets in the sample.
+We fit the $G$, $G_\mathrm{BP}$, and $G_\mathrm{RP}$ photometry (and uncertainties) and the parallax and its uncertainty reported in the \gaia\ DR2 catalog.
+To estimate the uncertainties on the magnitudes, we use linearized propagation of uncertainty which should be well behaved for the targets in the \tess\ sample, but then we also fit for an excess noise parameter in each band to account for remaining uncertainty caused by the measurement and systematics in the stellar evolution and atmosphere models.
+
+To cross match \kepler\ targets, we use the \href{https://gaia-kepler.fun}{gaia-kepler.fun}, for \tess, we cross match using the \gaia-TAP service provided by \astroquery.
+We search with a radius of \dfmtodo{HOWMANY} arcseconds and select the closest (in projected distance) \gaia\ source with a \gaia\ $G$ band magnitude within 1 magnitude of the target's \tess\ or \kepler\ magnitude.
+
+As a sanity check, we compare the inferences made using \isochrones\ and \gaia\ observations to the masses and radii inferred for the \kepler\ asteroseismic targets \citep{Chaplin:2014} and the \cks\ sample of targets with high resolution spectroscopic measurements \citep{Petigura:2017,Johnson:2017}.
+\dfmtodo{Should also compare to a set of M dwarfs (perhaps the ones from Mann) to demonstrate that we're doing ok (or not).}
+In all cases we find that our estimates of stellar masses and radii are consistent within the quoted uncertainties, but emphasize that more precise constraints could be obtained by including spectroscopic or asteroseismic measurements.
+
+
+
+
+\acknowledgments
+
+I would like to thank.
+
+
+
+This work made use of the \href{https://gaia-kepler.fun}{gaia-kepler.fun} crossmatch database created by Megan Bedell.
+
+\vspace{5mm}
+\facilities{\tess, \gaia, \kepler, etc.}
+
+\software{astropy \citep{Astropy-Collaboration:2013,Astropy-Collaboration:2018}}
+
+\appendix
+
+\section{An Appendix}
+
+Words.
+
+\bibliography{atlas}{}
+\bibliographystyle{aasjournal}
+
+\end{document}

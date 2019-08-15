@@ -51,9 +51,11 @@ def run_fit(kicid):
     params["parallax"] = (float(plx), float(plx_err))
     for k, v in params.items():
         params[k] = np.array(v, dtype=np.float64)
+    if params["parallax"][0] > 0:
+        params["max_distance"] = np.clip(2000 / plx, 100, np.inf)
     print(params)
 
-    output_dir = "results"
+    output_dir = "astero_results"
     os.makedirs(output_dir, exist_ok=True)
     fn = os.path.join(output_dir, "{0}.h5".format(kicid))
     if os.path.exists(fn):
@@ -61,15 +63,13 @@ def run_fit(kicid):
 
     # Set up an isochrones model using the MIST tracks
     mist = isochrones.get_ichrone("mist", bands=["G", "BP", "RP"])
-    mod = isochrones.SingleStarModel(
-        mist, max_distance=np.clip(2000 / plx, 100, np.inf), **params
-    )
+    mod = isochrones.SingleStarModel(mist, **params)
 
     # These functions wrap isochrones so that they can be used with dynesty:
     def prior_transform(u):
         cube = np.copy(u)
         mod.mnest_prior(cube[: mod.n_params], None, None)
-        cube[mod.n_params:] = -10 + 20 * cube[mod.n_params:]
+        cube[mod.n_params :] = -10 + 20 * cube[mod.n_params :]
         return cube
 
     def loglike(theta):
@@ -78,10 +78,7 @@ def run_fit(kicid):
         for i, k in enumerate(jitter_vars):
             err = np.sqrt(params[k][1] ** 2 + np.exp(theta[ind0 + i]))
             lp0 -= 2 * np.log(err)  # This is to fix a bug in isochrones
-            mod.kwargs[k] = (
-                params[k][0],
-                err,
-            )
+            mod.kwargs[k] = (params[k][0], err)
         lp = lp0 + mod.lnpost(theta[: mod.n_params])
         if np.isfinite(lp):
             return np.clip(lp, -1e10, np.inf)
@@ -102,10 +99,12 @@ def run_fit(kicid):
         results.samples, np.exp(results.logwt - results.logz[-1])
     )
     df = mod._samples = pd.DataFrame(
-        dict(zip(
-            list(mod.param_names) + ["log_jitter_" + k for k in jitter_vars],
-            samples.T
-        ))
+        dict(
+            zip(
+                list(mod.param_names) + ["log_jitter_" + k for k in jitter_vars],
+                samples.T,
+            )
+        )
     )
     mod._derived_samples = mod.ic(*[df[c].values for c in mod.param_names])
     mod._derived_samples["parallax"] = 1000.0 / df["distance"]

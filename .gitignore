@@ -5,3 +5,4 @@ cache
 build
 docs/notebooks/*/*.html
 __pycache__
+output

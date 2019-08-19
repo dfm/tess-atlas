@@ -10,6 +10,8 @@ __all__ = [
     "fit_gaia_data_for_tic",
 ]
 
+import os
+
 import numpy as np
 import pandas as pd
 from astroquery.mast import Catalogs
@@ -63,13 +65,9 @@ def get_info_for_tic(tic):
 
 
 def get_gaia_data_for_toi(toi_num, use_cache=True, **kwargs):
-    info = get_info_for_toi(toi_num, use_cache=use_cache)
-    coord = SkyCoord(
-        ra=info["RA"][0], dec=info["Dec"][0], unit=(u.hourangle, u.deg)
-    )
-    return get_gaia_data(
-        coord, approx_mag=float(info["TESS Mag"][0]), **kwargs
-    )
+    info = get_info_for_toi(toi_num, use_cache=use_cache).iloc[0]
+    coord = SkyCoord(ra=info["RA"], dec=info["Dec"], unit=(u.hourangle, u.deg))
+    return get_gaia_data(coord, approx_mag=float(info["TESS Mag"]), **kwargs)
 
 
 def get_gaia_data_for_tic(tic, **kwargs):
@@ -81,12 +79,12 @@ def get_gaia_data_for_tic(tic, **kwargs):
 
 
 def fit_gaia_data_for_toi(toi_num, clobber=False, **kwargs):
-    name = "toi{0}".format(toi_num)
+    name = os.path.join("toi", "{0}".format(toi_num))
     data = get_gaia_data_for_toi(toi_num, **kwargs)
     return fit_gaia_data(name, data, clobber=clobber)
 
 
 def fit_gaia_data_for_tic(tic, clobber=False, **kwargs):
-    name = "tic{0}".format(tic)
+    name = os.path.join("tic", "{0}".format(tic))
     data = get_gaia_data_for_tic(tic, **kwargs)
     return fit_gaia_data(name, data, clobber=clobber)

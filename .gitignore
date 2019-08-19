@@ -4,3 +4,4 @@ cache
 *.log
 build
 docs/notebooks/*/*.html
+__pycache__

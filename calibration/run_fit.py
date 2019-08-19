@@ -6,13 +6,13 @@ __all__ = ["run_fit"]
 import os
 import sys
 import time
+
+import dynesty
+import isochrones
 import numpy as np
 import pandas as pd
 
 from astropy.io import fits
-
-import dynesty
-import isochrones
 
 with fits.open("kepler_dr2_1arcsec.fits") as f:
     xmatch = f[1].data
@@ -55,7 +55,7 @@ def run_fit(kicid):
         params["max_distance"] = np.clip(2000 / plx, 100, np.inf)
     print(params)
 
-    output_dir = "astero_results"
+    output_dir = "results"
     os.makedirs(output_dir, exist_ok=True)
     fn = os.path.join(output_dir, "{0}.h5".format(kicid))
     if os.path.exists(fn):
@@ -101,7 +101,8 @@ def run_fit(kicid):
     df = mod._samples = pd.DataFrame(
         dict(
             zip(
-                list(mod.param_names) + ["log_jitter_" + k for k in jitter_vars],
+                list(mod.param_names)
+                + ["log_jitter_" + k for k in jitter_vars],
                 samples.T,
             )
         )

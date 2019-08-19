@@ -3,12 +3,13 @@
 
 from __future__ import division, print_function
 
-import re
 import os
-import sys
-import nbformat
+import re
 import subprocess
-from nbconvert.preprocessors import ExecutePreprocessor, CellExecutionError
+import sys
+
+import nbformat
+from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
 
 __version__ = "0.1.1"
 
@@ -23,8 +24,7 @@ with open("template.ipynb", "r") as f:
     txt = f.read()
     txt = txt.replace("{{{TOINUMBER}}}", "{0}".format(toi_number))
     txt = txt.replace("{{{VERSIONNUMBER}}}", "{0}".format(__version__))
-    txt = re.sub(r"toi_num = [0-9]+", "toi_num = {0}".format(toi_number),
-                 txt)
+    txt = re.sub(r"toi_num = [0-9]+", "toi_num = {0}".format(toi_number), txt)
 
 with open(filename, "w") as f:
     f.write(txt)
@@ -36,8 +36,9 @@ ep = ExecutePreprocessor(timeout=-1)
 
 print("running: {0}".format(filename))
 try:
-    ep.preprocess(notebook, {"metadata":
-                             {"path": "notebooks/{0}".format(__version__)}})
+    ep.preprocess(
+        notebook, {"metadata": {"path": "notebooks/{0}".format(__version__)}}
+    )
 except CellExecutionError as e:
     msg = "error while running: {0}\n\n".format(filename)
     msg += e.traceback

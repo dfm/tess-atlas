@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os
-import time
 import subprocess
+import time
+
 import numpy as np
 import pandas as pd
+
 from astropy.io import ascii
 
 # ASTERO
@@ -32,8 +34,12 @@ for i, split in enumerate(splits):
     cmd = "python run_fit.py {0}".format(" ".join(map("{0}".format, split)))
     print(cmd)
 
-    logfp = open(os.path.join("astero_results", "{0:03d}.stdout.log".format(i)), "w")
-    errfp = open(os.path.join("astero_results", "{0:03d}.stderr.log".format(i)), "w")
+    logfp = open(
+        os.path.join("astero_results", "{0:03d}.stdout.log".format(i)), "w"
+    )
+    errfp = open(
+        os.path.join("astero_results", "{0:03d}.stderr.log".format(i)), "w"
+    )
     procs.append(subprocess.Popen(cmd, shell=True, stdout=logfp, stderr=errfp))
     files += [logfp, errfp]
 

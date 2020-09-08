@@ -4,3 +4,7 @@ lightkurve>=1.11.2
 astropy>=4.0.1
 jupyter>=1.0.0
 numba>=0.51.2
+pytest>=6.0.1
+testbook>=0.2.3
+dynesty>=1.0.1
+isochrones>=2.1

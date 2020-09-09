@@ -22,8 +22,9 @@ class NotebookRunnerTestCase(unittest.TestCase):
 
     def test_notebook_creation(self):
         notebook_fn = run_toi.create_toi_notebook_from_template_notebook(
-            toi_number=2,
-            version=self.version
+            toi_number=723,
+            version=self.version,
+            quickrun=True
         )
         self.assertTrue(os.path.exists(notebook_fn))
 
@@ -36,7 +37,7 @@ class NotebookRunnerTestCase(unittest.TestCase):
 
     def test_notebook_execution(self):
         notebook_fn = run_toi.create_toi_notebook_from_template_notebook(
-            toi_number=723,
+            toi_number=1235,
             version=self.version,
             quickrun=True
         )
@@ -46,3 +47,5 @@ class NotebookRunnerTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+

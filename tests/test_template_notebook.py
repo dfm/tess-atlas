@@ -16,9 +16,9 @@ class NotebookRunnerTestCase(unittest.TestCase):
         self.outdir = f"notebooks/{self.version}"
         os.makedirs(self.outdir, exist_ok=True)
 
-    # def tearDown(self):
-    #     if os.path.exists(self.outdir):
-    #         shutil.rmtree(self.outdir)
+    def tearDown(self):
+        if os.path.exists(self.outdir):
+            shutil.rmtree(self.outdir)
 
     def test_notebook_creation(self):
         notebook_fn = run_toi.create_toi_notebook_from_template_notebook(

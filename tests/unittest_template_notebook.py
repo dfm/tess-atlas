@@ -1,6 +1,7 @@
 """Module to run unittests for functions in the template notebook"""
 import pytest
 import testbook
+from tess_atlas.tess_atlas_version import __version__
 
 TEMPLATE_NOTEBOOK = "template.ipynb"
 

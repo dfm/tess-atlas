@@ -21,3 +21,8 @@ To run all the notebooks, you can run
 ```bash
 python run_tois.py
 ```
+
+## Run tests on template.ipynb
+```bash
+pytest tests/
+```

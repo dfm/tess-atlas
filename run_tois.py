@@ -21,7 +21,7 @@ TOI_DATABASE = "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&o
 def run_toi(toi_id):
     print("running {0}".format(toi_id))
     os.environ["THEANO_FLAGS"] = "compiledir=./cache/{0}".format(os.getpid())
-    check_call("python run_toi.py {0}".format(toi_id), shell=True)
+    check_call("python3 run_toi.py {0}".format(toi_id), shell=True)
 
 
 def main():

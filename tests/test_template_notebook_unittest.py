@@ -31,7 +31,6 @@ def test_toi_class_construction(notebook):
     TOI(toi_number=1)
 
 
-
 def test_build_model(notebook):
     build_model = notebook.ref("build_model")
     build_model()

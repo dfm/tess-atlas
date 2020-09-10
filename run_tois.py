@@ -30,7 +30,6 @@ def main():
         np.array(tois.groupby("TIC ID").first().sort_values("TOI").TOI)
     ).astype(int)
     np.random.shuffle(toi_ids)
-
     with Pool(8) as pool:
         pool.map(run_toi, toi_ids)
 

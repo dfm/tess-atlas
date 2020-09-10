@@ -47,8 +47,8 @@ def create_toi_notebook_from_template_notebook(
         txt = txt.replace("{{{VERSIONNUMBER}}}", f"'{version}'")
         txt = re.sub(r"toi_num = [0-9]+", f"toi_num = {toi_number}", txt)
         if quickrun:
-            txt = re.sub(r"TUNE = [0-9]+", f"TUNE = {2}", txt)
-            txt = re.sub(r"DRAWS = [0-9]+", f"DRAWS = {2}", txt)
+            txt = re.sub(r"TUNE = [0-9]+", f"TUNE = {10}", txt)
+            txt = re.sub(r"DRAWS = [0-9]+", f"DRAWS = {10}", txt)
             txt = re.sub(r"CHAINS = [0-9]+", f"CHAINS = {1}", txt)
         else:
             txt = re.sub(r"TUNE = [0-9]+", f"TUNE = {2000}", txt)

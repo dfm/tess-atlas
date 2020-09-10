@@ -47,8 +47,12 @@ def create_toi_notebook_from_template_notebook(
         txt = txt.replace("{{{VERSIONNUMBER}}}", f"'{version}'")
         txt = re.sub(r"toi_num = [0-9]+", f"toi_num = {toi_number}", txt)
         if quickrun:
-            txt = re.sub(r"TUNE = [0-9]+", f"TUNE = {200}", txt)
-            txt = re.sub(r"DRAWS = [0-9]+", f"DRAWS = {200}", txt)
+            txt = re.sub(r"TUNE = [0-9]+", f"TUNE = {2}", txt)
+            txt = re.sub(r"DRAWS = [0-9]+", f"DRAWS = {2}", txt)
+            txt = re.sub(r"CHAINS = [0-9]+", f"CHAINS = {1}", txt)
+        else:
+            txt = re.sub(r"TUNE = [0-9]+", f"TUNE = {2000}", txt)
+            txt = re.sub(r"DRAWS = [0-9]+", f"DRAWS = {2000}", txt)
             txt = re.sub(r"CHAINS = [0-9]+", f"CHAINS = {1}", txt)
 
     with open(notebook_filename, "w") as f:
@@ -87,12 +91,13 @@ def execute_toi_notebook(notebook_filename, version=__version__):
         msg += e.traceback
         msg += f"removing: {notebook_filename}\n\n"
         print(msg)
-        # os.remove(notebook_filename)
+        os.remove(notebook_filename)
         success = False
     else:
         with open(notebook_filename, mode="wt") as f:
             nbformat.write(notebook, f)
         subprocess.check_call(f"git add {notebook_filename} -f", shell=True)
+        print(f"Success analysing {notebook_filename}!! ")
 
     return success
 

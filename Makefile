@@ -1,4 +1,4 @@
-VERSION=0.1.1
+VERSION=0.2.0
 FILES=$(wildcard notebooks/${VERSION}/*.ipynb)
 NOTEBOOKS = $(foreach fn, $(FILES), docs/$(basename ${fn}).html)
 

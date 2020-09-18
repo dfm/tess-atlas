@@ -12,11 +12,15 @@ from tess_atlas import run_toi
 class NotebookRunnerTestCase(unittest.TestCase):
 
     def setUp(self):
+        self.start_dir = os.getcwd()
+        # self.tess_atlas_dir = "./tess_atlas"
+        # os.chdir(self.tess_atlas_dir)
         self.version = "TEST"
-        self.outdir = f"notebooks/{self.version}"
+        self.outdir = f"../notebooks/{self.version}"
         os.makedirs(self.outdir, exist_ok=True)
 
     def tearDown(self):
+        os.chdir(self.start_dir)
         if os.path.exists(self.outdir):
             shutil.rmtree(self.outdir)
 

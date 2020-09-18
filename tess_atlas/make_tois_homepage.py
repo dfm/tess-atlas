@@ -22,7 +22,7 @@ def make_menu_page():
 
     txt = txt.replace("{{{VERSIONNUMBER}}}", version)
     txt = txt.replace("{{{TOILIST}}}", "\n".join(lines))
-    with open(os.path.join(DOCS, f"{version}/index.html", "w") as f:
+    with open(os.path.join(DOCS, f"{version}/index.html", "w")) as f:
         f.write(txt)
 
 

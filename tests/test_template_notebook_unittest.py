@@ -2,7 +2,7 @@
 import pytest
 import testbook
 
-TEMPLATE_NOTEBOOK = "template.ipynb"
+TEMPLATE_NOTEBOOK = "tess_atlas/template.ipynb"
 
 
 @pytest.fixture(scope='module')

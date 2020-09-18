@@ -12,6 +12,7 @@ from typing import Optional
 
 import nbformat
 from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
+
 from .tess_atlas_version import __version__
 
 TEMPLATE = "tess_atlas/template.ipynb"

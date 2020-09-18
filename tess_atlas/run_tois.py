@@ -15,7 +15,9 @@ from subprocess import check_call
 import numpy as np
 import pandas as pd
 
-TOI_DATABASE = "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
+TOI_DATABASE = (
+    "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
+)
 
 
 def run_toi(toi_id):
@@ -34,5 +36,5 @@ def main():
         pool.map(run_toi, toi_ids)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

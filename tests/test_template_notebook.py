@@ -6,7 +6,7 @@ import unittest
 
 import nbformat
 
-import run_toi
+from tess_atlas import run_toi
 
 
 class NotebookRunnerTestCase(unittest.TestCase):

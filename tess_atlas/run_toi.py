@@ -15,7 +15,7 @@ from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
 
 from tess_atlas.tess_atlas_version import __version__
 
-TEMPLATE = "template.ipynb"
+TEMPLATE = "tess_atlas/template.ipynb"
 
 
 def create_toi_notebook_from_template_notebook(

@@ -13,7 +13,7 @@
 
 <div id="header">
     <div id="logo"><img src="/static/atlas_logo.png"></div>
-    <h1>The TESS Atlas {{{VERSION}}}</h1>
+    <h1>The TESS Atlas {{{VERSIONNUMBER}}}</h1>
 </div>
 
 <p>

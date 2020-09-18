@@ -6,6 +6,7 @@ import os
 import sys
 
 NOTEBOOK_LOCATION = "notebooks/{version}/*.ipynb"
+DOCS = "docs/notebooks/"
 
 
 def make_menu_page():
@@ -16,12 +17,12 @@ def make_menu_page():
         toi = int(os.path.splitext(os.path.split(filename)[1])[0].split("-")[1])
         lines.append('<li><a href="toi-{0}.html">TOI {0}</a></li>'.format(toi))
 
-    with open("../docs/notebooks/index.html.tpl", "r") as f:
+    with open(os.path.join(DOCS, "index.html.tpl"), "r") as f:
         txt = f.read()
 
-    txt = txt.replace("{{{VERSION}}}", version)
+    txt = txt.replace("{{{VERSIONNUMBER}}}", version)
     txt = txt.replace("{{{TOILIST}}}", "\n".join(lines))
-    with open(f"../docs/notebooks/{version}/index.html", "w") as f:
+    with open(os.path.join(DOCS, f"{version}/index.html", "w") as f:
         f.write(txt)
 
 

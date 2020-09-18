@@ -6,3 +6,6 @@ build
 docs/notebooks/*/*.html
 __pycache__
 output
+*idea
+venv
+notebooks

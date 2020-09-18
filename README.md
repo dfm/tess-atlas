@@ -1,3 +1,6 @@
+[![Unit 🧪 `template.ipynb`](https://github.com/dfm/tess-atlas/workflows/Unit%20%F0%9F%A7%AA%20%60template.ipynb%60/badge.svg)](https://github.com/dfm/tess-atlas/actions?query=workflow%3A%22Unit+%F0%9F%A7%AA+%60template.ipynb%60%22)
+[![end-to-end 🧪 `template.ipynb`](https://github.com/dfm/tess-atlas/workflows/end-to-end%20%F0%9F%A7%AA%20%60template.ipynb%60/badge.svg)](https://github.com/dfm/tess-atlas/actions?query=workflow%3A%22end-to-end+%F0%9F%A7%AA+%60template.ipynb%60%22)
+
 <p align="center">
   <img width = "450" src="docs/static/atlas_logo.png" />
   <br>

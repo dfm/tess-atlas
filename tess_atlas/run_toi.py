@@ -88,12 +88,13 @@ def execute_toi_notebook(notebook_filename, version=__version__):
         msg += e.traceback
         msg += f"removing: {notebook_filename}\n\n"
         print(msg)
-        # os.remove(notebook_filename)
+        os.remove(notebook_filename)
         success = False
     else:
         with open(notebook_filename, mode="wt") as f:
             nbformat.write(notebook, f)
         subprocess.check_call(f"git add {notebook_filename} -f", shell=True)
+        print(f"Success analysing {notebook_filename}!! ")
 
     return success
 

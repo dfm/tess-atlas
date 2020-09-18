@@ -1,7 +1,9 @@
 # All notable changes will be documented in this file
 
 # v0.2.1 : 2020-09-18
-- Remove 
+- Remove unused files
+- Refactor code into ./tess_atlas/
+- Add new Makefile command 
 
 # v0.2.0 : 2020-09-09
 - Add pytest and CI for `template.ipynb`

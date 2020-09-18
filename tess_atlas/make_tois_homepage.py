@@ -5,10 +5,10 @@ import glob
 import os
 import sys
 
-NOTEBOOK_LOCATION = f"notebooks/{version}/*.ipynb"
+NOTEBOOK_LOCATION = "notebooks/{version}/*.ipynb"
 
 
-def main():
+def make_menu_page():
     version = sys.argv[1].strip()
     notebook_files = glob.glob(NOTEBOOK_LOCATION.format(version=version))
     lines = []
@@ -21,8 +21,12 @@ def main():
 
     txt = txt.replace("{{{VERSION}}}", version)
     txt = txt.replace("{{{TOILIST}}}", "\n".join(lines))
-    with open("../docs/notebooks/{0}/index.html".format(version), "w") as f:
+    with open(f"../docs/notebooks/{version}/index.html", "w") as f:
         f.write(txt)
+
+
+def main():
+    make_menu_page()
 
 
 if __name__ == "__main__":

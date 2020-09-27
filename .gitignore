@@ -10,3 +10,4 @@ output
 venv
 notebooks
 notebooks/TEST
+.mypy_cache

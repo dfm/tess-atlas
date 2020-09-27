@@ -1,12 +1,21 @@
 """Module to run unittests for functions in the template notebook"""
 import os
+import re
 
-import pandas as pd
-import pymc3 as pm
 import pytest
 import testbook
+from packaging import version
 
 TEMPLATE_NOTEBOOK = "tess_atlas/template.ipynb"
+
+
+def extract_substring(text, pattern="'(.+?)'"):
+    try:
+        found = re.search(pattern, text).group(1)
+    except AttributeError:
+        # AAA, ZZZ not found in the original string
+        found = ''  # apply your error handling
+    return found
 
 
 @pytest.fixture(scope='module')
@@ -20,7 +29,6 @@ def notebook():
 
 
 def test_exoplanent_import_version_number(notebook):
-    from packaging import version
     notebook.inject(
         """
         print(xo.__version__)
@@ -41,15 +49,23 @@ def test_build_model(notebook):
 
 
 def test_posterior_saving_and_loading(notebook):
-    """Save and load posteriors in HDF5"""
+    """Save and load posteriors as HDF5"""
     test_fn = "test.h5"
-    with pm.Model():
-        pm.Uniform('y', 0, 20)
-        trace = pm.sample(draws=10, n_init=1, chains=1, tune=10)
-    save_posteriors = notebook.ref("save_posteriors")
-    save_posteriors(trace, test_fn)
-    assert os.path.isfile(test_fn)
-    load_posterior = notebook.ref("load_posteriors")
-    posterior = load_posterior(test_fn)
-    assert isinstance(posterior, pd.DataFrame)
+    notebook.inject(
+        """
+        with pm.Model():
+            pm.Uniform('y', 0, 20)
+            trace = pm.sample(draws=10, n_init=1, chains=1, tune=10)
+        save_posteriors(trace, 'test.h5')
+        """
+    )
+    assert os.path.exists("test.h5")
+    notebook.inject(
+        """
+        posterior = load_posteriors('test.h5')
+        print(type(posterior))
+        """
+    )
+    out_txt = notebook.cells[-1]['outputs'][0]['text']
+    assert extract_substring(out_txt) == 'pandas.core.frame.DataFrame'
     os.remove(test_fn)

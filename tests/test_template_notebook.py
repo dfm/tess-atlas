@@ -42,7 +42,7 @@ class NotebookRunnerTestCase(unittest.TestCase):
             notebook_fn, version=self.version
         )
         self.assertTrue(success)
-        self.assertTrue(os.path.exists("notebooks/TEST/toi-1235.h5"))
+        self.assertTrue(os.path.exists(notebook_fn.replace(".ipynb", ".h5")))
 
 
 if __name__ == "__main__":

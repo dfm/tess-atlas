@@ -84,6 +84,7 @@ def execute_toi_notebook(notebook_filename, version=__version__):
 
     print(f"running: {notebook_filename}")
     try:
+        # Note that path specifies in which folder to execute the notebook.
         ep.preprocess(notebook, {"metadata": {"path": f"notebooks/{version}"}})
     except CellExecutionError as e:
         msg = f"error while running: {notebook_filename}\n\n"

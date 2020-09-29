@@ -4,6 +4,8 @@
 - Remove unused files
 - Refactor code into ./tess_atlas/
 - Add new Makefile command 
+- Add the saving of traces in a netcdf file
+- Add multiplanet support
 
 # v0.2.0 : 2020-09-09
 - Add pytest and CI for `template.ipynb`

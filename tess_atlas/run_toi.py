@@ -45,6 +45,7 @@ def create_toi_notebook_from_template_notebook(
         txt = f.read()
         txt = txt.replace("{{{TOINUMBER}}}", f"{toi_number}")
         txt = txt.replace("{{{VERSIONNUMBER}}}", f"'{version}'")
+        txt = txt.replace("{{{FILENAME}}}", f"'{notebook_filename}'")
         txt = re.sub(r"toi_num = [0-9]+", f"toi_num = {toi_number}", txt)
         if quickrun:
             txt = re.sub(r"TUNE = [0-9]+", f"TUNE = {10}", txt)
@@ -83,6 +84,7 @@ def execute_toi_notebook(notebook_filename, version=__version__):
 
     print(f"running: {notebook_filename}")
     try:
+        # Note that path specifies in which folder to execute the notebook.
         ep.preprocess(notebook, {"metadata": {"path": f"notebooks/{version}"}})
     except CellExecutionError as e:
         msg = f"error while running: {notebook_filename}\n\n"

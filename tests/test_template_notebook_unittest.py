@@ -48,24 +48,25 @@ def test_build_model(notebook):
     build_model()
 
 
-def test_posterior_saving_and_loading(notebook):
-    """Save and load posteriors as HDF5"""
-    test_fn = "test.h5"
+def test_trace_saving_and_loading(notebook):
+    """Save and load trace from netcdf"""
+    test_fn = "test.netcdf"
     notebook.inject(
         """
         with pm.Model():
             pm.Uniform('y', 0, 20)
             trace = pm.sample(draws=10, n_init=1, chains=1, tune=10)
-        save_posteriors(trace, 'test.h5')
+        save_trace(trace, 'test.netcdf')
         """
     )
-    assert os.path.exists("test.h5")
+    assert os.path.exists("test.netcdf")
     notebook.inject(
         """
-        posterior = load_posteriors('test.h5')
-        print(type(posterior))
+        trace = load_trace('test.netcdf')
+        print(type(trace))
         """
     )
+    print( notebook.cells[-1]['outputs'])
     out_txt = notebook.cells[-1]['outputs'][0]['text']
-    assert extract_substring(out_txt) == 'pandas.core.frame.DataFrame'
+    assert extract_substring(out_txt) == 'arviz.data.inference_data.InferenceData'
     os.remove(test_fn)

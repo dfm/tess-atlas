@@ -3,6 +3,7 @@
 import os
 import shutil
 import unittest
+import subprocess
 
 import nbformat
 
@@ -42,7 +43,9 @@ class NotebookRunnerTestCase(unittest.TestCase):
             notebook_fn, version=self.version
         )
         self.assertTrue(success)
-        self.assertTrue(os.path.exists(notebook_fn.replace(".ipynb", ".h5")))
+        subprocess.check_call(f"git rm {notebook_fn} -f", shell=True)
+        self.assertTrue(os.path.exists(notebook_fn.replace(".ipynb", ".netcdf")))
+
 
 
 if __name__ == "__main__":

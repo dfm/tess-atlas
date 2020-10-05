@@ -10,6 +10,10 @@ import nbformat
 from tess_atlas import run_toi
 
 
+SINGLE_TRANSIENT = 103 
+MULTI_TRANSIENT = 178 # has 3 planets
+
+
 class NotebookRunnerTestCase(unittest.TestCase):
     def setUp(self):
         self.start_dir = os.getcwd()
@@ -37,7 +41,7 @@ class NotebookRunnerTestCase(unittest.TestCase):
 
     def test_notebook_execution(self):
         notebook_fn = run_toi.create_toi_notebook_from_template_notebook(
-            toi_number=1235, version=self.version, quickrun=True
+            toi_number=MULTI_TRANSIENT, version=self.version, quickrun=True
         )
         success = run_toi.execute_toi_notebook(
             notebook_fn, version=self.version

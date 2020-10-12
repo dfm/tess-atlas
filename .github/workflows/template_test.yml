@@ -16,4 +16,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: End-to-end test 
-        run: pytest -vv tests/test_template_notebook.py 
+        run: pytest -vv -k "not slow" tests/test_template_notebook.py

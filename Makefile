@@ -1,4 +1,5 @@
-VERSION=0.2.0
+VERSION_FILE='./tess_atlas/tess_atlas_version.py'
+VERSION:=$$(grep -Eo '[0-9]+\.[0-9]+\.[0-9]' ${VERSION_FILE})
 FILES=$(wildcard notebooks/${VERSION}/*.ipynb)
 NOTEBOOKS = $(foreach fn, $(FILES), docs/$(basename ${fn}).html)
 

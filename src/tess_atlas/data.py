@@ -132,7 +132,7 @@ class LightCurveData:
         data = search.download_all()
         print("Completed light curve data download")
         data = data.stitch()
-        data = data.remove_nans().remove_outliers()
+        data = data.remove_nans().remove_outliers(sigma=7)
         return cls(
             time=np.ascontiguousarray(data.time.value, dtype=np.float64),
             flux=np.ascontiguousarray(

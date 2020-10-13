@@ -10,3 +10,5 @@ pandas
 plotly
 pytest
 testbook
+jupyter
+ipykernel

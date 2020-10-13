@@ -14,8 +14,10 @@ jobs:
     strategy:
       matrix:
         test-file:
-          - tests/test_template_notebook.py
-          - tests/test_template_notebook_unittest.py
+          - "tests/test_template_notebook.py::NotebookRunnerTestCase::test_slow_notebook_execution"
+          - "tests/test_template_notebook.py::NotebookRunnerTestCase::test_quick_notebook_execution"
+          - "tests/test_template_notebook.py::NotebookRunnerTestCase::test_notebook_creation"
+          - "tests/test_template_notebook_unittest.py"
 
     steps:
       - uses: actions/checkout@v2

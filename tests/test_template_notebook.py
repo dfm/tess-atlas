@@ -41,7 +41,6 @@ class NotebookRunnerTestCase(unittest.TestCase):
 
     def test_slow_notebook_execution(self):
         notebook_execution(MULTI_TRANSIT, version=__version__, quickrun=False)
-        notebook_execution(SINGLE_TRANSIT, version=__version__, quickrun=False)
 
     def test_quick_notebook_execution(self):
         notebook_execution(SINGLE_TRANSIT, version=self.version, quickrun=True)

@@ -44,6 +44,5 @@ jobs:
         env:
           TEST_FILE: ${{ matrix.test-file }}
       - uses: actions/upload-artifact@v2
-        if: ${{ always() }}
         with:
           path: notebooks

@@ -52,7 +52,7 @@ def notebook_execution(toi_number, version, quickrun=True):
     )
     success = run_toi.execute_toi_notebook(notebook_fn, version=version)
     assert success
-    subprocess.check_call(f"git rm {notebook_fn} -f", shell=True)
+    subprocess.check_call(f"git rm --cached {notebook_fn} -f", shell=True)
     assert os.path.exists(notebook_fn.replace(".ipynb", ".netcdf"))
 
 

@@ -41,3 +41,6 @@ jobs:
         run: python -m pytest -vv $TEST_FILE
         env:
           TEST_FILE: ${{ matrix.test-file }}
+      - uses: actions/upload-artifact@v2
+        with:
+          path: notebooks

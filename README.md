@@ -10,7 +10,7 @@
 ## Installation instructions
 To intall the necessary packages, run
 ```bash
-pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 ## Instructions to update TESS Atlas
@@ -32,5 +32,6 @@ python -m tess_atlas.run_tois
 
 ## Run tests on template.ipynb
 ```bash
+python -m pip install -e ".[test]"
 pytest tests/
 ```

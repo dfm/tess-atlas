@@ -125,21 +125,29 @@ class LightCurveData:
             "mission='TESS'"
         )
         search = lk.search_lightcurve(target=f"TIC {tic}", mission="TESS")
+
+        # Restrict to short cadence no "fast" cadence
+        search = search[np.where(search.table["t_exptime"] == 120)]
+
         print(
             f"Downloading {len(search)} observations of light curve data "
             "(TIC {tic})"
         )
         data = search.download_all()
+        if data is None:
+            raise ValueError(f"No light curves for TIC {tic}")
         print("Completed light curve data download")
         data = data.stitch()
         data = data.remove_nans().remove_outliers(sigma=7)
+        t = data.time.value
+        inds = np.argsort(t)
         return cls(
-            time=np.ascontiguousarray(data.time.value, dtype=np.float64),
+            time=np.ascontiguousarray(t[inds], dtype=np.float64),
             flux=np.ascontiguousarray(
-                1e3 * (data.flux.value - 1), dtype=np.float64
+                1e3 * (data.flux.value[inds] - 1), dtype=np.float64
             ),
             flux_err=np.ascontiguousarray(
-                1e3 * data.flux_err.value, dtype=np.float64
+                1e3 * data.flux_err.value[inds], dtype=np.float64
             ),
         )
 

@@ -8,3 +8,4 @@ arviz>=0.9.0
 matplotlib
 pandas
 plotly
+pytest

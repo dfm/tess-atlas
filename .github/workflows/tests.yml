@@ -38,7 +38,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install --use-feature=2020-resolver -U -e ".[test]"
       - name: End-to-end test
-        run: python -m pytest -vv $TEST_FILE
+        run: |
+          python -m pytest -vv $TEST_FILE
+          ls notebooks
         env:
           TEST_FILE: ${{ matrix.test-file }}
       - uses: actions/upload-artifact@v2

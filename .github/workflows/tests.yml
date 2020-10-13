@@ -1,0 +1,33 @@
+name: Tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    name: ${{ matrix.test-file }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        test-file:
+        - tests/test_template_notebook.py
+        - tests/test_template_notebook_unittest.py
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --use-feature=2020-resolver -U -e ".[test]"
+      - name: End-to-end test 
+        run: python -m pytest -vv $TEST_FILE
+        env:
+          TEST_FILE: ${{ matrix.test-file }}

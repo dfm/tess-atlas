@@ -3,6 +3,7 @@
 __all__ = [
     "plot_lightcurve_and_masks",
     "plot_masked_lightcurve_flux_vs_time_since_transit",
+    "plot_lightcurve_with_inital_model",
 ]
 
 from typing import List, Optional
@@ -118,4 +119,41 @@ def plot_masked_lightcurve_flux_vs_time_since_transit(
         )
     fig.update_layout(height=300 * num_planets)
     fig.update(layout_coloraxis_showscale=False)
+    return fig
+
+
+def plot_lightcurve_with_inital_model(tic_entry: TICEntry, map_soln):
+    lc = tic_entry.lightcurve
+    fig = go.Figure()
+    make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.02,
+    )
+    fig.add_trace(
+        go.Scattergl(
+            x=lc.time,
+            y=lc.flux,
+            mode="lines+markers",
+            marker_color="black",
+            marker_size=2,
+            line_width=0.1,
+            hoverinfo="skip",
+            name="Data",
+        ),
+    )
+    for i in range(tic_entry.planet_count):
+        fig.add_trace(
+            go.Scattergl(
+                x=lc.time,
+                y=map_soln["lightcurves"][:, i] * 1e3,
+                mode="lines",
+                name=f"Planet {i}",
+            )
+        )
+    fig.update_layout(
+        xaxis_title="Time [days]",
+        yaxis_title="Relative Flux [ppt]",
+    )
     return fig

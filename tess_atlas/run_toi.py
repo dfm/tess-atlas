@@ -4,6 +4,7 @@
 
 from __future__ import division, print_function
 
+import logging
 import os
 import re
 import subprocess
@@ -15,13 +16,15 @@ from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
 
 from .tess_atlas_version import __version__
 
+logging.getLogger().setLevel(logging.INFO)
+
 TEMPLATE = "tess_atlas/template.ipynb"
 
 
 def create_toi_notebook_from_template_notebook(
-    toi_number: int,
-    version: Optional[str] = __version__,
-    quickrun: Optional[bool] = False,
+        toi_number: int,
+        version: Optional[str] = __version__,
+        quickrun: Optional[bool] = False,
 ):
     """Creates a jupyter notebook for the TOI
 
@@ -62,7 +65,8 @@ def create_toi_notebook_from_template_notebook(
     return notebook_filename
 
 
-def execute_toi_notebook(notebook_filename, version=__version__):
+def execute_toi_notebook(notebook_filename, version=__version__,
+                         remove_on_failure=True):
     """Executes the TOI notebook and git adds the notebook on a successful run.
     Prints an error on failure to run the notebook.
 
@@ -82,22 +86,22 @@ def execute_toi_notebook(notebook_filename, version=__version__):
 
     ep = ExecutePreprocessor(timeout=-1)
 
-    print(f"running: {notebook_filename}")
+    logging.info(f"Preprocessing {notebook_filename}")
     try:
-        # Note that path specifies in which folder to execute the notebook.
+        # "path" specifies the folder to execute the notebook
         ep.preprocess(notebook, {"metadata": {"path": f"notebooks/{version}"}})
     except CellExecutionError as e:
-        msg = f"error while running: {notebook_filename}\n\n"
-        msg += e.traceback
-        msg += f"removing: {notebook_filename}\n\n"
-        print(msg)
-        os.remove(notebook_filename)
+        logging.error(f"Processing {notebook_filename} failed: \n\n{e.traceback}")
         success = False
+
+    if not success and remove_on_failure:
+        os.remove(notebook_filename)
+        logging.info(f"Removed: {notebook_filename}\n\n")
     else:
         with open(notebook_filename, mode="wt") as f:
             nbformat.write(notebook, f)
         subprocess.check_call(f"git add {notebook_filename} -f", shell=True)
-        print(f"Success analysing {notebook_filename}!! ")
+        logging.info(f"Success analysing {notebook_filename}!! ")
 
     return success
 

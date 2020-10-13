@@ -6,7 +6,6 @@ import subprocess
 import unittest
 
 import nbformat
-import pytest
 
 from tess_atlas import run_toi
 from tess_atlas.tess_atlas_version import __version__
@@ -40,22 +39,27 @@ class NotebookRunnerTestCase(unittest.TestCase):
         except nbformat.ValidationError:
             self.fail(f"{notebook_fn} is an invalid notebook")
 
-    def test_slow_notebook_execution(self):
+    def test_slow_multi_transit_execution(self):
         notebook_execution(MULTI_TRANSIENT, version=__version__, quickrun=False)
+
+    def test_slow_single_transit_execution(self):
         notebook_execution(SINGLE_TRANSIENT, version=__version__, quickrun=False)
 
     def test_quick_notebook_execution(self):
         notebook_execution(SINGLE_TRANSIENT, version=self.version, quickrun=True)
+
 
 def notebook_execution(toi_number, version, quickrun=True):
     notebook_fn = run_toi.create_toi_notebook_from_template_notebook(
         toi_number=toi_number, version=version, quickrun=quickrun
     )
     success = run_toi.execute_toi_notebook(
-        notebook_fn, version=version
+        notebook_fn, version=version, remove_on_failure=False
     )
+    subprocess.call(f"jupyter nbconvert --to html {notebook_fn}", shell=True)
+    assert os.path.exists(notebook_fn.replace(".ipynb", ".html"))
     assert success
-    subprocess.check_call(f"git rm {notebook_fn} -f", shell=True)
+    subprocess.check_call(f"git rm --cached {notebook_fn} -f", shell=True)
     assert os.path.exists(notebook_fn.replace(".ipynb", ".netcdf"))
 
 

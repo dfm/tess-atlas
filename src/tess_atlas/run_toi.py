@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 """Module to create and run a TOI notebook from the template notebook"""
 
-from __future__ import division, print_function
-
 import os
+import pkg_resources
 import re
 import subprocess
 import sys
@@ -15,7 +14,9 @@ from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
 
 from .tess_atlas_version import __version__
 
-TEMPLATE = "tess_atlas/template.ipynb"
+
+def get_template_filename():
+    return pkg_resources.resource_filename(__name__, "template.ipynb")
 
 
 def create_toi_notebook_from_template_notebook(
@@ -41,7 +42,7 @@ def create_toi_notebook_from_template_notebook(
     notebook_filename = f"notebooks/{version}/toi-{toi_number}.ipynb"
     os.makedirs(os.path.dirname(notebook_filename), exist_ok=True)
 
-    with open(TEMPLATE, "r") as f:
+    with open(get_template_filename(), "r") as f:
         txt = f.read()
         txt = txt.replace("{{{TOINUMBER}}}", f"{toi_number}")
         txt = txt.replace("{{{VERSIONNUMBER}}}", f"'{version}'")
@@ -94,7 +95,7 @@ def execute_toi_notebook(notebook_filename, version=__version__):
     finally:
         with open(notebook_filename, mode="wt") as f:
             nbformat.write(notebook, f)
-    
+
     if success:
         subprocess.check_call(f"git add {notebook_filename} -f", shell=True)
         print(f"Success analysing {notebook_filename}!! ")

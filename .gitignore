@@ -10,4 +10,4 @@ output
 venv
 notebooks
 notebooks/TEST
-.mypy_cache
+.mypy_cache*_version.py

@@ -23,5 +23,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install jupytext
       - name: roundtrip conversion test
-          # Test the py:light -> ipynb -> py:light round trip conversion
-          run: jupytext --test-strict  src/tess_atlas/template.py --to ipynb
+        # Test the py:light -> ipynb -> py:light round trip conversion
+        run: jupytext --test-strict  src/tess_atlas/template.py --to ipynb

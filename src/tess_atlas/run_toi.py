@@ -46,7 +46,7 @@ def create_toi_notebook_from_template_notebook(
         notebook_filename: str
             The filepath of the generated notebook
     """
-    notebook_filename = f"notebooks/{version}/toi-{toi_number}.ipynb"
+    notebook_filename = f"notebooks/{version}/toi_{toi_number}.ipynb"
     os.makedirs(os.path.dirname(notebook_filename), exist_ok=True)
 
     with open(get_template_filename(), "r") as f:

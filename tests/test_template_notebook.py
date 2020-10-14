@@ -46,14 +46,17 @@ class NotebookRunnerTestCase(unittest.TestCase):
         notebook_execution(SINGLE_TRANSIT, version=self.version, quickrun=True)
 
 
-def notebook_execution(toi_number, version, quickrun=True):
+def notebook_execution(toi_id, version, quickrun=True):
     notebook_fn = run_toi.create_toi_notebook_from_template_notebook(
-        toi_number=toi_number, version=version, quickrun=quickrun
+        toi_number=toi_id, version=version, quickrun=quickrun
     )
     success = run_toi.execute_toi_notebook(notebook_fn, version=version)
     assert success
     subprocess.check_call(f"git rm --cached {notebook_fn} -f", shell=True)
-    assert os.path.exists(notebook_fn.replace(".ipynb", ".netcdf"))
+    samples_file = (
+        f"notebooks/{version}/toi_{toi_id}_files/toi_{toi_id}.netcdf"
+    )
+    assert os.path.exists(samples_file), samples_file
 
 
 if __name__ == "__main__":

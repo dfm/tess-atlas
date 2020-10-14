@@ -8,13 +8,15 @@ __all__ = [
 ]
 
 import os
-from typing import List
+from typing import List, Optional
 
 import arviz as az
 import lightkurve as lk
 import numpy as np
 import pandas as pd
 from pymc3.sampling import MultiTrace
+
+from .tess_atlas_version import __version__
 
 TOI_DATASOURCE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
@@ -195,7 +197,7 @@ class TICEntry:
         elif isinstance(inference_trace, az.InferenceData):
             self._inference_trace = inference_trace
         else:
-            raise Exception(type(inference_trace))
+            raise TypeError(f"Unknown type: {type(inference_trace)}")
 
     def load_inference_trace(self):
         print(f"Trace loaded from {self.inference_trace_filename}")
@@ -250,7 +252,6 @@ class TICEntry:
         return os.path.join(self.outdir, f"toi_{self.toi_number}.netcdf")
 
     def setup_outdir(self):
-        toi = int(self.candidates[0].toi_id)
-        output_dir = os.path.join(f"toi_{toi}_files")
+        output_dir = os.path.join(f"toi_{self.toi_number}_files")
         os.makedirs(output_dir, exist_ok=True)
         self.outdir = output_dir

@@ -1,6 +1,8 @@
 """Module to run unittests for functions in the template notebook"""
 import os
 import re
+import shutil
+from pprint import pprint
 
 import pytest
 import testbook
@@ -54,25 +56,26 @@ def test_build_model(notebook):
 
 def test_trace_saving_and_loading(notebook):
     """Save and load trace from netcdf"""
-    test_fn = "test.netcdf"
+    test_dir = "toi_0_files"
     notebook.inject(
         """
         with pm.Model():
             pm.Uniform('y', 0, 20)
             trace = pm.sample(draws=10, n_init=1, chains=1, tune=10)
-        save_trace(trace, 'test.netcdf')
+        tic_entry = TICEntry(tic=0,candidates=[],toi=0)
+        tic_entry.inference_trace = trace
+        tic_entry.save_inference_trace()
+        tic_entry.load_inference_trace()
+        print(type(tic_entry.inference_trace))
         """
     )
-    assert os.path.exists("test.netcdf")
-    notebook.inject(
-        """
-        trace = load_trace('test.netcdf')
-        print(type(trace))
-        """
-    )
-    print(notebook.cells[-1]["outputs"])
-    out_txt = notebook.cells[-1]["outputs"][0]["text"]
+    assert os.path.exists("toi_0_files/toi_0.netcdf")
+    stdout_cells = [
+        o for o in notebook.cells[-1]["outputs"] if o.get("name") == "stdout"
+    ]
+    pprint(stdout_cells)
+    out_txt = stdout_cells[0]["text"]
     assert (
         extract_substring(out_txt) == "arviz.data.inference_data.InferenceData"
     )
-    os.remove(test_fn)
+    shutil.rmtree(test_dir)

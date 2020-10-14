@@ -54,9 +54,9 @@ def notebook_execution(toi_id, version, quickrun=True):
     assert success
     subprocess.check_call(f"git rm --cached {notebook_fn} -f", shell=True)
     samples_file = (
-        f"../notebooks/{version}/toi_{toi_id}_files/toi_{toi_id}.netcdf"
+        f"notebooks/{version}/toi_{toi_id}_files/toi_{toi_id}.netcdf"
     )
-    assert os.path.exists(samples_file)
+    assert os.path.exists(samples_file), samples_file
 
 
 if __name__ == "__main__":

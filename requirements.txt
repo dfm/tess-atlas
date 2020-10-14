@@ -12,3 +12,4 @@ pytest
 testbook
 jupyter
 ipykernel
+jupytext

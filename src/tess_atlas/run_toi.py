@@ -17,7 +17,9 @@ from .tess_atlas_version import __version__
 
 
 def get_template_filename():
-    template_py_filename = pkg_resources.resource_filename(__name__, "template.py")
+    template_py_filename = pkg_resources.resource_filename(
+        __name__, "template.py"
+    )
     template_ipynb_filename = template_py_filename.replace(".py", ".ipynb")
     template_py_pointer = jupytext.read(template_py_filename, fmt="py:light")
     jupytext.write(template_py_pointer, template_ipynb_filename)
@@ -25,9 +27,9 @@ def get_template_filename():
 
 
 def create_toi_notebook_from_template_notebook(
-        toi_number: int,
-        version: Optional[str] = __version__,
-        quickrun: Optional[bool] = False,
+    toi_number: int,
+    version: Optional[str] = __version__,
+    quickrun: Optional[bool] = False,
 ):
     """Creates a jupyter notebook for the TOI
 

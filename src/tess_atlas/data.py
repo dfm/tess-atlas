@@ -10,12 +10,11 @@ __all__ = [
 import os
 from typing import List
 
+import lightkurve as lk
 import numpy as np
 import pandas as pd
-import lightkurve as lk
 
 from .tess_atlas_version import __version__
-
 
 TOI_DATASOURCE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"

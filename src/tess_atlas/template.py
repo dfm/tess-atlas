@@ -94,7 +94,6 @@ from tess_atlas.data import TICEntry
 from tess_atlas.plotting import (
     plot_lightcurve_and_masks, plot_lightcurve_with_inital_model,
     plot_masked_lightcurve_flux_vs_time_since_transit)
-from tess_atlas.trace_storage import save_trace
 
 get_ipython().magic('config InlineBackend.figure_format = "retina"')
 
@@ -350,10 +349,10 @@ def start_model_sampling(model) -> MultiTrace:
     np.random.seed(TOI_NUMBER)
 
     with model:
-        trace = pmx.sample(
+        samples = pmx.sample(
             tune=TUNE, draws=DRAWS, start=init_params, chains=2, cores=1
         )
-        return trace
+        return samples
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -363,7 +362,8 @@ trace = start_model_sampling(planet_transit_model)
 # Then we can take a look at the summary statistics:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-az.from_pymc3(trace)
+tic_entry.inference_trace = trace
+tic_entry.inference_trace
 
 
 # -
@@ -385,8 +385,7 @@ plot_posteriors(trace)
 # Finally, we save the posteriors and sampling metadata for future use.
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-trace_filename = os.path.basename(FILENAME.replace(".ipynb", ".netcdf"))
-save_trace(trace, trace_filename)
+tic_entry.save_inference_trace()
 
 
 # -

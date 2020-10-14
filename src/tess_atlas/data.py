@@ -10,11 +10,11 @@ __all__ = [
 import os
 from typing import List
 
+import arviz as az
 import lightkurve as lk
 import numpy as np
 import pandas as pd
-
-from .tess_atlas_version import __version__
+from pymc3.sampling import MultiTrace
 
 TOI_DATASOURCE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
@@ -173,8 +173,9 @@ class LightCurveData:
 class TICEntry:
     """Hold information about a TIC (TESS Input Catalog) entry"""
 
-    def __init__(self, tic: int, candidates: List[PlanetCandidate]):
+    def __init__(self, tic: int, candidates: List[PlanetCandidate], toi: int):
         self.tic_number = tic
+        self.toi_number = toi
         self.candidates = candidates
         self.lightcurve = None
         self.setup_outdir()
@@ -182,6 +183,29 @@ class TICEntry:
     @property
     def planet_count(self):
         return len(self.candidates)
+
+    @property
+    def inference_trace(self) -> az.InferenceData:
+        return self._inference_trace
+
+    @inference_trace.setter
+    def inference_trace(self, inference_trace):
+        if isinstance(inference_trace, MultiTrace):
+            self._inference_trace = az.from_pymc3(inference_trace)
+        elif isinstance(inference_trace, az.InferenceData):
+            self._inference_trace = inference_trace
+        else:
+            raise Exception(type(inference_trace))
+
+    def load_inference_trace(self):
+        print(f"Trace loaded from {self.inference_trace_filename}")
+        self.inference_trace = az.from_netcdf(self.inference_trace_filename)
+
+    def save_inference_trace(self):
+        print(f"Trace saved at {self.inference_trace_filename}")
+        az.to_netcdf(
+            self.inference_trace, filename=self.inference_trace_filename
+        )
 
     @classmethod
     def generate_tic_from_toi_number(cls, toi: int):
@@ -195,6 +219,7 @@ class TICEntry:
         return cls(
             tic=int(tois_for_tic_table["TIC ID"].iloc[0]),
             candidates=candidates,
+            toi=toi,
         )
 
     def load_lightcurve(self):
@@ -219,6 +244,10 @@ class TICEntry:
         df = df.transpose()
         df.columns = df.loc["TOI"]
         display(df)
+
+    @property
+    def inference_trace_filename(self):
+        return os.path.join(self.outdir, f"toi_{self.toi_number}.netcdf")
 
     def setup_outdir(self):
         toi = int(self.candidates[0].toi_id)

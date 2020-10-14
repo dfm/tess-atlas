@@ -38,12 +38,14 @@ jobs:
           pip install --use-feature=2020-resolver -U -e ".[dev]"
   notebook_check:
     needs: build
+    runs-on: ubuntu-latest
     steps:
       - name: roundtrip conversion test
         # Test the py:light -> ipynb -> py:light round trip conversion
         run: jupytext --test-strict  src/tess_atlas/template.py --to ipynb
   precommit:
     needs: build
+    runs-on: ubuntu-latest
     steps:
       - name: pre-commit
         run: pre-commit run --all-files --verbose --show-diff-on-failure

@@ -14,6 +14,8 @@ import numpy as np
 import pandas as pd
 import lightkurve as lk
 
+from .tess_atlas_version import __version__
+
 
 TOI_DATASOURCE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
@@ -176,6 +178,7 @@ class TICEntry:
         self.tic_number = tic
         self.candidates = candidates
         self.lightcurve = None
+        self.setup_outdir()
 
     @property
     def planet_count(self):
@@ -218,8 +221,8 @@ class TICEntry:
         df.columns = df.loc["TOI"]
         display(df)
 
-    def setup_outdir(self, version):
+    def setup_outdir(self):
         toi = int(self.candidates[0].toi_id)
-        output_dir = os.path.join("results", version, toi)
+        output_dir = os.path.join(f"toi_{toi}_files")
         os.makedirs(output_dir, exist_ok=True)
         self.outdir = output_dir

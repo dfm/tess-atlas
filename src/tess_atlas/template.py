@@ -351,7 +351,7 @@ def start_model_sampling(model) -> MultiTrace:
 
     with model:
         trace = pmx.sample(
-            tune=TUNE, draws=DRAWS, start=init_params, chains=2, cores=2
+            tune=TUNE, draws=DRAWS, start=init_params, chains=2, cores=1
         )
         return trace
 

@@ -88,11 +88,13 @@ from astroquery.mast import Catalogs
 from celerite2.theano import GaussianProcess, terms
 from IPython.display import display
 from plotly.subplots import make_subplots
+from pymc3.sampling import MultiTrace
 
 from tess_atlas.data import TICEntry
 from tess_atlas.plotting import (
     plot_lightcurve_and_masks, plot_lightcurve_with_inital_model,
     plot_masked_lightcurve_flux_vs_time_since_transit)
+from tess_atlas.trace_storage import save_trace
 
 get_ipython().magic('config InlineBackend.figure_format = "retina"')
 
@@ -344,7 +346,7 @@ TUNE = 2000
 DRAWS = 2000
 
 
-def start_model_sampling(model):
+def start_model_sampling(model) -> MultiTrace:
     np.random.seed(TOI_NUMBER)
 
     with model:
@@ -381,26 +383,6 @@ plot_posteriors(trace)
 # -
 
 # Finally, we save the posteriors and sampling metadata for future use.
-
-# + pycharm={"name": "#%%\n"} tags=["def"]
-def validate_trace_filename(filename):
-    suffix = Path(filename).suffix
-    if suffix != ".netcdf":
-        raise ValueError(f"{suffix} is an invalid extension.")
-
-
-def save_trace(trace, filename):
-    """Save pymc3 trace as a netcdf file"""
-    validate_trace_filename(filename)
-    az_trace = az.from_pymc3(trace)
-    az_trace.to_netcdf(filename)
-
-
-def load_trace(filename):
-    """Load pymc3 trace from netcdf file and return an arviz InferenceData object"""
-    validate_trace_filename(filename)
-    return az.from_netcdf(filename)
-
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 trace_filename = os.path.basename(FILENAME.replace(".ipynb", ".netcdf"))

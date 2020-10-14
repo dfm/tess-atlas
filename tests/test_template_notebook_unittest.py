@@ -6,7 +6,9 @@ import pytest
 import testbook
 from packaging import version
 
-TEMPLATE_NOTEBOOK = "src/tess_atlas/template.ipynb"
+from tess_atlas.run_toi import get_template_filename
+
+TEMPLATE_NOTEBOOK = get_template_filename()
 
 
 def extract_substring(text, pattern="'(.+?)'"):

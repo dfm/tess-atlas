@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Module to create and run a TOI notebook from the template notebook"""
 
+import logging
 import os
 import re
 import subprocess
@@ -12,6 +13,8 @@ import jupytext
 import nbformat
 import pkg_resources
 from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
+
+logging.getLogger().setLevel(logging.INFO)
 
 from .tess_atlas_version import __version__
 
@@ -90,14 +93,14 @@ def execute_toi_notebook(notebook_filename, version=__version__):
 
     ep = ExecutePreprocessor(timeout=-1)
 
-    print(f"running: {notebook_filename}")
+    logging.info(f"Executing {notebook_filename}")
     try:
         # Note that path specifies in which folder to execute the notebook.
         ep.preprocess(notebook, {"metadata": {"path": f"notebooks/{version}"}})
     except CellExecutionError as e:
-        msg = f"error while running: {notebook_filename}\n\n"
-        msg += e.traceback
-        print(msg)
+        logging.error(
+            f"Preprocessing {notebook_filename} failed:\n\n {e.traceback}"
+        )
         success = False
     finally:
         with open(notebook_filename, mode="wt") as f:
@@ -105,7 +108,7 @@ def execute_toi_notebook(notebook_filename, version=__version__):
 
     if success:
         subprocess.check_call(f"git add {notebook_filename} -f", shell=True)
-        print(f"Success analysing {notebook_filename}!! ")
+        logging.info(f"Preprocessed {notebook_filename}")
 
     return success
 

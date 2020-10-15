@@ -97,6 +97,8 @@ from tess_atlas.plotting import (
     plot_masked_lightcurve_flux_vs_time_since_transit,
 )
 
+logging.getLogger().setLevel(logging.INFO)
+
 get_ipython().magic('config InlineBackend.figure_format = "retina"')
 
 # TEMPORARY WORKAROUND
@@ -307,7 +309,7 @@ def get_optimized_init_params(
     model, planet_params, noise_params, stellar_params
 ):
     """Get params with maximimal log prob for sampling starting point"""
-    print("Optimizing sampling starting point")
+    logging.info("Optimizing sampling starting point")
     with model:
         theta = model.test_point
         kwargs = dict(start=theta, verbose=False, progress=False)
@@ -315,7 +317,7 @@ def get_optimized_init_params(
         theta = pmx.optimize(**kwargs, vars=planet_params)
         theta = pmx.optimize(**kwargs, vars=noise_params)
         theta = pmx.optimize(**kwargs, vars=stellar_params)
-    print("Optimization complete!")
+    logging.info("Optimization complete!")
     return theta
 
 

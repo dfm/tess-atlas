@@ -2,7 +2,6 @@
 import os
 import re
 import shutil
-from pprint import pprint
 
 import pytest
 import testbook
@@ -73,7 +72,6 @@ def test_trace_saving_and_loading(notebook):
     stdout_cells = [
         o for o in notebook.cells[-1]["outputs"] if o.get("name") == "stdout"
     ]
-    pprint(stdout_cells)
     out_txt = stdout_cells[0]["text"]
     assert (
         extract_substring(out_txt) == "arviz.data.inference_data.InferenceData"

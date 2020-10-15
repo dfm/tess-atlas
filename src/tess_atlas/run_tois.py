@@ -8,6 +8,7 @@ https://exofop.ipac.caltech.edu/tess/
 """
 from __future__ import division, print_function
 
+import logging
 import os
 from multiprocessing import Pool
 from subprocess import check_call
@@ -15,13 +16,14 @@ from subprocess import check_call
 import numpy as np
 import pandas as pd
 
+logging.getLogger().setLevel(logging.INFO)
 TOI_DATABASE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
 )
 
 
 def run_toi(toi_id):
-    print(f"running {toi_id}")
+    logging.info(f"Running {toi_id}")
     os.environ["THEANO_FLAGS"] = f"compiledir=./cache/{os.getpid()}"
     check_call(f"python tess_atlas/run_toi.py {toi_id}", shell=True)
 

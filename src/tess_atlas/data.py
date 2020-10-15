@@ -7,8 +7,9 @@ __all__ = [
     "TICEntry",
 ]
 
+import logging
 import os
-from typing import List, Optional
+from typing import List
 
 import arviz as az
 import lightkurve as lk
@@ -17,6 +18,8 @@ import pandas as pd
 from pymc3.sampling import MultiTrace
 
 from .tess_atlas_version import __version__
+
+logging.getLogger().setLevel(logging.INFO)
 
 TOI_DATASOURCE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
@@ -123,23 +126,24 @@ class LightCurveData:
     @classmethod
     def from_mast(cls, tic: int):
         """Uses lightkurve to get TESS data for a TIC from MAST"""
-        print(
+        logging.info(
             f"Searching for lightkurve data with target='TIC {tic}', "
             "mission='TESS'"
         )
         search = lk.search_lightcurve(target=f"TIC {tic}", mission="TESS")
+        logging.debug(f"Search  succeeded: {search}")
 
         # Restrict to short cadence no "fast" cadence
         search = search[np.where(search.table["t_exptime"] == 120)]
 
-        print(
+        logging.info(
             f"Downloading {len(search)} observations of light curve data "
-            "(TIC {tic})"
+            f"(TIC {tic})"
         )
         data = search.download_all()
         if data is None:
             raise ValueError(f"No light curves for TIC {tic}")
-        print("Completed light curve data download")
+        logging.info("Completed light curve data download")
         data = data.stitch()
         data = data.remove_nans().remove_outliers(sigma=7)
         t = data.time.value
@@ -165,7 +169,7 @@ class LightCurveData:
         self.flux = np.ascontiguousarray(self.flux[transit_mask])
         self.flux_err = np.ascontiguousarray(self.flux_err[transit_mask])
         len_after = len(self.time)
-        print(
+        logging.info(
             f"Masking reduces light curve from {len_before}-->{len_after} points"
         )
         assert len_before >= len_after, f"{len_before}-->{len_after}"
@@ -200,11 +204,11 @@ class TICEntry:
             raise TypeError(f"Unknown type: {type(inference_trace)}")
 
     def load_inference_trace(self):
-        print(f"Trace loaded from {self.inference_trace_filename}")
+        logging.info(f"Trace loaded from {self.inference_trace_filename}")
         self.inference_trace = az.from_netcdf(self.inference_trace_filename)
 
     def save_inference_trace(self):
-        print(f"Trace saved at {self.inference_trace_filename}")
+        logging.info(f"Trace saved at {self.inference_trace_filename}")
         az.to_netcdf(
             self.inference_trace, filename=self.inference_trace_filename
         )

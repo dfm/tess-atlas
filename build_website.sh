@@ -12,4 +12,3 @@ cp docs/.nojekyll .
 git add -f CNAME css static index.html notebooks .nojekyll
 git commit -m "updating the site"
 git push -f https://github.com/dfm/tess-atlas.git gh-pages
-

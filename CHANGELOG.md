@@ -3,7 +3,7 @@
 # v0.2.1 : 2020-09-18
 - Remove unused files
 - Refactor code into ./tess_atlas/
-- Add new Makefile command 
+- Add new Makefile command
 - Add the saving of traces in a netcdf file
 - Add multiplanet support
 

@@ -8,16 +8,7 @@ on:
       - main
 jobs:
   build:
-    name: ${{ matrix.test-file }}
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        test-file:
-          - "tests/test_template_notebook.py::NotebookRunnerTestCase::test_quick_notebook_execution"
-          - "tests/test_template_notebook.py::NotebookRunnerTestCase::test_notebook_creation"
-          - "tests/test_template_notebook_unittest.py"
-
     steps:
       - uses: actions/checkout@v2
         with:
@@ -35,12 +26,17 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --use-feature=2020-resolver -U -e ".[test]"
-      - name: End-to-end test
-        run: python -m pytest -vv $TEST_FILE
-        env:
-          TEST_FILE: ${{ matrix.test-file }}
-      - uses: actions/upload-artifact@v2
-        if: ${{ always() }}
-        with:
-          path: notebooks
+          pip install --use-feature=2020-resolver -U -e ".[dev]"
+
+      # Test the py:light -> ipynb -> py:light round trip conversion
+      - name: roundtrip conversion test
+        run: jupytext src/tess_atlas/template.py --to notebook --test
+
+      # Verify pre-commits valid
+      - name: pre-commit
+        run: pre-commit run --all-files --verbose --show-diff-on-failure
+
+      # Run all test other than ones marked as "slow"
+      - name: pytest
+        run: python -m pytest -vv $TEST_FILE -k "not slow"
+        if: always()

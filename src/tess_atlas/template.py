@@ -92,8 +92,10 @@ from pymc3.sampling import MultiTrace
 
 from tess_atlas.data import TICEntry
 from tess_atlas.plotting import (
-    plot_lightcurve_and_masks, plot_lightcurve_with_inital_model,
-    plot_masked_lightcurve_flux_vs_time_since_transit)
+    plot_lightcurve_and_masks,
+    plot_lightcurve_with_inital_model,
+    plot_masked_lightcurve_flux_vs_time_since_transit,
+)
 
 get_ipython().magic('config InlineBackend.figure_format = "retina"')
 

@@ -27,34 +27,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install --use-feature=2020-resolver -U -e ".[dev]"
-  notebook_check:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
+
+      # Test the py:light -> ipynb -> py:light round trip conversion
       - name: roundtrip conversion test
-        # Test the py:light -> ipynb -> py:light round trip conversion
         run: jupytext --test-strict  src/tess_atlas/template.py --to ipynb
-  precommit:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
+
+      # Verify pre-commits valid
       - name: pre-commit
         run: pre-commit run --all-files --verbose --show-diff-on-failure
-  test:
-    name: ${{ matrix.test-file }}
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        test-file:
-          - "tests/test_template_notebook.py"
-          - "tests/test_template_notebook_unittest.py"
-    steps:
-      - name: End-to-end test
+
+      # Run all test other than ones marked as "slow"
+      - name: pytest
         run: python -m pytest -vv $TEST_FILE -k "not slow"
-        env:
-          TEST_FILE: ${{ matrix.test-file }}
-      - uses: actions/upload-artifact@v2
-        if: ${{ always() }}
-        with:
-          path: notebooks
+        if: always()

@@ -14,7 +14,9 @@ def make_menu_page():
     notebook_files = glob.glob(NOTEBOOK_LOCATION.format(version=version))
     lines = []
     for filename in sorted(notebook_files):
-        toi = int(os.path.splitext(os.path.split(filename)[1])[0].split("-")[1])
+        toi = int(
+            os.path.splitext(os.path.split(filename)[1])[0].split("-")[1]
+        )
         lines.append('<li><a href="toi-{0}.html">TOI {0}</a></li>'.format(toi))
 
     with open(os.path.join(DOCS, "index.html.tpl"), "r") as f:

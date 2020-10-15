@@ -11,7 +11,6 @@ from typing import List, Optional
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-
 from .data import TICEntry
 
 
@@ -125,12 +124,7 @@ def plot_masked_lightcurve_flux_vs_time_since_transit(
 def plot_lightcurve_with_inital_model(tic_entry: TICEntry, map_soln):
     lc = tic_entry.lightcurve
     fig = go.Figure()
-    make_subplots(
-        rows=2,
-        cols=1,
-        shared_xaxes=True,
-        vertical_spacing=0.02,
-    )
+    make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.02)
     fig.add_trace(
         go.Scattergl(
             x=lc.time,
@@ -141,7 +135,7 @@ def plot_lightcurve_with_inital_model(tic_entry: TICEntry, map_soln):
             line_width=0.1,
             hoverinfo="skip",
             name="Data",
-        ),
+        )
     )
     for i in range(tic_entry.planet_count):
         fig.add_trace(
@@ -153,7 +147,6 @@ def plot_lightcurve_with_inital_model(tic_entry: TICEntry, map_soln):
             )
         )
     fig.update_layout(
-        xaxis_title="Time [days]",
-        yaxis_title="Relative Flux [ppt]",
+        xaxis_title="Time [days]", yaxis_title="Relative Flux [ppt]"
     )
     return fig

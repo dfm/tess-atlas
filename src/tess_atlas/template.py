@@ -408,7 +408,7 @@ tic_entry.save_inference_trace()
 # All the details are described in [Dawson & Johnson (2012)](https://arxiv.org/abs/1203.5537), but here's how you can do this here using the stellar density listed in the TESS input catalog:
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
-def calculate_eccentricity_weights(tic_entry, trace):
+def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
     star = Catalogs.query_object(
         f"TIC {tic_entry.tic_number}", catalog="TIC", radius=0.001
     )

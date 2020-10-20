@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import pymc3 as pm
 from plotly.subplots import make_subplots
 
 # matplotlib settings
@@ -195,12 +196,10 @@ def plot_lightcurve_with_inital_model(tic_entry: TICEntry, map_soln):
     return fig
 
 
-def plot_posteriors(tic_entry: TICEntry):
-    samples = tic_entry.inference_trace.to_dataframe()[["p", "r", "b"]]
+def plot_posteriors(tic_entry: TICEntry, trace: pm.sampling.MultiTrace):
+    samples = pm.trace_to_dataframe(trace, varnames=["p", "r", "b"])
     fig, ax = plt.subplot()
-    corner.corner(
-        samples, ax=ax, labels=["period", "radius", "impact"], **CORNER_KWARGS
-    )
+    corner.corner(samples, ax=ax, **CORNER_KWARGS)
     fname = os.path.join(tic_entry.outdir, "posteriors.png")
     logging.debug(f"Saving {fname}")
     fig.savefig(fname)

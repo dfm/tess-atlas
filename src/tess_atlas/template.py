@@ -376,11 +376,11 @@ tic_entry.inference_trace
 
 # -
 
-# And plot the posterior covariances compared to the values from [Pepper et al. (2019)](https://arxiv.org/abs/1911.05150):
+# And plot the posterior probability distributuions:
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_posteriors(tic_entry)
+plot_posteriors(tic_entry, trace)
 
 
 # -
@@ -446,6 +446,7 @@ def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 ecc_samples = calculate_eccentricity_weights(tic_entry, trace)
+ecc_samples.to_csv(os.path.join(tic_entry.outdir, "eccentricity_samples.csv"))
 plot_eccentricity_posteriors(tic_entry, ecc_samples)
 # -
 

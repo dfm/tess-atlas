@@ -35,10 +35,10 @@ CORNER_KWARGS = dict(
     smooth=0.9,
     label_kwargs=dict(fontsize=30),
     title_kwargs=dict(fontsize=16),
-    color="0072C1",
+    color="#0072C1",
     truth_color="tab:orange",
     quantiles=[0.16, 0.84],
-    levels=(1 - np.exp(-0.5), 1 - np.exp(-2), 1 - np.exp(-9 / 2.0)),
+    levels=(1 - np.exp(-0.5), 1 - np.exp(-2), 1 - np.exp(-9.0 / 2.0)),
     plot_density=False,
     plot_datapoints=False,
     fill_contours=True,
@@ -198,8 +198,7 @@ def plot_lightcurve_with_inital_model(tic_entry: TICEntry, map_soln):
 
 def plot_posteriors(tic_entry: TICEntry, trace: pm.sampling.MultiTrace):
     samples = pm.trace_to_dataframe(trace, varnames=["p", "r", "b"])
-    fig, ax = plt.subplot()
-    corner.corner(samples, ax=ax, **CORNER_KWARGS)
+    fig = corner.corner(samples, **CORNER_KWARGS)
     fname = os.path.join(tic_entry.outdir, "posteriors.png")
     logging.debug(f"Saving {fname}")
     fig.savefig(fname)
@@ -208,12 +207,10 @@ def plot_posteriors(tic_entry: TICEntry, trace: pm.sampling.MultiTrace):
 def plot_eccentricity_posteriors(
     tic_entry: TICEntry, ecc_samples: pd.DataFrame
 ):
-    fig, ax = plt.subplot()
-    corner.corner(
+    fig = corner.corner(
         ecc_samples[["ecc", "omega"]],
         weights=ecc_samples["weights"],
         labels=["eccentricity", "omega"],
-        ax=ax,
         **CORNER_KWARGS,
     )
     fname = os.path.join(tic_entry.outdir, "ecc_posteriors.png")

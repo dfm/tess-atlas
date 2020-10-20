@@ -92,9 +92,11 @@ from pymc3.sampling import MultiTrace
 
 from tess_atlas.data import TICEntry
 from tess_atlas.plotting import (
+    plot_eccentricity_posteriors,
     plot_lightcurve_and_masks,
     plot_lightcurve_with_inital_model,
     plot_masked_lightcurve_flux_vs_time_since_transit,
+    plot_posteriors,
 )
 
 logging.getLogger().setLevel(logging.INFO)
@@ -119,6 +121,8 @@ logger = logging.getLogger("theano.gof.compilelock")
 logger.setLevel(logging.ERROR)
 logger = logging.getLogger("exoplanet")
 logger.setLevel(logging.DEBUG)
+
+logging.getLogger().setLevel(logging.DEBUG)
 
 # matplotlib settings
 plt.style.use("default")
@@ -372,16 +376,11 @@ tic_entry.inference_trace
 
 # -
 
-# And plot the posterior covariances compared to the values from [Pepper et al. (2019)](https://arxiv.org/abs/1911.05150):
-
-# + pycharm={"name": "#%%\n"} tags=["def"]
-def plot_posteriors(trace):
-    samples = pm.trace_to_dataframe(trace, varnames=["p", "r", "b"])
-    corner.corner(samples)
+# And plot the posterior probability distributuions:
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_posteriors(trace)
+plot_posteriors(tic_entry, trace)
 
 
 # -
@@ -409,12 +408,12 @@ tic_entry.save_inference_trace()
 # All the details are described in [Dawson & Johnson (2012)](https://arxiv.org/abs/1203.5537), but here's how you can do this here using the stellar density listed in the TESS input catalog:
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
-def plot_reweighted_ecentricity_samples(tic_number, trace):
+def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
     star = Catalogs.query_object(
-        f"TIC {tic_number}", catalog="TIC", radius=0.001
+        f"TIC {tic_entry.tic_number}", catalog="TIC", radius=0.001
     )
     tic_rho_star = float(star["rho"]), float(star["e_rho"])
-    print("rho_star = {0} ± {1}".format(*tic_rho_star))
+    logging.info("rho_star = {0} ± {1}".format(*tic_rho_star))
 
     # Extract the implied density from the fit
     rho_circ = np.repeat(trace["rho_circ"], 100)
@@ -436,22 +435,19 @@ def plot_reweighted_ecentricity_samples(tic_number, trace):
 
     # Estimate the expected posterior quantiles
     q = corner.quantile(ecc, [0.16, 0.5, 0.84], weights=weights)
-    print(
+    logging.info(
         "eccentricity = {0:.2f} +{1[1]:.2f} -{1[0]:.2f}".format(
             q[1], np.diff(q)
         )
     )
 
-    corner.corner(
-        np.vstack((ecc, omega)).T,
-        weights=weights,
-        plot_datapoints=False,
-        labels=["eccentricity", "omega"],
-    )
+    return pd.DataFrame(dict(ecc=ecc, omega=omega, weights=weights))
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_reweighted_ecentricity_samples(tic_entry.tic_number, trace)
+ecc_samples = calculate_eccentricity_weights(tic_entry, trace)
+ecc_samples.to_csv(os.path.join(tic_entry.outdir, "eccentricity_samples.csv"))
+plot_eccentricity_posteriors(tic_entry, ecc_samples)
 # -
 
 # As you can see, this eccentricity estimate is consistent (albeit with large uncertainties) with the value that [Pepper et al. (2019)](https://arxiv.org/abs/1911.05150) measure using radial velocities and it is definitely clear that this planet is not on a circular orbit.

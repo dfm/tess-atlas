@@ -4,12 +4,48 @@ __all__ = [
     "plot_lightcurve_and_masks",
     "plot_masked_lightcurve_flux_vs_time_since_transit",
     "plot_lightcurve_with_inital_model",
+    "plot_posteriors",
+    "plot_eccentricity_posteriors",
 ]
 
+import logging
+import os
 from typing import List, Optional
 
+import corner
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
+import pymc3 as pm
 from plotly.subplots import make_subplots
+
+# matplotlib settings
+plt.style.use("default")
+plt.rcParams["savefig.dpi"] = 100
+plt.rcParams["figure.dpi"] = 100
+plt.rcParams["font.size"] = 16
+plt.rcParams["font.family"] = "sans-serif"
+plt.rcParams["font.sans-serif"] = ["Liberation Sans"]
+plt.rcParams["font.cursive"] = ["Liberation Sans"]
+plt.rcParams["mathtext.fontset"] = "custom"
+plt.rcParams["image.cmap"] = "inferno"
+
+CORNER_KWARGS = dict(
+    smooth=0.9,
+    label_kwargs=dict(fontsize=30),
+    title_kwargs=dict(fontsize=16),
+    color="#0072C1",
+    truth_color="tab:orange",
+    quantiles=[0.16, 0.84],
+    levels=(1 - np.exp(-0.5), 1 - np.exp(-2), 1 - np.exp(-9.0 / 2.0)),
+    plot_density=False,
+    plot_datapoints=False,
+    fill_contours=True,
+    max_n_ticks=3,
+    verbose=True,
+    use_math_text=True,
+)
 
 from .data import TICEntry
 
@@ -56,13 +92,15 @@ def plot_lightcurve_and_masks(tic_entry: TICEntry):
                 x=lc.time,
                 y=candidate.get_mask(lc.time),
                 mode="lines",
-                name=f"Planet {i+1}",
+                name=f"Planet {i + 1}",
             ),
             row=2,
             col=1,
         )
-
     fig.update_yaxes(title_text="Planet Transiting", row=2, col=1)
+    fname = os.path.join(tic_entry.outdir, "flux_mask.png")
+    logging.debug(f"Saving {fname}")
+    fig.write_image(fname)
     return fig
 
 
@@ -73,7 +111,7 @@ def plot_masked_lightcurve_flux_vs_time_since_transit(
         model_lightcurves = []
     num_planets = tic_entry.planet_count
     subplot_titles = [
-        f"Planet {i+1}: TOI-{c.toi_id}"
+        f"Planet {i + 1}: TOI-{c.toi_id}"
         for i, c in enumerate(tic_entry.candidates)
     ]
     fig = make_subplots(
@@ -96,7 +134,7 @@ def plot_masked_lightcurve_flux_vs_time_since_transit(
                     showscale=False,
                     colorbar=dict(title="Days"),
                 ),
-                name=f"Candidate {i+1} Data",
+                name=f"Candidate {i + 1} Data",
             ),
             row=i + 1,
             col=1,
@@ -111,13 +149,16 @@ def plot_masked_lightcurve_flux_vs_time_since_transit(
                 x=planet.get_timefold(lc.time),
                 y=model_lightcurve,
                 mode="markers",
-                name=f"Planet {i+1}",
+                name=f"Planet {i + 1}",
             ),
             row=i + 1,
             col=1,
         )
     fig.update_layout(height=300 * num_planets)
     fig.update(layout_coloraxis_showscale=False)
+    fname = os.path.join(tic_entry.outdir, "flux_vs_time.png")
+    logging.debug(f"Saving {fname}")
+    fig.write_image(fname)
     return fig
 
 
@@ -149,4 +190,29 @@ def plot_lightcurve_with_inital_model(tic_entry: TICEntry, map_soln):
     fig.update_layout(
         xaxis_title="Time [days]", yaxis_title="Relative Flux [ppt]"
     )
+    fname = os.path.join(tic_entry.outdir, "modeled_flux_vs_time.png")
+    logging.debug(f"Saving {fname}")
+    fig.write_image(fname)
     return fig
+
+
+def plot_posteriors(tic_entry: TICEntry, trace: pm.sampling.MultiTrace):
+    samples = pm.trace_to_dataframe(trace, varnames=["p", "r", "b"])
+    fig = corner.corner(samples, **CORNER_KWARGS)
+    fname = os.path.join(tic_entry.outdir, "posteriors.png")
+    logging.debug(f"Saving {fname}")
+    fig.savefig(fname)
+
+
+def plot_eccentricity_posteriors(
+    tic_entry: TICEntry, ecc_samples: pd.DataFrame
+):
+    fig = corner.corner(
+        ecc_samples[["ecc", "omega"]],
+        weights=ecc_samples["weights"],
+        labels=["eccentricity", "omega"],
+        **CORNER_KWARGS,
+    )
+    fname = os.path.join(tic_entry.outdir, "ecc_posteriors.png")
+    logging.debug(f"Saving {fname}")
+    fig.savefig(fname)

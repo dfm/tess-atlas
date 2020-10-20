@@ -29,12 +29,14 @@ INSTALL_REQUIRES = [
     "pymc3>=3.9",
     "pymc3-ext>=0.0.2",
     "lightkurve>=2.0.b1",
+    "plotly>=4.9.0",
+    "arviz>=0.10.0",
     "corner",
     "pandas",
-    "plotly",
     "jupyter",
     "ipykernel",
     "jupytext",
+    "kaleido",
 ]
 EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}
 EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [

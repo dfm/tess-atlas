@@ -73,20 +73,7 @@ def create_toi_notebook_from_template_notebook(
     return notebook_filename
 
 
-def execute_toi_notebook(notebook_filename, version=__version__):
-    """Executes the TOI notebook and git adds the notebook on a successful run.
-    Prints an error on failure to run the notebook.
-
-    Args:
-        notebook_filename: str
-            Filepath of the notebook
-        version: str
-            The string id of the TESS Atlas version for the run
-
-    Returns:
-        success: bool
-            True if successful run of notebook
-    """
+def execute_ipynb(notebook_filename: str, version: str):
     success = True
     with open(notebook_filename) as f:
         notebook = nbformat.read(f, as_version=4)
@@ -105,12 +92,28 @@ def execute_toi_notebook(notebook_filename, version=__version__):
     finally:
         with open(notebook_filename, mode="wt") as f:
             nbformat.write(notebook, f)
+    return success
 
-    if success:
+
+def execute_toi_notebook(notebook_filename, version=__version__):
+    """Executes the TOI notebook and git adds the notebook on a successful run.
+    Prints an error on failure to run the notebook.
+
+    Args:
+        notebook_filename: str
+            Filepath of the notebook
+        version: str
+            The string id of the TESS Atlas version for the run
+
+    Returns:
+        success: bool
+            True if successful run of notebook
+    """
+    execution_successful = execute_ipynb(notebook_filename, version)
+    if execution_successful:
         subprocess.check_call(f"git add {notebook_filename} -f", shell=True)
         logging.info(f"Preprocessed {notebook_filename}")
-
-    return success
+    return execution_successful
 
 
 def get_toi_from_cli():

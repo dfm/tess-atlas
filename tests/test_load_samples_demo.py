@@ -13,10 +13,11 @@ from tess_atlas import run_load_samples_demo
 from tess_atlas.data import TICEntry
 
 DATA = dict(TOI=103, TIC=336732616)
+version = "TEST_LOADER_DEMO"
 
 
 def get_outdir():
-    version = "TEST"
+
     outdir = os.path.join(f"./notebooks/{version}/toi_{DATA['TOI']}_files/")
     os.makedirs(outdir, exist_ok=True)
     return outdir
@@ -36,7 +37,6 @@ def create_fake_sample_files(version):
 
 
 def test_load_samples():
-    version = "TEST_LOADER_DEMO"
     create_fake_sample_files(version)
     fn = run_load_samples_demo.get_load_samples_demo_notebook_filename(version)
     assert os.path.exists(fn)

@@ -14,6 +14,8 @@ import nbformat
 import pkg_resources
 from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
 
+from tess_atlas.utils import execute_ipynb
+
 logging.getLogger().setLevel(logging.INFO)
 
 from .tess_atlas_version import __version__
@@ -87,30 +89,11 @@ def execute_toi_notebook(notebook_filename, version=__version__):
         success: bool
             True if successful run of notebook
     """
-    success = True
-    with open(notebook_filename) as f:
-        notebook = nbformat.read(f, as_version=4)
-
-    ep = ExecutePreprocessor(timeout=-1)
-
-    logging.info(f"Executing {notebook_filename}")
-    try:
-        # Note that path specifies in which folder to execute the notebook.
-        ep.preprocess(notebook, {"metadata": {"path": f"notebooks/{version}"}})
-    except CellExecutionError as e:
-        logging.error(
-            f"Preprocessing {notebook_filename} failed:\n\n {e.traceback}"
-        )
-        success = False
-    finally:
-        with open(notebook_filename, mode="wt") as f:
-            nbformat.write(notebook, f)
-
-    if success:
+    execution_successful = execute_ipynb(notebook_filename, version)
+    if execution_successful:
         subprocess.check_call(f"git add {notebook_filename} -f", shell=True)
         logging.info(f"Preprocessed {notebook_filename}")
-
-    return success
+    return execution_successful
 
 
 def get_toi_from_cli():

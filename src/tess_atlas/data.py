@@ -7,6 +7,7 @@ __all__ = [
     "TICEntry",
 ]
 
+import functools
 import logging
 import os
 from typing import List
@@ -17,30 +18,37 @@ import numpy as np
 import pandas as pd
 from pymc3.sampling import MultiTrace
 
-from .tess_atlas_version import __version__
-
 logging.getLogger().setLevel(logging.INFO)
 
-TOI_DATASOURCE = (
+TIC_DATASOURCE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
 )
 MIN_NUM_DAYS = 0.25
 
 
-def get_tic_data_from_database(toi_number: int) -> pd.DataFrame:
+@functools.lru_cache()
+def get_tic_database():
+    return pd.read_csv(TIC_DATASOURCE)
+
+
+def get_tic_id_for_toi(toi_number: int) -> int:
+    tic_db = get_tic_database()
+    toi = tic_db[tic_db["TOI"] == toi_number + 0.01].iloc[0]
+    return int(toi["TIC ID"])
+
+
+def get_tic_data_from_database(toi_numbers: List[int]) -> pd.DataFrame:
     """Get rows of about a TIC  from ExoFOP associated with a TOI target.
-    :param int toi_number: The TOI number for which the TIC data is obtained
+    :param int toi_numbers: The list TOI number for which the TIC data is required
     :return: Dataframe with all TOIs for the TIC which contains TOI {toi_id}
     :rtype: pd.DataFrame
     """
-    tois = pd.read_csv(TOI_DATASOURCE)
-    toi = tois[tois["TOI"] == toi_number + 0.01].iloc[0]
-    tic = toi["TIC ID"]
-    tois_for_tic = tois[tois["TIC ID"] == tic].sort_values("TOI")
+    tic_db = get_tic_database()
+    tics = [get_tic_id_for_toi(toi) for toi in toi_numbers]
+    dfs = [tic_db[tic_db["TIC ID"] == tic].sort_values("TOI") for tic in tics]
+    tois_for_tic = pd.concat(dfs)
     if len(tois_for_tic) < 1:
-        raise ValueError(
-            f"TOI-{toi_number} data for TIC-{tic} does not exist."
-        )
+        raise ValueError(f"TOI data for TICs-{tics} does not exist.")
     return tois_for_tic
 
 
@@ -203,29 +211,37 @@ class TICEntry:
         else:
             raise TypeError(f"Unknown type: {type(inference_trace)}")
 
-    def load_inference_trace(self):
-        logging.info(f"Trace loaded from {self.inference_trace_filename}")
-        self.inference_trace = az.from_netcdf(self.inference_trace_filename)
+    def load_inference_trace(self, fname=None):
+        if fname is None:
+            fname = self.inference_trace_filename
+        if os.path.isfile(fname):
+            logging.debug(f"Trace loaded from {self.inference_trace_filename}")
+            self.inference_trace = az.from_netcdf(
+                self.inference_trace_filename
+            )
+        else:
+            raise FileNotFoundError(f"{fname} not found.")
 
-    def save_inference_trace(self):
-        logging.info(f"Trace saved at {self.inference_trace_filename}")
-        az.to_netcdf(
-            self.inference_trace, filename=self.inference_trace_filename
-        )
+    def save_inference_trace(self, fname=None):
+        if fname is None:
+            fname = self.inference_trace_filename
+        az.to_netcdf(self.inference_trace, filename=fname)
+        logging.info(f"Trace saved at {fname}")
 
     @classmethod
-    def generate_tic_from_toi_number(cls, toi: int):
-        tois_for_tic_table = get_tic_data_from_database(toi)
+    def generate_tic_from_toi_number(
+        cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()
+    ):
+        if tic_data.empty:
+            tic_data = get_tic_data_from_database([toi])
         candidates = []
-        for index, toi_data in tois_for_tic_table.iterrows():
+        for index, toi_data in tic_data.iterrows():
             candidate = PlanetCandidate.from_toi_database_entry(
                 toi_data.to_dict()
             )
             candidates.append(candidate)
         return cls(
-            tic=int(tois_for_tic_table["TIC ID"].iloc[0]),
-            candidates=candidates,
-            toi=toi,
+            tic=int(tic_data["TIC ID"].iloc[0]), candidates=candidates, toi=toi
         )
 
     def load_lightcurve(self):
@@ -254,6 +270,26 @@ class TICEntry:
     @property
     def inference_trace_filename(self):
         return os.path.join(self.outdir, f"toi_{self.toi_number}.netcdf")
+
+    def get_trace_summary(self) -> pd.DataFrame:
+        """Returns a dataframe with the mean+sd of each candidate's p, b, r  """
+        df = az.summary(
+            self.inference_trace,
+            var_names=["~lightcurves"],
+            filter_vars="like",
+        )
+        df = (
+            df.transpose()
+            .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
+            .transpose()
+        )
+        df = df[["mean", "sd"]]
+        df["TOI"] = self.toi_number
+        df["parameter"] = df.index
+        df.set_index(
+            ["TOI", "parameter"], inplace=True, append=False, drop=True
+        )
+        return df
 
     def setup_outdir(self):
         output_dir = os.path.join(f"toi_{self.toi_number}_files")

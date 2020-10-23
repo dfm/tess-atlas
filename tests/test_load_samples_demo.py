@@ -4,35 +4,42 @@
 3. run load_samples_demo.ipynb notebook
 4. ensure no error while running + figures created
 """
+import os
+import shutil
 
-import jupytext
-import pkg_resources
+import pymc3 as pm
 
-from tess_atlas.run_toi import execute_ipynb
+from tess_atlas import run_load_samples_demo
+from tess_atlas.data import TICEntry
 
-
-def get_load_samples_demo_notebook_filename(version=None):
-    """Write demo notebook in notebooks/{version}/load_samples_demo.ipynb"""
-    py_filename = pkg_resources.resource_filename(
-        __name__, "load_samples_demo.py"
-    )
-    ipynb_filename = py_filename.replace(".py", ".ipynb")
-    py_pointer = jupytext.read(ipynb_filename, fmt="py:light")
-    jupytext.write(py_pointer, ipynb_filename)
-    return ipynb_filename
+DATA = dict(TOI=103, TIC=336732616)
 
 
-def create_fake_sample_files(version=None):
-    pass
+def get_outdir():
+    version = "TEST"
+    outdir = os.path.join(f"./notebooks/{version}/toi_{DATA['TOI']}_files/")
+    os.makedirs(outdir, exist_ok=True)
+    return outdir
+
+
+def create_fake_sample_files(version):
+    __version__ = version
+    with pm.Model():
+        pm.Uniform("p[0]", 0, 20)
+        pm.Uniform("b[0]", 0, 20)
+        pm.Uniform("r[0]", 0, 20)
+        trace = pm.sample(draws=10, n_init=1, chains=1, tune=10)
+    tic_entry = TICEntry(tic=DATA["TIC"], candidates=[], toi=DATA["TOI"])
+    tic_entry.inference_trace = trace
+    fname = os.path.join(get_outdir(), f"toi_{DATA['TOI']}.netcdf")
+    tic_entry.save_inference_trace(fname)
 
 
 def test_load_samples():
-    version = "test_version"
+    version = "TEST_LOADER_DEMO"
     create_fake_sample_files(version)
-    load_samples_demo_notebook_filename = (
-        get_load_samples_demo_notebook_filename()
-    )
-    successful_operation = execute_ipynb(
-        load_samples_demo_notebook_filename, version
-    )
+    fn = run_load_samples_demo.get_load_samples_demo_notebook_filename(version)
+    assert os.path.exists(fn)
+    successful_operation = run_load_samples_demo.execute_ipynb(fn, version)
     assert successful_operation
+    shutil.rmtree(get_outdir())

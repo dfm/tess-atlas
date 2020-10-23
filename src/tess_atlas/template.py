@@ -257,6 +257,8 @@ def build_planet_transit_model(tic_entry):
         kernel = terms.SHOTerm(sigma=sigma, rho=rho, Q=0.3)
         noise_params = [jitter, sigma, rho]
 
+        # TODO: pass duration to orbit (this will make a rho_circ for each planet)
+
         ## define 𝜇(𝑡;𝜃) (ie light)
         orbit = xo.orbits.KeplerianOrbit(period=p, t0=t0, b=b)
         lightcurves = xo.LimbDarkLightCurve(u).get_light_curve(
@@ -409,6 +411,7 @@ tic_entry.save_inference_trace()
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
 def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
+    # TODO: update calculation with https://github.com/exoplanet-dev/tess.world/blob/main/src/tess_world/templates/post.ipynb
     star = Catalogs.query_object(
         f"TIC {tic_entry.tic_number}", catalog="TIC", radius=0.001
     )

@@ -43,7 +43,7 @@ class NotebookRunnerTestCase(unittest.TestCase):
         notebook_execution(MULTI_TRANSIT, version=__version__, quickrun=False)
 
     def test_quick_notebook_execution(self):
-        notebook_execution(SINGLE_TRANSIT, version=self.version, quickrun=True)
+        notebook_execution(MULTI_TRANSIT, version=self.version, quickrun=True)
 
 
 def notebook_execution(toi_id, version, quickrun=True, remove_after=False):

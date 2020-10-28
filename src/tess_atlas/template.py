@@ -69,20 +69,18 @@ import logging
 import multiprocessing as mp
 import os
 import warnings
-import exoplanet as xo
 
+import exoplanet as xo
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 import pymc3 as pm
 import pymc3_ext as pmx
-
 from celerite2.theano import GaussianProcess, terms
 from pymc3.sampling import MultiTrace
 
-from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
 from tess_atlas.data import TICEntry
+from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
     plot_lightcurve_and_masks,
@@ -109,12 +107,15 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Logging setup
-logger = logging.getLogger("theano.gof.compilelock")
-logger.setLevel(logging.ERROR)
-logger = logging.getLogger("exoplanet")
-logger.setLevel(logging.DEBUG)
-
-logging.getLogger().setLevel(logging.DEBUG)
+for logger_name in [
+    "theano.gof.compilelock",
+    "exoplanet",
+    "matplotlib",
+    "urllib3",
+]:
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.ERROR)
+logging.getLogger().setLevel(logging.INFO)
 
 # matplotlib settings
 plt.style.use("default")
@@ -393,11 +394,12 @@ tic_entry.save_inference_trace()
 # 1) `e=0` allows simpler orbital dynamics which are more computationally efficient (no need to solve Kepler's equation numerically)
 # 2) There are degeneracies between eccentricity, arrgument of periasteron, impact parameter, and planet radius. Hence by setting `e=0` and using the duration in calculating the planet's orbit, the sampler can perform better.
 #
-# But, in this case, the planet *is* actually on an eccentric orbit, so that assumption isn't justified.
-# It has been recognized by various researchers over the years (I first learned about this from [Bekki Dawson](https://arxiv.org/abs/1203.5537)) that, to first order, the eccentricity mainly just changes the transit duration.
-# The key realization is that this can be thought of as a change in the impled density of the star.
-# Therefore, if you fit the transit using stellar density (or duration, in this case) as one of the parameters (*note: you must have a* different *stellar density parameter for each planet if there are more than one*), you can use an independent measurement of the stellar density to infer the eccentricity of the orbit after the fact.
-# All the details are described in [Dawson & Johnson (2012)](https://arxiv.org/abs/1203.5537), but here's how you can do this here using the stellar density listed in the TESS input catalog:
+# To first order, the eccentricity mainly just changes the transit duration.
+# This can be thought of as a change in the impled density of the star.
+# Therefore, if the transit is fit using stellar density (or duration, in this case) as one of the parameters, it is possible to make an independent measurement of the stellar density, and in turn infer the eccentricity of the orbit as a post-processing step.
+# The details of this eccentricity calculation method are described in [Dawson & Johnson (2012)](https://arxiv.org/abs/1203.5537).
+#
+# Note: a different stellar density parameter is required for each planet (if there is more than one planet)
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 ecc_samples = calculate_eccentricity_weights(tic_entry, trace)

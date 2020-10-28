@@ -207,12 +207,16 @@ def plot_posteriors(tic_entry: TICEntry, trace: pm.sampling.MultiTrace):
 def plot_eccentricity_posteriors(
     tic_entry: TICEntry, ecc_samples: pd.DataFrame
 ):
-    fig = corner.corner(
-        ecc_samples[["ecc", "omega"]],
-        weights=ecc_samples["weights"],
-        labels=["eccentricity", "omega"],
-        **CORNER_KWARGS,
-    )
-    fname = os.path.join(tic_entry.outdir, "ecc_posteriors.png")
-    logging.debug(f"Saving {fname}")
-    fig.savefig(fname)
+    for n in range(tic_entry.planet_count):
+        fig = corner.corner(
+            ecc_samples[[f"e[{n}]", f"omega[{n}]"]],
+            weights=ecc_samples[f"weights[{n}]"],
+            labels=["eccentricity", "omega"],
+            **CORNER_KWARGS,
+        )
+        plt.suptitle(f"Planet {n} Eccentricity")
+        fname = os.path.join(
+            tic_entry.outdir, f"planet_{n}_ecc_posteriors.png"
+        )
+        logging.debug(f"Saving {fname}")
+        fig.savefig(fname)

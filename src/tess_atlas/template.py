@@ -257,10 +257,10 @@ def build_planet_transit_model(tic_entry):
         kernel = terms.SHOTerm(sigma=sigma, rho=rho, Q=0.3)
         noise_params = [jitter, sigma, rho]
 
-        # TODO: pass duration to orbit (this will make a rho_circ for each planet)
-
         ## define 𝜇(𝑡;𝜃) (ie light)
-        orbit = xo.orbits.KeplerianOrbit(period=p, t0=t0, b=b)
+        orbit = xo.orbits.KeplerianOrbit(
+            period=p, t0=t0, b=b, duration=d, ror=r
+        )
         lightcurves = xo.LimbDarkLightCurve(u).get_light_curve(
             orbit=orbit, r=r, t=t
         )

@@ -64,32 +64,24 @@
 # Then we'll set up the plotting styles and do all of the imports:
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
-import functools
+
 import logging
 import multiprocessing as mp
 import os
 import warnings
-from copy import deepcopy
-from pathlib import Path
-from typing import List, Optional
-
-import arviz as az
-import corner
 import exoplanet as xo
-import lightkurve as lk
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
+
 import pymc3 as pm
 import pymc3_ext as pmx
-import theano.tensor as tt
-from astroquery.mast import Catalogs
+
 from celerite2.theano import GaussianProcess, terms
-from IPython.display import display
-from plotly.subplots import make_subplots
 from pymc3.sampling import MultiTrace
 
+from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
 from tess_atlas.data import TICEntry
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
@@ -395,57 +387,17 @@ tic_entry.save_inference_trace()
 
 # -
 
-# ## Bonus: eccentricity
+# ## Eccentricity
 #
-# As discussed above, we fit this model assuming a circular orbit which speeds things up for a few reasons.
-# First, setting eccentricity to zero means that the orbital dynamics are much simpler and more computationally efficient, since we don't need to solve Kepler's equation numerically.
-# But this isn't actually the main effect!
-# Instead the bigger issues come from the fact that the degeneracies between eccentricity, arrgument of periasteron, impact parameter, and planet radius are hard for the sampler to handle, causing the sampler's performance to plummet.
-# In this case, by fitting with a circular orbit where duration is one of the parameters, everything is well behaved and the sampler runs faster.
+# As discussed above, we fit this model assuming a circular orbit which speeds things up for a few reasons:
+# 1) `e=0` allows simpler orbital dynamics which are more computationally efficient (no need to solve Kepler's equation numerically)
+# 2) There are degeneracies between eccentricity, arrgument of periasteron, impact parameter, and planet radius. Hence by setting `e=0` and using the duration in calculating the planet's orbit, the sampler can perform better.
 #
 # But, in this case, the planet *is* actually on an eccentric orbit, so that assumption isn't justified.
 # It has been recognized by various researchers over the years (I first learned about this from [Bekki Dawson](https://arxiv.org/abs/1203.5537)) that, to first order, the eccentricity mainly just changes the transit duration.
 # The key realization is that this can be thought of as a change in the impled density of the star.
 # Therefore, if you fit the transit using stellar density (or duration, in this case) as one of the parameters (*note: you must have a* different *stellar density parameter for each planet if there are more than one*), you can use an independent measurement of the stellar density to infer the eccentricity of the orbit after the fact.
 # All the details are described in [Dawson & Johnson (2012)](https://arxiv.org/abs/1203.5537), but here's how you can do this here using the stellar density listed in the TESS input catalog:
-
-# + pycharm={"name": "#%%\n"} tags=["def"]
-def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
-    # TODO: update calculation with https://github.com/exoplanet-dev/tess.world/blob/main/src/tess_world/templates/post.ipynb
-    star = Catalogs.query_object(
-        f"TIC {tic_entry.tic_number}", catalog="TIC", radius=0.001
-    )
-    tic_rho_star = float(star["rho"]), float(star["e_rho"])
-    logging.info("rho_star = {0} ± {1}".format(*tic_rho_star))
-
-    # Extract the implied density from the fit
-    rho_circ = np.repeat(trace["rho_circ"], 100)
-
-    # Sample eccentricity and omega from their priors (the math might
-    # be a little more subtle for more informative priors, but I leave
-    # that as an exercise for the reader...)
-    ecc = np.random.uniform(0, 1, len(rho_circ))
-    omega = np.random.uniform(-np.pi, np.pi, len(rho_circ))
-
-    # Compute the "g" parameter from Dawson & Johnson and what true
-    # density that implies
-    g = (1 + ecc * np.sin(omega)) / np.sqrt(1 - ecc ** 2)
-    rho = rho_circ / g ** 3
-
-    # Re-weight these samples to get weighted posterior samples
-    log_weights = -0.5 * ((rho - tic_rho_star[0]) / tic_rho_star[1]) ** 2
-    weights = np.exp(log_weights - np.max(log_weights))
-
-    # Estimate the expected posterior quantiles
-    q = corner.quantile(ecc, [0.16, 0.5, 0.84], weights=weights)
-    logging.info(
-        "eccentricity = {0:.2f} +{1[1]:.2f} -{1[0]:.2f}".format(
-            q[1], np.diff(q)
-        )
-    )
-
-    return pd.DataFrame(dict(ecc=ecc, omega=omega, weights=weights))
-
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 ecc_samples = calculate_eccentricity_weights(tic_entry, trace)

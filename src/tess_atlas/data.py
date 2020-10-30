@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 __all__ = [
+    "get_tic_database",
+    "get_tic_id_for_toi",
     "get_tic_data_from_database",
+    "calculate_time_fold",
     "PlanetCandidate",
     "LightCurveData",
     "TICEntry",
@@ -23,7 +26,6 @@ logging.getLogger().setLevel(logging.INFO)
 TIC_DATASOURCE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
 )
-MIN_NUM_DAYS = 0.25
 
 
 @functools.lru_cache()
@@ -50,6 +52,12 @@ def get_tic_data_from_database(toi_numbers: List[int]) -> pd.DataFrame:
     if len(tois_for_tic) < 1:
         raise ValueError(f"TOI data for TICs-{tics} does not exist.")
     return tois_for_tic
+
+
+def calculate_time_fold(t, t0, p):
+    """Function to get time-fold"""
+    hp = 0.5 * p
+    return (t - t0 + hp) % p - hp
 
 
 class PlanetCandidate:
@@ -90,13 +98,8 @@ class PlanetCandidate:
             duration=toi_data["Duration (hours)"] / 24.0,  # convert to days
         )
 
-    def get_mask(self, t: np.ndarray) -> List[bool]:
-        """Get mask of when data points in this planet's transit"""
-        dur = 0.5 * self.duration
-        dur = MIN_NUM_DAYS if dur < MIN_NUM_DAYS else dur
-        return np.abs(self.get_timefold(t)) < dur
-
     def get_timefold(self, t):
+        """Used in plotting"""
         return calculate_time_fold(t, self.t0, self.period)
 
     def to_dict(self):
@@ -107,12 +110,6 @@ class PlanetCandidate:
             "Depth (ppt)": self.depth,
             "Duration (days)": self.duration,
         }
-
-
-def calculate_time_fold(t, t0, p):
-    """Function to get time-fold"""
-    hp = 0.5 * p
-    return (t - t0 + hp) % p - hp
 
 
 class LightCurveData:
@@ -129,7 +126,6 @@ class LightCurveData:
         self.time = time
         self.flux = flux
         self.flux_err = flux_err
-        self.masked = False
 
     @classmethod
     def from_mast(cls, tic: int):
@@ -165,23 +161,6 @@ class LightCurveData:
                 1e3 * data.flux_err.value[inds], dtype=np.float64
             ),
         )
-
-    def apply_mask(self, transit_mask: List[bool]):
-        """
-        Mask light curve data to look only at the central "days" duration of data
-        """
-        if self.masked:
-            raise ValueError("Light curve already masked once.")
-        len_before = len(self.time)
-        self.time = np.ascontiguousarray(self.time[transit_mask])
-        self.flux = np.ascontiguousarray(self.flux[transit_mask])
-        self.flux_err = np.ascontiguousarray(self.flux_err[transit_mask])
-        len_after = len(self.time)
-        logging.info(
-            f"Masking reduces light curve from {len_before}-->{len_after} points"
-        )
-        assert len_before >= len_after, f"{len_before}-->{len_after}"
-        self.masked = True
 
 
 class TICEntry:
@@ -246,13 +225,6 @@ class TICEntry:
 
     def load_lightcurve(self):
         self.lightcurve = LightCurveData.from_mast(tic=self.tic_number)
-
-    def get_combined_mask(self):
-        masks = [c.get_mask(self.lightcurve.time) for c in self.candidates]
-        return [any(mask) for mask in zip(*masks)]
-
-    def mask_lightcurve(self):
-        self.lightcurve.apply_mask(self.get_combined_mask())
 
     def to_dataframe(self):
         return pd.DataFrame(

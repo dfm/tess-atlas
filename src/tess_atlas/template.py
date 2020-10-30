@@ -66,12 +66,9 @@
 # + pycharm={"name": "#%%\n"} tags=["def"]
 
 import logging
-import multiprocessing as mp
 import os
-import warnings
 
 import exoplanet as xo
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pymc3 as pm
@@ -83,63 +80,16 @@ from tess_atlas.data import TICEntry
 from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
-    plot_lightcurve_and_masks,
-    plot_lightcurve_with_inital_model,
-    plot_masked_lightcurve_flux_vs_time_since_transit,
+    plot_folded_lightcurve,
+    plot_lightcurve,
     plot_posteriors,
 )
+from tess_atlas.utils import notebook_initalisations
 
-logging.getLogger().setLevel(logging.INFO)
-
-get_ipython().magic('config InlineBackend.figure_format = "retina"')
-
-# TEMPORARY WORKAROUND
-try:
-    mp.set_start_method("fork")
-except RuntimeError:  # "Multiprocessing context already set"
-    pass
-
-# Don't use the schmantzy progress bar
-os.environ["EXOPLANET_NO_AUTO_PBAR"] = "true"
-
-# Warning
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
-
-# Logging setup
-for logger_name in [
-    "theano.gof.compilelock",
-    "exoplanet",
-    "matplotlib",
-    "urllib3",
-]:
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.ERROR)
-logging.getLogger().setLevel(logging.INFO)
-
-# matplotlib settings
-plt.style.use("default")
-plt.rcParams["savefig.dpi"] = 100
-plt.rcParams["figure.dpi"] = 100
-plt.rcParams["font.size"] = 16
-plt.rcParams["font.family"] = "sans-serif"
-plt.rcParams["font.sans-serif"] = ["Liberation Sans"]
-plt.rcParams["font.cursive"] = ["Liberation Sans"]
-plt.rcParams["mathtext.fontset"] = "custom"
-plt.rcParams["image.cmap"] = "inferno"
-
-
-# Constants
-TOI_DATASOURCE = (
-    "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
-)
-
-MIN_NUM_DAYS = 0.25
+notebook_initalisations()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 TOI_NUMBER = {{{TOINUMBER}}}
-__version__ = {{{VERSIONNUMBER}}}
-FILENAME = {{{FILENAME}}}
 # -
 
 # ## Fitting stellar parameters
@@ -165,21 +115,12 @@ tic_entry.display()
 tic_entry.load_lightcurve()
 
 # + tags=["exe"]
-plot_lightcurve_and_masks(tic_entry)
-# -
-
-# For efficiency purposes, let's extract just the data within 0.25 days of the transits:
-
-# + pycharm={"name": "#%%\n"} tags=["exe"]
-# tic_entry.mask_lightcurve()
-
-# + tags=["exe"]
-plot_masked_lightcurve_flux_vs_time_since_transit(tic_entry)
+plot_lightcurve(tic_entry)
 
 
 # -
 
-# That looks a little janky, but it's good enough for now.
+# Now that we have the data, we can define a Bayesian model to fit it.
 #
 # ## The probabilistic model
 #
@@ -327,16 +268,17 @@ init_params = get_optimized_init_params(planet_transit_model, **params)
 # Now we can plot our initial model:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_lightcurve_with_inital_model(tic_entry, init_params)
+model_lightcurves = [
+    init_params["lightcurves"][:, i] * 1e3
+    for i in range(tic_entry.planet_count)
+]
+
+# + pycharm={"name": "#%%\n"} tags=["exe"]
+plot_lightcurve(tic_entry, model_lightcurves)
 
 # + tags=["exe"]
-plot_masked_lightcurve_flux_vs_time_since_transit(
-    tic_entry=tic_entry,
-    model_lightcurves=[
-        init_params["lightcurves"][:, i] * 1e3
-        for i in range(tic_entry.planet_count)
-    ],
-)
+plot_folded_lightcurve(tic_entry, model_lightcurves)
+
 # -
 
 # That looks better!
@@ -344,22 +286,20 @@ plot_masked_lightcurve_flux_vs_time_since_transit(
 # Now on to sampling:
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
-TUNE = 2000
-DRAWS = 2000
 
 
 def start_model_sampling(model) -> MultiTrace:
     np.random.seed(TOI_NUMBER)
-
     with model:
-        samples = pmx.sample(
-            tune=TUNE, draws=DRAWS, start=init_params, chains=2, cores=1
+        samples_trace = pmx.sample(
+            tune=2000, draws=2000, chains=2, cores=1, start=init_params
         )
-        return samples
+        return samples_trace
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 trace = start_model_sampling(planet_transit_model)
+
 # -
 
 # Then we can take a look at the summary statistics:
@@ -367,7 +307,6 @@ trace = start_model_sampling(planet_transit_model)
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.inference_trace = trace
 tic_entry.inference_trace
-
 
 # -
 
@@ -377,14 +316,12 @@ tic_entry.inference_trace
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_posteriors(tic_entry, trace)
 
-
 # -
 
 # Finally, we save the posteriors and sampling metadata for future use.
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.save_inference_trace()
-
 
 # -
 

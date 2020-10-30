@@ -45,7 +45,7 @@ def create_toi_notebook_from_template_notebook(
             The version of TESS Atlas being run
         quickrun: bool
             If True changes some constants to run the notebooks faster (useful for
-            testing and debugging). CURRENTLY UNIMPLEMENTED.
+            testing and debugging).
 
     Returns:
         notebook_filename: str
@@ -58,16 +58,11 @@ def create_toi_notebook_from_template_notebook(
         txt = f.read()
         txt = txt.replace("{{{TOINUMBER}}}", f"{toi_number}")
         txt = txt.replace("{{{VERSIONNUMBER}}}", f"'{version}'")
-        txt = txt.replace("{{{FILENAME}}}", f"'{notebook_filename}'")
-        txt = re.sub(r"toi_num = [0-9]+", f"toi_num = {toi_number}", txt)
         if quickrun:
-            txt = re.sub(r"TUNE = [0-9]+", f"TUNE = {10}", txt)
-            txt = re.sub(r"DRAWS = [0-9]+", f"DRAWS = {10}", txt)
-            txt = re.sub(r"CHAINS = [0-9]+", f"CHAINS = {1}", txt)
-        else:
-            txt = re.sub(r"TUNE = [0-9]+", f"TUNE = {2000}", txt)
-            txt = re.sub(r"DRAWS = [0-9]+", f"DRAWS = {2000}", txt)
-            txt = re.sub(r"CHAINS = [0-9]+", f"CHAINS = {1}", txt)
+            txt = re.sub(r"tune=[0-9]+", f"tune={10}", txt)
+            txt = re.sub(r"draws=[0-9]+", f"draws={10}", txt)
+            txt = re.sub(r"chains=[0-9]+", f"chains={1}", txt)
+            txt = re.sub(r"cores=[0-9]+", f"cores={1}", txt)
 
     with open(notebook_filename, "w") as f:
         f.write(txt)

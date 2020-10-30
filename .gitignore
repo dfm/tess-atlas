@@ -13,4 +13,4 @@ notebooks/TEST
 .mypy_cache
 *_version.py
 *.egg-info
-!/src/tess_atlas/template.ipynb
+src/tess_atlas/template.ipynb

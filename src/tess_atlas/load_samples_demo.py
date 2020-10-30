@@ -31,25 +31,13 @@ import logging
 import os
 from typing import List
 
-import matplotlib.pylab as plt
 import pandas as pd
 import tqdm
 
 from tess_atlas.data import TICEntry
+from tess_atlas.utils import notebook_initalisations
 
-logging.getLogger("aviz").setLevel(logging.ERROR)
-logging.getLogger().setLevel(logging.INFO)
-
-# matplotlib settings
-plt.style.use("default")
-plt.rcParams["savefig.dpi"] = 100
-plt.rcParams["figure.dpi"] = 100
-plt.rcParams["font.size"] = 16
-plt.rcParams["font.family"] = "sans-serif"
-plt.rcParams["font.sans-serif"] = ["Liberation Sans"]
-plt.rcParams["font.cursive"] = ["Liberation Sans"]
-plt.rcParams["mathtext.fontset"] = "custom"
-plt.rcParams["image.cmap"] = "inferno"
+notebook_initalisations()
 
 ATLAS_VERSION = "0.2.0"
 SEARCH_PATH = "./toi_*_files/*.netcdf"

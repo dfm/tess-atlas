@@ -392,6 +392,7 @@ tic_entry.save_inference_trace()
 #
 # As discussed above, we fit this model assuming a circular orbit which speeds things up for a few reasons:
 # 1) `e=0` allows simpler orbital dynamics which are more computationally efficient (no need to solve Kepler's equation numerically)
+#
 # 2) There are degeneracies between eccentricity, arrgument of periasteron, impact parameter, and planet radius. Hence by setting `e=0` and using the duration in calculating the planet's orbit, the sampler can perform better.
 #
 # To first order, the eccentricity mainly just changes the transit duration.

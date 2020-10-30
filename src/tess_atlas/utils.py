@@ -2,6 +2,7 @@
 
 import logging
 import multiprocessing as mp
+import os
 import warnings
 
 import matplotlib.pyplot as plt

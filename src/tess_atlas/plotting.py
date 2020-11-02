@@ -5,6 +5,7 @@ __all__ = [
     "plot_folded_lightcurve",
     "plot_posteriors",
     "plot_eccentricity_posteriors",
+    "get_range",
 ]
 
 import logging
@@ -44,7 +45,7 @@ CORNER_KWARGS = dict(
     plot_datapoints=False,
     fill_contours=True,
     max_n_ticks=3,
-    verbose=True,
+    verbose=False,
     use_math_text=True,
 )
 
@@ -75,7 +76,8 @@ def plot_lightcurve(
             x=lc.time,
             y=lc.flux,
             mode="lines+markers",
-            marker=dict(size=2, color="black", line_width=0.1),
+            marker=dict(size=2, color="black"),
+            line=dict(width=0.1),
             hoverinfo="skip",
             name="Data",
         )
@@ -153,7 +155,7 @@ def plot_posteriors(
     tic_entry: TICEntry, trace: pm.sampling.MultiTrace
 ) -> None:
     samples = pm.trace_to_dataframe(trace, varnames=["p", "r", "b"])
-    fig = corner.corner(samples, **CORNER_KWARGS)
+    fig = corner.corner(samples, **CORNER_KWARGS, range=get_range(samples))
     fname = os.path.join(tic_entry.outdir, POSTERIOR_PLOT)
     logging.debug(f"Saving {fname}")
     fig.savefig(fname)
@@ -163,11 +165,13 @@ def plot_eccentricity_posteriors(
     tic_entry: TICEntry, ecc_samples: pd.DataFrame
 ) -> None:
     for n in range(tic_entry.planet_count):
+        planet_n_samples = ecc_samples[[f"e[{n}]", f"omega[{n}]"]]
         fig = corner.corner(
-            ecc_samples[[f"e[{n}]", f"omega[{n}]"]],
+            planet_n_samples,
             weights=ecc_samples[f"weights[{n}]"],
             labels=["eccentricity", "omega"],
             **CORNER_KWARGS,
+            range=get_range(planet_n_samples),
         )
         plt.suptitle(f"Planet {n} Eccentricity")
         fname = os.path.join(
@@ -175,3 +179,7 @@ def plot_eccentricity_posteriors(
         )
         logging.debug(f"Saving {fname}")
         fig.savefig(fname)
+
+
+def get_range(samples):
+    return [[samples[l].min(), samples[l].max()] for l in samples]

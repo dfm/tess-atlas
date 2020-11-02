@@ -286,8 +286,6 @@ plot_folded_lightcurve(tic_entry, model_lightcurves)
 # Now on to sampling:
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
-
-
 def start_model_sampling(model) -> MultiTrace:
     np.random.seed(TOI_NUMBER)
     with model:

@@ -76,7 +76,8 @@ def plot_lightcurve(
             x=lc.time,
             y=lc.flux,
             mode="lines+markers",
-            marker=dict(size=2, color="black", line_width=0.1),
+            marker=dict(size=2, color="black"),
+            line=dict(width=0.1),
             hoverinfo="skip",
             name="Data",
         )
@@ -164,12 +165,13 @@ def plot_eccentricity_posteriors(
     tic_entry: TICEntry, ecc_samples: pd.DataFrame
 ) -> None:
     for n in range(tic_entry.planet_count):
+        planet_n_samples = ecc_samples[[f"e[{n}]", f"omega[{n}]"]]
         fig = corner.corner(
-            ecc_samples[[f"e[{n}]", f"omega[{n}]"]],
+            planet_n_samples,
             weights=ecc_samples[f"weights[{n}]"],
             labels=["eccentricity", "omega"],
             **CORNER_KWARGS,
-            range=get_range(ecc_samples),
+            range=get_range(planet_n_samples),
         )
         plt.suptitle(f"Planet {n} Eccentricity")
         fname = os.path.join(

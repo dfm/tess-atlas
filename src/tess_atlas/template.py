@@ -94,25 +94,25 @@ TOI_NUMBER = {{{TOINUMBER}}}
 
 # ## Fitting stellar parameters
 #
-# Next, we define some code to grab the TOI list from [ExoFOP](https://exofop.ipac.caltech.edu/tess/) to get the information about the system.
+# Next, we grab the TOI list from [ExoFOP] to get intial guesses about the system, and use [lightkurve] to download the TOI's light cuve data.
 #
-# We wrap the information in three objects, a `TIC Entry`, a `Planet Candidate` and finally a `Lightcurve Data` object.
+# Note that we are wrapping the information in three objects, a `TIC Entry`, a `Planet Candidate` and finally a `Lightcurve Data` object.
 #
 # - The `TIC Entry` object holds one or more `Planet Candidate`s (each candidate associated with one TOI id number) and a `Lightcurve Data` for associated with the candidates. Note that the `Lightcurve Data` object is initially the same fopr each candidate but may be masked according to the candidate transit's period.
 #
 # - The `Planet Candidate` holds informaiton on the TOI data collected by [SPOC](https://heasarc.gsfc.nasa.gov/docs/tess/pipeline.html) (eg transit period, etc)
 #
 # - The `Lightcurve Data` holds the lightcurve time and flux data for the planet candidates.
+#
+# [ExoFOP]: https://exofop.ipac.caltech.edu/tess/
+# [lightkurve]: https://docs.lightkurve.org/
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry = TICEntry.generate_tic_from_toi_number(toi=TOI_NUMBER)
-tic_entry.display()
-# -
-
-# Now, lets download and plot the TESS light curve data for the `Planet Candidate`s using [lightkurve](https://docs.lightkurve.org/):
+tic_entry.load_lightcurve()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-tic_entry.load_lightcurve()
+tic_entry.display()
 
 # + tags=["exe"]
 plot_lightcurve(tic_entry)

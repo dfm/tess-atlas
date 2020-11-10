@@ -19,6 +19,7 @@ import arviz as az
 import lightkurve as lk
 import numpy as np
 import pandas as pd
+from IPython.display import display
 from pymc3.sampling import MultiTrace
 
 logging.getLogger().setLevel(logging.INFO)
@@ -110,6 +111,10 @@ class PlanetCandidate:
             "Depth (ppt)": self.depth,
             "Duration (days)": self.duration,
         }
+
+    @property
+    def is_single_transit(self):
+        return (self.period <= 0.0) | np.isnan(self.period)
 
 
 class LightCurveData:
@@ -225,6 +230,12 @@ class TICEntry:
 
     def load_lightcurve(self):
         self.lightcurve = LightCurveData.from_mast(tic=self.tic_number)
+        generic_period_guess = (
+            self.lightcurve.time.max() - self.lightcurve.time.min()
+        )
+        for planet in self.candidates:
+            if planet.is_single_transit:
+                planet.period = generic_period_guess
 
     def to_dataframe(self):
         return pd.DataFrame(
@@ -232,8 +243,6 @@ class TICEntry:
         )
 
     def display(self):
-        from IPython.display import display
-
         df = self.to_dataframe()
         df = df.transpose()
         df.columns = df.loc["TOI"]

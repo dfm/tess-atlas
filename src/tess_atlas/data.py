@@ -230,6 +230,9 @@ class TICEntry:
 
     def load_lightcurve(self):
         self.lightcurve = LightCurveData.from_mast(tic=self.tic_number)
+        self.update_missing_candidate_period_guesses_with_lightcurve()
+
+    def update_missing_candidate_period_guesses_with_lightcurve(self):
         generic_period_guess = (
             self.lightcurve.time.max() - self.lightcurve.time.min()
         )

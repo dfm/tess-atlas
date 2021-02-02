@@ -87,6 +87,10 @@ class PlanetCandidate:
         self.depth = depth
         self.duration = duration
 
+    @property
+    def has_data_only_for_single_transit(self):
+        return (self.period <= 0.0) or np.isnan(self.period)
+
     @classmethod
     def from_toi_database_entry(cls, toi_data: dict):
         return cls(
@@ -176,10 +180,6 @@ class TICEntry:
     @property
     def planet_count(self):
         return len(self.candidates)
-
-    @property
-    def is_single_transit(self):
-        return self.planet_count == 1
 
     @property
     def inference_trace(self) -> az.InferenceData:

@@ -87,6 +87,10 @@ class PlanetCandidate:
         self.depth = depth
         self.duration = duration
 
+    @property
+    def has_data_only_for_single_transit(self):
+        return (self.period <= 0.0) or np.isnan(self.period)
+
     @classmethod
     def from_toi_database_entry(cls, toi_data: dict):
         return cls(

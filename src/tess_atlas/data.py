@@ -178,6 +178,10 @@ class TICEntry:
         return len(self.candidates)
 
     @property
+    def is_single_transit(self):
+        return self.planet_count == 1
+
+    @property
     def inference_trace(self) -> az.InferenceData:
         return self._inference_trace
 

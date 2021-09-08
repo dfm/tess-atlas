@@ -11,8 +11,3 @@ repos:
   rev: 19.3b0
   hooks:
   - id: black
-
-- repo: https://github.com/timothycrosley/isort
-  rev: master
-  hooks:
-  - id: isort

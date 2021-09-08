@@ -55,7 +55,7 @@
 #
 # ## Getting started
 #
-# To get going, we'll need to make out plots show up inline and install a few packages:
+# To get going, we'll need to make out plots show up inline:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 # %matplotlib inline
@@ -73,6 +73,7 @@ import numpy as np
 import pandas as pd
 import pymc3 as pm
 import pymc3_ext as pmx
+import theano.tensor as tt
 from celerite2.theano import GaussianProcess, terms
 from pymc3.sampling import MultiTrace
 
@@ -90,54 +91,68 @@ notebook_initalisations()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 TOI_NUMBER = {{{TOINUMBER}}}
-# -
 
-# ## Fitting stellar parameters
+# + [markdown] tags=["def"]
+# ## Downloading Data
 #
-# Next, we define some code to grab the TOI list from [ExoFOP](https://exofop.ipac.caltech.edu/tess/) to get the information about the system.
+# Next, we grab some inital guesses for the TOI's parameters from [ExoFOP](https://exofop.ipac.caltech.edu/tess/) and download the TOI's lightcurve with [Lightkurve].
 #
 # We wrap the information in three objects, a `TIC Entry`, a `Planet Candidate` and finally a `Lightcurve Data` object.
 #
 # - The `TIC Entry` object holds one or more `Planet Candidate`s (each candidate associated with one TOI id number) and a `Lightcurve Data` for associated with the candidates. Note that the `Lightcurve Data` object is initially the same fopr each candidate but may be masked according to the candidate transit's period.
 #
-# - The `Planet Candidate` holds informaiton on the TOI data collected by [SPOC](https://heasarc.gsfc.nasa.gov/docs/tess/pipeline.html) (eg transit period, etc)
+# - The `Planet Candidate` holds informaiton on the TOI data collected by [SPOC] (eg transit period, etc)
 #
 # - The `Lightcurve Data` holds the lightcurve time and flux data for the planet candidates.
-
+#
+# [ExoFOP]: https://exofop.ipac.caltech.edu/tess/
+# [Lightkurve]: https://docs.lightkurve.org/index.html
+# [SPOC]: https://heasarc.gsfc.nasa.gov/docs/tess/pipeline.html
+#
+# Downloading the data (this may take a few minutes):
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry = TICEntry.generate_tic_from_toi_number(toi=TOI_NUMBER)
-tic_entry.display()
+
 # -
 
-# Now, lets download and plot the TESS light curve data for the `Planet Candidate`s using [lightkurve](https://docs.lightkurve.org/):
+# The initial guesses for the parameters (determined by SPOC):
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-tic_entry.load_lightcurve()
+tic_entry.display()
 
-# + tags=["exe"]
+# -
+
+# Plot of the lightcurve:
+
+
+# + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_lightcurve(tic_entry)
 
 
 # -
-
+# ## Fitting stellar parameters
 # Now that we have the data, we can define a Bayesian model to fit it.
 #
-# ## The probabilistic model
+# ### The probabilistic model
 #
 # We use the probabilistic model as described in [Foreman-Mackey et al 2017] to determine the best parameters to fit the transits present in the lightcurve data.
 #
-# More explicitly, the stellar light curve $l(t; \vec{\theta})$ is modelled with a Gaussian Process (GP). A GP consists of a mean function $\mu(t;\vec{\theta})$ and a kernel function $k_\alpha(t,t';\vec{\theta})$, where $\vec{\theta}$ is the vector of parameters descibing the lightcurve and $t$ is the time during which the lightcurve is under observation
+# More explicitly, the stellar light curve $l(t; \vec{\theta})$ is modelled with a Gaussian Process (GP).
+# A GP consists of a mean function $\mu(t;\vec{\theta})$ and a kernel function $k_\alpha(t,t';\vec{\theta})$, where $\vec{\theta}$ is the vector of parameters descibing the lightcurve and $t$ is the time during which the lightcurve is under observation
 #
-# The parameters describing the lightcurve are
-# $\vec{\theta}$ = {
-# &emsp;$p_i$ (orbital periods for each planet),
-# &emsp;$d_i$ (transit durations for each planet),
-# &emsp;$t0_i$ (transit phase/epoch for each planet),
-# &emsp;$b_i$ (impact parameter for each planet),
-# &emsp;$r_i$ (planet radius in stellar radius for each planet),
-# &emsp;$f0$ (baseline relative flux of the light curve from star),
-# &emsp;$u1$ $u2$ (two parameters describing the limb-darkening profile of star)
-# }
+# The 8 parameters describing the lightcurve are
+# $$\vec{\theta} = \{d_i, t0_i, tmax_i, b_i, r_i, f0, u1, u2\},$$
+# where
+# * $d_i$ transit durations for each planet,
+# * $t0_i$ transit phase/epoch for each planet,
+# * $tmax_i$ time of the last transit observed by TESS for each planet,
+# * $b_i$ impact parameter for each planet,
+# * $r_i$ planet radius in stellar radius for each planet,
+# * $f0$ baseline relative flux of the light curve from star,
+# * $u1$ $u2$ two parameters describing the limb-darkening profile of star.
+#
+# Note: if the observed data only records a single transit,
+# we swap $tmax_i$ with $p_i$ (orbital periods for each planet).
 #
 # With this we can write
 # $$l(t;\vec{\theta}) \sim \mathcal{GP} (\mu(t;\vec{\theta}), k_\alpha(t,t';\vec{\theta}))\ .$$
@@ -155,65 +170,113 @@ plot_lightcurve(tic_entry)
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
 def build_planet_transit_model(tic_entry):
-    n = tic_entry.planet_count
-    t0s = np.array([planet.t0 for planet in tic_entry.candidates])
-    depths = np.array([planet.depth for planet in tic_entry.candidates])
-    periods = np.array([planet.period for planet in tic_entry.candidates])
 
+    # TODO: update model https://github.com/exoplanet-dev/tess.world/blob/main/src/tess_world/templates/template.py#L305
     t = tic_entry.lightcurve.time
     y = tic_entry.lightcurve.flux
     yerr = tic_entry.lightcurve.flux_err
 
+    n = tic_entry.planet_count
+    t0s = np.array([planet.t0 for planet in tic_entry.candidates])
+    depths = np.array([planet.depth for planet in tic_entry.candidates])
+    periods = np.array([planet.period for planet in tic_entry.candidates])
+    tmaxs = np.array([planet.tmax for planet in tic_entry.candidates])
+    durations = np.array([planet.duration for planet in tic_entry.candidates])
+    max_duration, min_duration = durations.max(), durations.min()
+
     with pm.Model() as my_planet_transit_model:
         ## define planet 𝜃⃗
-        t0 = pm.Normal("t0", mu=t0s, sd=1.0, shape=n)
-        p = pm.Lognormal("p", mu=np.log(periods), sd=1.0, shape=n)
-        d = pm.Lognormal("d", mu=np.log(0.1), sigma=10.0, shape=n)
-        r = pm.Lognormal("r", mu=0.5 * np.log(depths * 1e-3), sd=1.0, shape=n)
-        b = xo.distributions.ImpactParameter("b", ror=r, shape=n)
-        planet_parms = [r, d, b]
+        d_priors = pm.Lognormal("d", mu=np.log(0.1), sigma=10.0, shape=n)
+        r_priors = pm.Lognormal(
+            "r", mu=0.5 * np.log(depths * 1e-3), sd=1.0, shape=n
+        )
+        b_priors = xo.distributions.ImpactParameter("b", ror=r_priors, shape=n)
+        planet_priors = [r_priors, d_priors, b_priors]
+
+        ## define orbit-timing 𝜃⃗
+        t0_norm = pm.Bound(
+            pm.Normal, lower=t0s - max_duration, upper=t0s + max_duration
+        )
+        t0_priors = t0_norm("t0", mu=t0s, sd=1.0, shape=n)
+
+        p_params, p_priors_list, tmax_priors_list = [], [], []
+        for n, planet in enumerate(tic_entry.candidates):
+            if planet.has_data_only_for_single_transit:
+                p_prior = pm.Pareto(
+                    f"p_{planet.index}",
+                    m=planet.period_min,
+                    alpha=2.0 / 3.0,
+                    testval=planet.period,
+                )
+                p_param = p_prior
+                tmax_prior = planet.t0
+            else:
+                tmax_norm = pm.Bound(
+                    pm.Normal,
+                    lower=planet.tmax - max_duration,
+                    upper=planet.tmax + max_duration,
+                )
+                tmax_prior = tmax_norm(
+                    f"tmax_{planet.index}",
+                    mu=planet.tmax,
+                    sigma=0.5 * planet.duration,
+                    testval=planet.tmax,
+                )
+                p_prior = (tmax_prior - t0_priors[n]) / planet.num_periods
+                p_param = tmax_prior
+
+            p_params.append(p_param)  # the param needed to calculate p
+            p_priors_list.append(p_prior)
+            tmax_priors_list.append(tmax_prior)
+
+        p_priors = pm.Deterministic("p", tt.stack(p_priors_list))
+        tmax_priors = pm.Deterministic("tmax", tt.stack(tmax_priors_list))
 
         ## define stellar 𝜃⃗
-        f0 = pm.Normal("f0", mu=0.0, sd=10.0)
-        u = xo.distributions.QuadLimbDark("u")
-        stellar_params = [f0, u]
+        f0_prior = pm.Normal("f0", mu=0.0, sd=10.0)
+        u_prior = xo.distributions.QuadLimbDark("u")
+        stellar_priors = [f0_prior, u_prior]
 
         ## define 𝑘(𝑡,𝑡′;𝜃⃗ )
-        jitter = pm.InverseGamma(
+        jitter_prior = pm.InverseGamma(
             "jitter", **pmx.estimate_inverse_gamma_parameters(1.0, 5.0)
         )
-        sigma = pm.InverseGamma(
+        sigma_prior = pm.InverseGamma(
             "sigma", **pmx.estimate_inverse_gamma_parameters(1.0, 5.0)
         )
-        rho = pm.InverseGamma(
+        rho_prior = pm.InverseGamma(
             "rho", **pmx.estimate_inverse_gamma_parameters(0.5, 10.0)
         )
-        kernel = terms.SHOTerm(sigma=sigma, rho=rho, Q=0.3)
-        noise_params = [jitter, sigma, rho]
+        kernel = terms.SHOTerm(sigma=sigma_prior, rho=rho_prior, Q=0.3)
+        noise_priors = [jitter_prior, sigma_prior, rho_prior]
 
-        ## define 𝜇(𝑡;𝜃) (ie light)
+        ## define 𝜇(𝑡;𝜃) (the lightcurve model)
         orbit = xo.orbits.KeplerianOrbit(
-            period=p, t0=t0, b=b, duration=d, ror=r
+            period=p_priors,
+            t0=t0_priors,
+            b=b_priors,
+            duration=d_priors,
+            ror=r_priors,
         )
-        lightcurves = xo.LimbDarkLightCurve(u).get_light_curve(
-            orbit=orbit, r=r, t=t
-        )
-        lightcurve = 1e3 * pm.math.sum(lightcurves, axis=-1) + f0
-        lightcurves = pm.Deterministic("lightcurves", lightcurves)
+        star = xo.LimbDarkLightCurve(u_prior)
+        lightcurve_models = star.get_light_curve(orbit=orbit, r=r_priors, t=t)
+        lightcurve = 1e3 * pm.math.sum(lightcurve_models, axis=-1) + f0_prior
+        lightcurve_models = pm.Deterministic("lightcurves", lightcurve_models)
         rho_circ = pm.Deterministic("rho_circ", orbit.rho_star)
 
         # Finally the GP observation model
         residual = y - lightcurve
         gp = GaussianProcess(
-            kernel, t=t, diag=yerr ** 2 + jitter ** 2, mean=lightcurve
+            kernel, t=t, diag=yerr ** 2 + jitter_prior ** 2, mean=lightcurve
         )
         gp.marginal("obs", observed=y)
 
         # cache params
         my_params = dict(
-            planet_params=planet_parms,
-            noise_params=noise_params,
-            stellar_params=stellar_params,
+            planet_params=planet_priors,
+            noise_params=noise_priors,
+            stellar_params=stellar_priors,
+            period_params=p_params,
         )
     return my_planet_transit_model, my_params, gp
 
@@ -246,7 +309,7 @@ test_model(planet_transit_model)
 
 # + tags=["def"]
 def get_optimized_init_params(
-    model, planet_params, noise_params, stellar_params
+    model, planet_params, noise_params, stellar_params, period_params
 ):
     """Get params with maximimal log prob for sampling starting point"""
     logging.info("Optimizing sampling starting point")
@@ -257,6 +320,7 @@ def get_optimized_init_params(
         theta = pmx.optimize(**kwargs, vars=planet_params)
         theta = pmx.optimize(**kwargs, vars=noise_params)
         theta = pmx.optimize(**kwargs, vars=stellar_params)
+        theta = pmx.optimize(**kwargs, vars=period_params)
     logging.info("Optimization complete!")
     return theta
 
@@ -279,9 +343,9 @@ plot_folded_lightcurve(tic_entry, model_lightcurves)
 
 # -
 
-# That looks better!
 #
-# Now on to sampling:
+# ### Sampling
+# With the model and priors defined, we can begin sampling
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
 def start_model_sampling(model) -> MultiTrace:
@@ -305,15 +369,15 @@ tic_entry.inference_trace = trace
 tic_entry.save_inference_trace()
 tic_entry.inference_trace
 
-# -
 
-# And plot the posterior probability distributuions:
+# -
+# ## Results
+# Below are plots of the posterior probability distributuions:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_posteriors(tic_entry, trace)
 
 # -
-
 # We can also plot the best-fitting light-curve model
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -323,10 +387,9 @@ model_lightcurves = [
 ]
 plot_lightcurve(tic_entry, model_lightcurves)
 
-
 # -
 
-# ## Eccentricity
+# ### Post-processing: Eccentricity
 #
 # As discussed above, we fit this model assuming a circular orbit which speeds things up for a few reasons:
 # 1) `e=0` allows simpler orbital dynamics which are more computationally efficient (no need to solve Kepler's equation numerically)
@@ -336,8 +399,9 @@ plot_lightcurve(tic_entry, model_lightcurves)
 # To first order, the eccentricity mainly just changes the transit duration.
 # This can be thought of as a change in the impled density of the star.
 # Therefore, if the transit is fit using stellar density (or duration, in this case) as one of the parameters, it is possible to make an independent measurement of the stellar density, and in turn infer the eccentricity of the orbit as a post-processing step.
-# The details of this eccentricity calculation method are described in [Dawson & Johnson (2012)](https://arxiv.org/abs/1203.5537).
+# The details of this eccentricity calculation method are described in [Dawson & Johnson (2012)].
 #
+# [Dawson & Johnson (2012)]: https://arxiv.org/abs/1203.5537
 # Note: a different stellar density parameter is required for each planet (if there is more than one planet)
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -346,11 +410,8 @@ ecc_samples.to_csv(os.path.join(tic_entry.outdir, "eccentricity_samples.csv"))
 plot_eccentricity_posteriors(tic_entry, ecc_samples)
 # -
 
-# As you can see, this eccentricity estimate is consistent (albeit with large uncertainties) with the value that [Pepper et al. (2019)](https://arxiv.org/abs/1911.05150) measure using radial velocities and it is definitely clear that this planet is not on a circular orbit.
-
 # ## Citations
 #
-# As described in the :ref:`citation` tutorial, we can use :func:`exoplanet.citations.get_citations_for_model` to construct an acknowledgement and BibTeX listing that includes the relevant citations for this model.
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 with planet_transit_model:

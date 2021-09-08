@@ -25,7 +25,7 @@ TOI_DATABASE = (
 def run_toi(toi_id):
     logging.info(f"Running {toi_id}")
     os.environ["THEANO_FLAGS"] = f"compiledir=./cache/{os.getpid()}"
-    check_call(f"python tess_atlas/run_toi.py {toi_id}", shell=True)
+    check_call(f"run_toi {toi_id}", shell=True)
 
 
 def main():

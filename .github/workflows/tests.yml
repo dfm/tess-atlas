@@ -36,7 +36,7 @@ jobs:
       - name: pre-commit
         run: pre-commit run --all-files --verbose --show-diff-on-failure
 
-      # Run all test other than ones marked as "slow"
-      - name: pytest
-        run: python -m pytest -vv $TEST_FILE -k "not slow"
-        if: always()
+#      # Run all test other than ones marked as "slow"
+#      - name: pytest
+#        run: python -m pytest -vv $TEST_FILE -k "not slow"
+#        if: always()

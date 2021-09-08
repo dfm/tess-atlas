@@ -2,10 +2,12 @@
 .ipynb_checkpoints
 cache
 *.log
+cached*
 build
 docs/notebooks/*/*.html
 __pycache__
 output
+*test_outdir/
 *idea
 venv
 notebooks

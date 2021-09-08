@@ -10,8 +10,8 @@ import nbformat
 from tess_atlas import run_toi
 from tess_atlas.tess_atlas_version import __version__
 
-SINGLE_TRANSIT = 103
-MULTI_TRANSIT = 178  # has 3 planets
+SINGLE_PLANET = 103
+MULTI_PLANET = 178  # has 3 planets
 
 
 class NotebookRunnerTestCase(unittest.TestCase):
@@ -40,10 +40,10 @@ class NotebookRunnerTestCase(unittest.TestCase):
             self.fail(f"{notebook_fn} is an invalid notebook")
 
     def test_slow_notebook_execution(self):
-        notebook_execution(MULTI_TRANSIT, version=__version__, quickrun=False)
+        notebook_execution(MULTI_PLANET, version=__version__, quickrun=False)
 
     def test_quick_notebook_execution(self):
-        notebook_execution(MULTI_TRANSIT, version=self.version, quickrun=True)
+        notebook_execution(SINGLE_PLANET, version=self.version, quickrun=True)
 
 
 def notebook_execution(toi_id, version, quickrun=True, remove_after=False):

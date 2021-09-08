@@ -91,4 +91,10 @@ if __name__ == "__main__":
         extras_require=EXTRA_REQUIRE,
         classifiers=CLASSIFIERS,
         zip_safe=True,
+        entry_points={
+            "console_scripts": [
+                "run_toi=tess_atlas.run_toi:main",
+                "run_tois=tess_atlas.run_tois:main",
+            ]
+        },
     )

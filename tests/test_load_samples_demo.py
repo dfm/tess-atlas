@@ -30,7 +30,9 @@ def create_fake_sample_files(version):
         pm.Uniform("b[0]", 0, 20)
         pm.Uniform("r[0]", 0, 20)
         trace = pm.sample(draws=10, n_init=1, chains=1, tune=10)
-    tic_entry = TICEntry(tic_number=DATA["TIC"], candidates=[], toi=DATA["TOI"])
+    tic_entry = TICEntry(
+        tic_number=DATA["TIC"], candidates=[], toi=DATA["TOI"]
+    )
     tic_entry.inference_trace = trace
     fname = os.path.join(get_outdir(), f"toi_{DATA['TOI']}.netcdf")
     tic_entry.save_inference_trace(fname)

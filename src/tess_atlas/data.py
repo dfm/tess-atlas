@@ -11,17 +11,18 @@ __all__ = [
 ]
 
 import functools
+import json
 import logging
 import os
-from typing import List, Dict, Optional
-import json
+from typing import Dict, List, Optional
 
-import arviz as az
 import lightkurve as lk
 import numpy as np
 import pandas as pd
 from IPython.display import display
 from pymc3.sampling import MultiTrace
+
+import arviz as az
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -30,6 +31,7 @@ TIC_DATASOURCE = (
 )
 
 DIR = os.path.dirname(__file__)
+
 
 @functools.lru_cache()
 def get_tic_database():
@@ -42,6 +44,7 @@ def get_tic_database():
     db = pd.read_csv(TIC_DATASOURCE)
     db.to_csv(cached_file)
     return db
+
 
 def get_tic_id_for_toi(toi_number: int) -> int:
     tic_db = get_tic_database()
@@ -74,7 +77,7 @@ class LightCurveData:
     """Stores Light Curve data for a single target"""
 
     def __init__(
-            self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
+        self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
     ):
         """
         :param np.ndarray time: The time in days.
@@ -128,20 +131,23 @@ class LightCurveData:
         }
 
     def save_data(self, outdir):
-        pd.DataFrame(self.to_dict()).to_csv(os.path.join(outdir, "lightcurve.csv"), index=False)
+        pd.DataFrame(self.to_dict()).to_csv(
+            os.path.join(outdir, "lightcurve.csv"), index=False
+        )
         logging.info(f"Saved lightcurve data.")
+
 
 class PlanetCandidate:
     """Plant Candidate obtained by TESS."""
 
     def __init__(
-            self,
-            toi_id: float,
-            period: float,
-            time: np.ndarray,
-            t0: float,
-            depth: float,
-            duration: float,
+        self,
+        toi_id: float,
+        period: float,
+        time: np.ndarray,
+        t0: float,
+        depth: float,
+        duration: float,
     ):
         """
         :param float toi_id: The toi number X.Y where the Y represents the
@@ -180,7 +186,7 @@ class PlanetCandidate:
         """the minimum possible period"""
         return np.maximum(
             np.abs(self.t0 - self.__time.max()),
-            np.abs(self.__time.min() - self.t0)
+            np.abs(self.__time.min() - self.t0),
         )
 
     @property
@@ -191,21 +197,24 @@ class PlanetCandidate:
 
     @property
     def duration_min(self):
-        return  min(self.duration, 2 * np.min(np.diff(self.__time)))
+        return min(self.duration, 2 * np.min(np.diff(self.__time)))
 
     @property
     def has_data_only_for_single_transit(self):
         return (self.period <= 0.0) or np.isnan(self.period)
 
     @classmethod
-    def from_toi_database_entry(cls, toi_data: Dict, lightcurve: LightCurveData):
+    def from_toi_database_entry(
+        cls, toi_data: Dict, lightcurve: LightCurveData
+    ):
         unpack_data = dict(
             toi_id=toi_data["TOI"],
             period=toi_data["Period (days)"],
             t0=toi_data["Epoch (BJD)"] - 2457000,  # convert to TBJD
-            depth=toi_data["Depth (ppm)"] * 1e-3,  # convert to parts per thousand
+            depth=toi_data["Depth (ppm)"]
+            * 1e-3,  # convert to parts per thousand
             duration=toi_data["Duration (hours)"] / 24.0,  # convert to days,
-            time=lightcurve.time
+            time=lightcurve.time,
         )
         return cls(**unpack_data)
 
@@ -224,12 +233,17 @@ class PlanetCandidate:
         }
 
 
-
 class TICEntry:
     """Hold information about a TIC (TESS Input Catalog) entry"""
 
-    def __init__(self, tic_number: int, candidates: List[PlanetCandidate], toi: int, lightcurve: LightCurveData,
-                 meta_data: Optional[Dict] = {}):
+    def __init__(
+        self,
+        tic_number: int,
+        candidates: List[PlanetCandidate],
+        toi: int,
+        lightcurve: LightCurveData,
+        meta_data: Optional[Dict] = {},
+    ):
         self.tic_number = tic_number
         self.toi_number = toi
         self.candidates = candidates
@@ -273,7 +287,7 @@ class TICEntry:
 
     @classmethod
     def generate_tic_from_toi_number(
-            cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()
+        cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()
     ):
         # Load database entry for TIC
         tic_data = get_tic_data_from_database([toi])
@@ -290,7 +304,11 @@ class TICEntry:
             candidates.append(candidate)
 
         return cls(
-            tic_number=tic_number, candidates=candidates, toi=toi, lightcurve=lightcurve, meta_data=tic_data.to_dict('list')
+            tic_number=tic_number,
+            candidates=candidates,
+            toi=toi,
+            lightcurve=lightcurve,
+            meta_data=tic_data.to_dict("list"),
         )
 
     def to_dataframe(self):
@@ -317,8 +335,8 @@ class TICEntry:
         )
         df = (
             df.transpose()
-                .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
-                .transpose()
+            .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
+            .transpose()
         )
         df = df[["mean", "sd"]]
         df["TOI"] = self.toi_number

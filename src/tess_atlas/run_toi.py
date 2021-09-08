@@ -16,9 +16,9 @@ from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
 
 from tess_atlas.utils import execute_ipynb
 
-logging.getLogger().setLevel(logging.INFO)
-
 from .tess_atlas_version import __version__
+
+logging.getLogger().setLevel(logging.INFO)
 
 
 def get_template_filename():

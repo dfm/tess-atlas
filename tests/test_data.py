@@ -1,13 +1,15 @@
 import os
 import shutil
 import unittest
-import tess_atlas.data as tess_data
+
 import pandas as pd
+
+import tess_atlas.data as tess_data
 
 CLEAN_AFTER_TEST = False
 
-class TestData(unittest.TestCase):
 
+class TestData(unittest.TestCase):
     def setUp(self):
         self.orig_dir = os.getcwd()
         self.outdir = "data_test_outdir"
@@ -24,5 +26,5 @@ class TestData(unittest.TestCase):
         self.assertIsInstance(data.to_dataframe(), pd.DataFrame)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

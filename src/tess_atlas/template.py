@@ -73,9 +73,9 @@ import numpy as np
 import pandas as pd
 import pymc3 as pm
 import pymc3_ext as pmx
+import theano.tensor as tt
 from celerite2.theano import GaussianProcess, terms
 from pymc3.sampling import MultiTrace
-import theano.tensor as tt
 
 from tess_atlas.data import TICEntry
 from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
@@ -187,27 +187,45 @@ def build_planet_transit_model(tic_entry):
     with pm.Model() as my_planet_transit_model:
         ## define planet 𝜃⃗
         d_priors = pm.Lognormal("d", mu=np.log(0.1), sigma=10.0, shape=n)
-        r_priors = pm.Lognormal("r", mu=0.5 * np.log(depths * 1e-3), sd=1.0, shape=n)
+        r_priors = pm.Lognormal(
+            "r", mu=0.5 * np.log(depths * 1e-3), sd=1.0, shape=n
+        )
         b_priors = xo.distributions.ImpactParameter("b", ror=r_priors, shape=n)
         planet_priors = [r_priors, d_priors, b_priors]
 
         ## define orbit-timing 𝜃⃗
-        t0_norm = pm.Bound(pm.Normal,lower=t0s - max_duration,upper=t0s + max_duration)
+        t0_norm = pm.Bound(
+            pm.Normal, lower=t0s - max_duration, upper=t0s + max_duration
+        )
         t0_priors = t0_norm("t0", mu=t0s, sd=1.0, shape=n)
 
-        p_params, p_priors_list, tmax_priors_list  = [], [], []
+        p_params, p_priors_list, tmax_priors_list = [], [], []
         for n, planet in enumerate(tic_entry.candidates):
             if planet.has_data_only_for_single_transit:
-                p_prior = pm.Pareto(f"p_{planet.index}", m=planet.period_min, alpha= 2.0/3.0 , testval=planet.period)
+                p_prior = pm.Pareto(
+                    f"p_{planet.index}",
+                    m=planet.period_min,
+                    alpha=2.0 / 3.0,
+                    testval=planet.period,
+                )
                 p_param = p_prior
                 tmax_prior = planet.t0
             else:
-                tmax_norm = pm.Bound(pm.Normal,lower=planet.tmax - max_duration,upper=planet.tmax + max_duration)
-                tmax_prior = tmax_norm(f"tmax_{planet.index}", mu=planet.tmax, sigma=0.5*planet.duration, testval=planet.tmax)
+                tmax_norm = pm.Bound(
+                    pm.Normal,
+                    lower=planet.tmax - max_duration,
+                    upper=planet.tmax + max_duration,
+                )
+                tmax_prior = tmax_norm(
+                    f"tmax_{planet.index}",
+                    mu=planet.tmax,
+                    sigma=0.5 * planet.duration,
+                    testval=planet.tmax,
+                )
                 p_prior = (tmax_prior - t0_priors[n]) / planet.num_periods
                 p_param = tmax_prior
 
-            p_params.append(p_param) # the param needed to calculate p
+            p_params.append(p_param)  # the param needed to calculate p
             p_priors_list.append(p_prior)
             tmax_priors_list.append(tmax_prior)
 
@@ -234,7 +252,11 @@ def build_planet_transit_model(tic_entry):
 
         ## define 𝜇(𝑡;𝜃) (the lightcurve model)
         orbit = xo.orbits.KeplerianOrbit(
-            period=p_priors, t0=t0_priors, b=b_priors, duration=d_priors, ror=r_priors
+            period=p_priors,
+            t0=t0_priors,
+            b=b_priors,
+            duration=d_priors,
+            ror=r_priors,
         )
         star = xo.LimbDarkLightCurve(u_prior)
         lightcurve_models = star.get_light_curve(orbit=orbit, r=r_priors, t=t)
@@ -254,7 +276,7 @@ def build_planet_transit_model(tic_entry):
             planet_params=planet_priors,
             noise_params=noise_priors,
             stellar_params=stellar_priors,
-            period_params=p_params
+            period_params=p_params,
         )
     return my_planet_transit_model, my_params, gp
 

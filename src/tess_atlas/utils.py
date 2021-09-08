@@ -56,9 +56,10 @@ def notebook_initalisations():
         "urllib3",
         "arviz",
         "astropy",
+        "lightkurve"
     ]:
         logger = logging.getLogger(logger_name)
-        logger.setLevel(logging.ERROR)
+        logger.setLevel(logging.ERROR )
     logging.getLogger().setLevel(logging.INFO)
 
     plt.style.use("default")

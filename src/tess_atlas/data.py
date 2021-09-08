@@ -13,12 +13,14 @@ __all__ = [
 import functools
 import logging
 import os
-from typing import List
+from typing import List, Dict, Optional
+import json
 
 import arviz as az
 import lightkurve as lk
 import numpy as np
 import pandas as pd
+from IPython.display import display
 from pymc3.sampling import MultiTrace
 
 logging.getLogger().setLevel(logging.INFO)
@@ -27,11 +29,19 @@ TIC_DATASOURCE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
 )
 
+DIR = os.path.dirname(__file__)
 
 @functools.lru_cache()
 def get_tic_database():
-    return pd.read_csv(TIC_DATASOURCE)
+    # if we have a cached database file
+    cached_file = os.path.join(DIR, "cached_tic_database.csv")
+    if os.path.isfile(cached_file):
+        return pd.read_csv(cached_file)
 
+    # go online to grab database and cache
+    db = pd.read_csv(TIC_DATASOURCE)
+    db.to_csv(cached_file)
+    return db
 
 def get_tic_id_for_toi(toi_number: int) -> int:
     tic_db = get_tic_database()
@@ -60,67 +70,11 @@ def calculate_time_fold(t, t0, p):
     return (t - t0 + hp) % p - hp
 
 
-class PlanetCandidate:
-    """Plant Candidate obtained by TESS."""
-
-    def __init__(
-        self,
-        toi_id: float,
-        period: float,
-        t0: float,
-        depth: float,
-        duration: float,
-    ):
-        """
-        :param float toi_id: The toi number X.Y where the Y represents the
-            TOI sub number
-        :param float period: Planet candidate orbital period (in days)
-        :param float t0: Epoch (timestamp) of the primary transit in
-            Barycentric Julian Date
-        :param float depth: Planet candidate transit depth, in parts per
-            million
-        :param float duration: Planet candidate transit duration, in days.
-        """
-        self.toi_id = toi_id
-        self.period = period
-        self.t0 = t0
-        self.depth = depth
-        self.duration = duration
-
-    @property
-    def has_data_only_for_single_transit(self):
-        return (self.period <= 0.0) or np.isnan(self.period)
-
-    @classmethod
-    def from_toi_database_entry(cls, toi_data: dict):
-        return cls(
-            toi_id=toi_data["TOI"],
-            period=toi_data["Period (days)"],
-            t0=toi_data["Epoch (BJD)"] - 2457000,  # convert to TBJD
-            depth=toi_data["Depth (ppm)"]
-            * 1e-3,  # convert to parts per thousand
-            duration=toi_data["Duration (hours)"] / 24.0,  # convert to days
-        )
-
-    def get_timefold(self, t):
-        """Used in plotting"""
-        return calculate_time_fold(t, self.t0, self.period)
-
-    def to_dict(self):
-        return {
-            "TOI": self.toi_id,
-            "Period (days)": self.period,
-            "Epoch (TBJD)": self.t0,
-            "Depth (ppt)": self.depth,
-            "Duration (days)": self.duration,
-        }
-
-
 class LightCurveData:
     """Stores Light Curve data for a single target"""
 
     def __init__(
-        self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
+            self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
     ):
         """
         :param np.ndarray time: The time in days.
@@ -166,16 +120,122 @@ class LightCurveData:
             ),
         )
 
+    def to_dict(self):
+        return {
+            "time": self.time,
+            "flux": self.flux,
+            "flux_err": self.flux_err,
+        }
+
+    def save_data(self, outdir):
+        pd.DataFrame(self.to_dict()).to_csv(os.path.join(outdir, "lightcurve.csv"), index=False)
+        logging.info(f"Saved lightcurve data.")
+
+class PlanetCandidate:
+    """Plant Candidate obtained by TESS."""
+
+    def __init__(
+            self,
+            toi_id: float,
+            period: float,
+            time: np.ndarray,
+            t0: float,
+            depth: float,
+            duration: float,
+    ):
+        """
+        :param float toi_id: The toi number X.Y where the Y represents the
+            TOI sub number (e.g. 103.1)
+        :param np.ndarray time: The list of times for which we have data for
+        :param float period: Planet candidate orbital period (in days)
+        :param float t0: Epoch (timestamp) of the primary transit in
+            Barycentric Julian Date
+        :param float depth: Planet candidate transit depth, in parts per
+            million
+        :param float duration: Planet candidate transit duration, in days.
+        """
+        self.toi_id = toi_id
+        self.t0 = t0
+        self.period = period
+        self.depth = depth
+        self.duration = duration
+        self.__time = time
+
+    @property
+    def index(self):
+        return int(str(self.toi_id).split(".")[1])
+
+    @property
+    def num_periods(self):
+        """number of periods between t0 and tmax"""
+        return (np.floor(max(self.__time) - self.t0) / self.period).astype(int)
+
+    @property
+    def tmax(self):
+        """Time of the last transit"""
+        return self.t0 + self.num_periods * self.period
+
+    @property
+    def period_min(self):
+        """the minimum possible period"""
+        return np.maximum(
+            np.abs(self.t0 - self.__time.max()),
+            np.abs(self.__time.min() - self.t0)
+        )
+
+    @property
+    def duration_max(self):
+        if self.has_data_only_for_single_transit:
+            return 1.0
+        return max(1.5 * self.duration, 0.1)
+
+    @property
+    def duration_min(self):
+        return  min(self.duration, 2 * np.min(np.diff(self.__time)))
+
+    @property
+    def has_data_only_for_single_transit(self):
+        return (self.period <= 0.0) or np.isnan(self.period)
+
+    @classmethod
+    def from_toi_database_entry(cls, toi_data: Dict, lightcurve: LightCurveData):
+        unpack_data = dict(
+            toi_id=toi_data["TOI"],
+            period=toi_data["Period (days)"],
+            t0=toi_data["Epoch (BJD)"] - 2457000,  # convert to TBJD
+            depth=toi_data["Depth (ppm)"] * 1e-3,  # convert to parts per thousand
+            duration=toi_data["Duration (hours)"] / 24.0,  # convert to days,
+            time=lightcurve.time
+        )
+        return cls(**unpack_data)
+
+    def get_timefold(self, t):
+        """Used in plotting"""
+        return calculate_time_fold(t, self.t0, self.period)
+
+    def to_dict(self):
+        return {
+            "TOI": self.toi_id,
+            "Period (days)": self.period,
+            "Epoch (TBJD)": self.t0,
+            "Depth (ppt)": self.depth,
+            "Duration (days)": self.duration,
+            "Single Transit": self.has_data_only_for_single_transit,
+        }
+
+
 
 class TICEntry:
     """Hold information about a TIC (TESS Input Catalog) entry"""
 
-    def __init__(self, tic: int, candidates: List[PlanetCandidate], toi: int):
-        self.tic_number = tic
+    def __init__(self, tic_number: int, candidates: List[PlanetCandidate], toi: int, lightcurve: LightCurveData,
+                 meta_data: Optional[Dict] = {}):
+        self.tic_number = tic_number
         self.toi_number = toi
         self.candidates = candidates
-        self.lightcurve = None
-        self.setup_outdir()
+        self.lightcurve = lightcurve
+        self.meta_data = meta_data
+        self.outdir = os.path.join(f"toi_{self.toi_number}_files")
 
     @property
     def planet_count(self):
@@ -213,22 +273,25 @@ class TICEntry:
 
     @classmethod
     def generate_tic_from_toi_number(
-        cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()
+            cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()
     ):
-        if tic_data.empty:
-            tic_data = get_tic_data_from_database([toi])
+        # Load database entry for TIC
+        tic_data = get_tic_data_from_database([toi])
+        tic_number = int(tic_data["TIC ID"].iloc[0])
+
+        # Load lighcurve for TIC
+        lightcurve = LightCurveData.from_mast(tic=tic_number)
+
         candidates = []
         for index, toi_data in tic_data.iterrows():
             candidate = PlanetCandidate.from_toi_database_entry(
-                toi_data.to_dict()
+                toi_data=toi_data.to_dict(), lightcurve=lightcurve
             )
             candidates.append(candidate)
-        return cls(
-            tic=int(tic_data["TIC ID"].iloc[0]), candidates=candidates, toi=toi
-        )
 
-    def load_lightcurve(self):
-        self.lightcurve = LightCurveData.from_mast(tic=self.tic_number)
+        return cls(
+            tic_number=tic_number, candidates=candidates, toi=toi, lightcurve=lightcurve, meta_data=tic_data.to_dict('list')
+        )
 
     def to_dataframe(self):
         return pd.DataFrame(
@@ -236,8 +299,6 @@ class TICEntry:
         )
 
     def display(self):
-        from IPython.display import display
-
         df = self.to_dataframe()
         df = df.transpose()
         df.columns = df.loc["TOI"]
@@ -256,8 +317,8 @@ class TICEntry:
         )
         df = (
             df.transpose()
-            .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
-            .transpose()
+                .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
+                .transpose()
         )
         df = df[["mean", "sd"]]
         df["TOI"] = self.toi_number
@@ -267,7 +328,17 @@ class TICEntry:
         )
         return df
 
-    def setup_outdir(self):
-        output_dir = os.path.join(f"toi_{self.toi_number}_files")
-        os.makedirs(output_dir, exist_ok=True)
-        self.outdir = output_dir
+    @property
+    def outdir(self):
+        return self.__outdir
+
+    @outdir.setter
+    def outdir(self, outdir):
+        os.makedirs(outdir, exist_ok=True)
+        self.__outdir = outdir
+        self.cache_data()
+
+    def cache_data(self):
+        with open(os.path.join(self.outdir, "meta_data.json"), "w") as outfile:
+            json.dump(self.meta_data, outfile, indent=4, sort_keys=True)
+        self.lightcurve.save_data(self.outdir)

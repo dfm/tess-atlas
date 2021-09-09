@@ -1,0 +1,40 @@
+name: build_paper
+
+on:
+  push:
+    branches: [ paper ]
+  pull_request:
+    branches: [ paper ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Github Action for LaTeX
+        uses: xu-cheng/latex-action@v2
+        with:
+          working_directory: ./paper
+          root_file: main.tex
+
+      - name: Move pdf
+        run: |
+          mkdir public
+          ls
+          mv main.pdf public/main.pdf
+          ls public
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v2
+        with:
+          name: main.pdf
+          path: public/main.pdf # or path/to/artifact
+
+#      - name: Deploy 🚀
+#        uses: JamesIves/github-pages-deploy-action@releases/v3
+#        with:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          BRANCH: gh-pages
+#          FOLDER: public
+#          CLEAN: true

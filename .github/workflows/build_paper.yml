@@ -16,7 +16,7 @@ jobs:
         uses: xu-cheng/latex-action@v2
         with:
           working_directory: ./paper
-          root_file: main.tex
+          root_file: atlas.tex
 
       - name: Move pdf
         run: |

@@ -336,8 +336,6 @@ model_lightcurves = [
     init_params["lightcurves"][:, i] * 1e3
     for i in range(tic_entry.planet_count)
 ]
-
-# + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_lightcurve(tic_entry, model_lightcurves)
 
 # + tags=["exe"]
@@ -363,28 +361,31 @@ def start_model_sampling(model) -> MultiTrace:
 trace = start_model_sampling(planet_transit_model)
 
 # -
-# Here are some summary statistics from sampling:
+
+# Lets save the posteriors and sampling metadata for future use, and take a look at summary statistics
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.inference_trace = trace
-tic_entry.inference_trace
-
-
-# -
-
-# Finally, we save the posteriors and sampling metadata for future use.
-
-# + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.save_inference_trace()
+tic_entry.inference_trace
 
 
 # -
 # ## Results
 # Below are plots of the posterior probability distributuions:
 
-
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_posteriors(tic_entry, trace)
+
+# -
+# We can also plot the best-fitting light-curve model
+
+# + pycharm={"name": "#%%\n"} tags=["exe"]
+model_lightcurves = [
+    init_params["lightcurves"][:, i] * 1e3
+    for i in range(tic_entry.planet_count)
+]
+plot_lightcurve(tic_entry, model_lightcurves)
 
 # -
 

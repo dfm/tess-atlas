@@ -22,14 +22,14 @@ jobs:
         run: |
           mkdir public
           ls
-          mv main.pdf public/main.pdf
+          mv atlas.pdf public/atlas.pdf
           ls public
 
       - name: Upload PDF
         uses: actions/upload-artifact@v2
         with:
           name: main.pdf
-          path: public/main.pdf # or path/to/artifact
+          path: public/atlas.pdf # or path/to/artifact
 
 #      - name: Deploy 🚀
 #        uses: JamesIves/github-pages-deploy-action@releases/v3

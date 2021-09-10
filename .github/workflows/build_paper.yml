@@ -22,7 +22,8 @@ jobs:
         run: |
           mkdir public
           ls
-          mv atlas.pdf public/atlas.pdf
+          ls paper
+          mv paper/atlas.pdf public/atlas.pdf
           ls public
 
       - name: Upload PDF

@@ -46,10 +46,10 @@
 # ## Table of Contents
 #
 # 1. [Getting started](#Getting-started)
-# 2. [Data & de-trending](#Data-%26amp%3B-de-trending)
-# 3. [Removing stellar variability](#Removing-stellar-variability)
-# 4. [Transit model in PyMC3 & exoplanet](#Transit-model-in-PyMC3-%26amp%3B-exoplanet)
-# 5. [Sampling](#Sampling)
+# 2. [Downloading Data](#Downloading-Data)
+# 3. [Fitting stellar parameters](#Fitting-stellar-parameters)
+# 4. [Results](#Results)
+# 5. [Citations](#Citations)
 # 6. [Posterior constraints](#Posterior-constraints)
 # 7. [Attribution](#Attribution)
 #
@@ -419,5 +419,16 @@ with planet_transit_model:
     txt, bib = xo.citations.get_citations_for_model()
 print(txt)
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
-print("\n".join(bib.splitlines()[:10]) + "\n...")
+# + pycharm={"name": "#%%\n"} tags=["exe", "output_scroll"]
+print("\n".join(bib.splitlines()) + "\n...")
+# -
+
+# ### Packages used:
+#
+
+# + pycharm={"name": "#%%\n"} tags=["exe", "output_scroll"]
+import pkg_resources
+
+dists = [str(d).replace(" ", "==") for d in pkg_resources.working_set]
+for i in dists:
+    print(i)

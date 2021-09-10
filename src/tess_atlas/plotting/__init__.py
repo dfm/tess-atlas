@@ -6,6 +6,8 @@ from .matplotlib_plots import MatplotlibPlotter
 if os.environ.get("INTERACTIVE_PLOTS", default="False") == "TRUE":
     plot_lightcurve = PlotlyPlotter.plot_lightcurve
     plot_folded_lightcurve = PlotlyPlotter.plot_folded_lightcurve
+    plot_phase = MatplotlibPlotter.plot_phase
 else:
     plot_lightcurve = MatplotlibPlotter.plot_lightcurve
     plot_folded_lightcurve = MatplotlibPlotter.plot_folded_lightcurve
+    plot_phase = MatplotlibPlotter.plot_phase

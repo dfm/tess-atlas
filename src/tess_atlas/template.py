@@ -89,6 +89,7 @@ os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
     plot_folded_lightcurve,
+    plot_phase,
     plot_lightcurve,
     plot_posteriors,
 )
@@ -385,11 +386,7 @@ plot_posteriors(tic_entry, trace)
 # We can also plot the best-fitting light-curve model
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-model_lightcurves = [
-    init_params["lightcurves"][:, i] * 1e3
-    for i in range(tic_entry.planet_count)
-]
-plot_lightcurve(tic_entry, model_lightcurves)
+plot_phase(tic_entry, trace)
 
 # -
 

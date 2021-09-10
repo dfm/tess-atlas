@@ -16,3 +16,4 @@ notebooks/TEST
 *_version.py
 *.egg-info
 src/tess_atlas/template.ipynb
+/tests/notebooks/

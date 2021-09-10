@@ -79,15 +79,20 @@ from pymc3.sampling import MultiTrace
 
 from tess_atlas.data import TICEntry
 from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
-from tess_atlas.plotting import (
-    plot_eccentricity_posteriors,
-    plot_folded_lightcurve,
-    plot_lightcurve,
-    plot_posteriors,
-)
+
 from tess_atlas.utils import notebook_initalisations
 
 notebook_initalisations()
+
+# + pycharm={"name": "#%%\n"} tags=["exe"]
+os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
+from tess_atlas.plotting import (
+    plot_eccentricity_posteriors,
+    plot_folded_lightcurve,
+    plot_phase,
+    plot_lightcurve,
+    plot_posteriors,
+)
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 TOI_NUMBER = {{{TOINUMBER}}}
@@ -381,11 +386,7 @@ plot_posteriors(tic_entry, trace)
 # We can also plot the best-fitting light-curve model
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-model_lightcurves = [
-    init_params["lightcurves"][:, i] * 1e3
-    for i in range(tic_entry.planet_count)
-]
-plot_lightcurve(tic_entry, model_lightcurves)
+plot_phase(tic_entry, trace)
 
 # -
 

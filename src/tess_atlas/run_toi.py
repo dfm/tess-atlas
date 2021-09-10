@@ -2,20 +2,17 @@
 # -*- coding: utf-8 -*-
 """Module to create and run a TOI notebook from the template notebook"""
 
+import argparse
 import logging
 import os
 import re
 import subprocess
-import sys
 from typing import Optional
 
 import jupytext
-import nbformat
 import pkg_resources
-from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
 
 from tess_atlas.utils import execute_ipynb
-
 from .tess_atlas_version import __version__
 
 logging.getLogger().setLevel(logging.INFO)
@@ -33,6 +30,7 @@ def get_template_filename():
 
 def create_toi_notebook_from_template_notebook(
     toi_number: int,
+    outdir: Optional[str] = "notebooks",
     version: Optional[str] = __version__,
     quickrun: Optional[bool] = False,
 ):
@@ -51,7 +49,9 @@ def create_toi_notebook_from_template_notebook(
         notebook_filename: str
             The filepath of the generated notebook
     """
-    notebook_filename = f"notebooks/{version}/toi_{toi_number}.ipynb"
+    notebook_filename = os.path.join(
+        outdir, f"{version}/toi_{toi_number}.ipynb"
+    )
     os.makedirs(os.path.dirname(notebook_filename), exist_ok=True)
 
     with open(get_template_filename(), "r") as f:
@@ -86,22 +86,33 @@ def execute_toi_notebook(notebook_filename, version=__version__):
     """
     execution_successful = execute_ipynb(notebook_filename, version)
     if execution_successful:
-        subprocess.check_call(f"git add {notebook_filename} -f", shell=True)
+        # subprocess.check_call(f"git add {notebook_filename} -f", shell=True)
         logging.info(f"Preprocessed {notebook_filename}")
     return execution_successful
 
 
-def get_toi_from_cli():
+def get_cli_args():
     """Get the TOI number from the CLI and return it"""
-    if len(sys.argv) < 2:
-        raise RuntimeError("you must give a TOI number")
-    toi_number = int(sys.argv[1])
-    return toi_number
+    parser = argparse.ArgumentParser(prog="run_toi")
+    default_outdir = os.path.join(os.getcwd(), "notebooks")
+    parser.add_argument(
+        "toi_number", type=int, help="The TOI number to be analysed (e.g. 103)"
+    )
+    parser.add_argument(
+        "--outdir",
+        default=default_outdir,
+        type=str,
+        help="The outdir to save notebooks (default: cwd/notebooks)",
+    )
+    args = parser.parse_args()
+    return args.toi_number, args.outdir
 
 
 def main():
-    toi_number = get_toi_from_cli()
-    notebook_filename = create_toi_notebook_from_template_notebook(toi_number)
+    toi_number, outdir = get_cli_args()
+    notebook_filename = create_toi_notebook_from_template_notebook(
+        toi_number, outdir
+    )
     execute_toi_notebook(notebook_filename)
 
 

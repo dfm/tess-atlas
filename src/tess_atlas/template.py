@@ -79,15 +79,19 @@ from pymc3.sampling import MultiTrace
 
 from tess_atlas.data import TICEntry
 from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
+
+from tess_atlas.utils import notebook_initalisations
+
+notebook_initalisations()
+
+# + pycharm={"name": "#%%\n"} tags=["exe"]
+os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
     plot_folded_lightcurve,
     plot_lightcurve,
     plot_posteriors,
 )
-from tess_atlas.utils import notebook_initalisations
-
-notebook_initalisations()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 TOI_NUMBER = {{{TOINUMBER}}}

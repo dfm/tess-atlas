@@ -52,7 +52,7 @@ def notebook_execution(toi_id, version, quickrun=True, remove_after=False):
     )
     success = run_toi.execute_toi_notebook(notebook_fn, version=version)
 
-    subprocess.check_call(f"git rm --cached {notebook_fn} -f", shell=True)
+    # subprocess.check_call(f"git rm --cached {notebook_fn} -f", shell=True)
     samples_file = (
         f"notebooks/{version}/toi_{toi_id}_files/toi_{toi_id}.netcdf"
     )

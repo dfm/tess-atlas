@@ -8,6 +8,7 @@ import pandas as pd
 import pymc3 as pm
 
 from tess_atlas.data import TICEntry
+from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT
 
 CORNER_KWARGS = dict(
     smooth=0.9,

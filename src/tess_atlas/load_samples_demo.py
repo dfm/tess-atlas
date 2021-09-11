@@ -36,8 +36,10 @@ import tqdm
 
 from tess_atlas.data import TICEntry
 from tess_atlas.utils import notebook_initalisations
+from tess_atlas.logger import NOTEBOOK_LOGGER_NAME
 
 notebook_initalisations()
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 ATLAS_VERSION = "0.2.0"
 SEARCH_PATH = "./toi_*_files/*.netcdf"
@@ -50,7 +52,7 @@ def get_analysed_toi_sample_filenames() -> pd.DataFrame:
         int("".join(filter(str.isdigit, os.path.basename(f)))) for f in files
     ]
     analysed_tois = pd.DataFrame(dict(toi=toi_nums, path=files))
-    logging.info(f"Number of analysed TOIs: {len(analysed_tois)}")
+    logger.info(f"Number of analysed TOIs: {len(analysed_tois)}")
     return analysed_tois
 
 

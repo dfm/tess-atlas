@@ -12,23 +12,28 @@ import argparse
 import logging
 import os
 from multiprocessing import Pool
-from subprocess import check_call
 
 import numpy as np
 import pandas as pd
 
-logging.getLogger().setLevel(logging.INFO)
+from .run_toi import run_toi
+from .utils import setup_logger, RUNNER_LOGGER_NAME
+from .tess_atlas_version import __version__
+
 TOI_DATABASE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
 )
 
 
-def run_toi(args):
+def run_toi_in_pool(kwargs):
+    logger = logging.getLogger(RUNNER_LOGGER_NAME)
     # make sure that THEANO has cache dir for each thread (prevent locking issues)
     os.environ["THEANO_FLAGS"] = f"compiledir=./cache/{os.getpid()}"
-    command = f"run_toi {args}"
-    logging.info(f"Running {command}")
-    check_call(command, shell=True)
+    logger.info(f"Running TOI with {kwargs}")
+    run_status, run_duration = run_toi(**kwargs)
+    logger.info(
+        f"TOI {kwargs['toi_number']} Passed: {run_status} ({run_duration})"
+    )
 
 
 def get_cli_args():
@@ -47,21 +52,33 @@ def get_cli_args():
         type=str,
         help="The csv with TOI numbers (has to have the columns [`TIC ID, TOI`])",
     )
+    parser.add_argument(
+        "--quickrun",
+        action="store_true",  # False by default
+        help="Run with reduced sampler settings (useful for debugging)",
+    )
     args = parser.parse_args()
-    return args.outdir, args.toi_database
+    return args.outdir, args.toi_database, args.quickrun
 
 
 def main():
-    outdir, toi_database = get_cli_args()
+    outdir, toi_database, quickrun = get_cli_args()
+    logger = setup_logger(
+        outdir=os.path.join(outdir, __version__),
+        logger_name=RUNNER_LOGGER_NAME,
+    )
     tois = pd.read_csv(toi_database)
     toi_ids = np.floor(
         np.array(tois.groupby("TIC ID").first().sort_values("TOI").TOI)
     ).astype(int)
-    logging.info(f"Number of TOIs to analyse: {len(toi_ids)}")
+    logger.info(f"Number of TOIs to analyse: {len(toi_ids)}")
     np.random.shuffle(toi_ids)
-    run_toi_args = [f"{toi_id} --outdir {outdir}" for toi_id in toi_ids]
+    run_toi_args = [
+        dict(toi_number=toi_id, outdir=outdir, quickrun=quickrun)
+        for toi_id in toi_ids
+    ]
     with Pool(8) as pool:
-        pool.map(run_toi, run_toi_args)
+        pool.map(run_toi_in_pool, run_toi_args)
 
 
 if __name__ == "__main__":

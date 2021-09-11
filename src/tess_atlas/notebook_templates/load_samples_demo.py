@@ -36,7 +36,8 @@ import tqdm
 
 from tess_atlas.data import TICEntry
 from tess_atlas.utils import notebook_initalisations
-from tess_atlas.logger import NOTEBOOK_LOGGER_NAME
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
 
 notebook_initalisations()
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)

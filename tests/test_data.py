@@ -6,7 +6,7 @@ import pandas as pd
 
 import tess_atlas.data as tess_data
 
-CLEAN_AFTER_TEST = False
+CLEAN_AFTER_TEST = True
 
 
 class TestData(unittest.TestCase):

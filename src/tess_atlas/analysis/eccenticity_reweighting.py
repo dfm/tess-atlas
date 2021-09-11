@@ -7,8 +7,8 @@ import pandas as pd
 from astroquery.mast import Catalogs
 from pymc3.sampling import MultiTrace
 
-from .logger import NOTEBOOK_LOGGER_NAME
-from .data import TICEntry
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+from tess_atlas.data import TICEntry
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

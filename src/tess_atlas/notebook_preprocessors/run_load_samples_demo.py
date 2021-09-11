@@ -13,8 +13,8 @@ import jupytext
 import pkg_resources
 
 from tess_atlas.tess_atlas_version import __version__
-from tess_atlas.utils import execute_ipynb
-from tess_atlas.logger import RUNNER_LOGGER_NAME
+from tess_atlas.utils import RUNNER_LOGGER_NAME
+from .notebook_executor import execute_ipynb
 
 runner_logger = logging.getLogger(RUNNER_LOGGER_NAME)
 

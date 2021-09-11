@@ -7,7 +7,7 @@ import pytest
 import testbook
 from packaging import version
 
-from tess_atlas.run_toi import get_template_filename
+from tess_atlas.notebook_preprocessors.run_toi import get_template_filename
 
 TEMPLATE_NOTEBOOK = get_template_filename()
 

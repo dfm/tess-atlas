@@ -78,10 +78,12 @@ from celerite2.theano import GaussianProcess, terms
 from pymc3.sampling import MultiTrace
 
 from tess_atlas.data import TICEntry
-from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
+from tess_atlas.analysis.eccenticity_reweighting import (
+    calculate_eccentricity_weights,
+)
 
 from tess_atlas.utils import notebook_initalisations
-from tess_atlas.logger import NOTEBOOK_LOGGER_NAME
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 notebook_initalisations()
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)

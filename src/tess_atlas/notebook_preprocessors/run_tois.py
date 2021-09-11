@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Module to create and execute the notebooks for all existing TOIs
 
-Uses `runt_toi.py` to create and execute the notebooks for the TOIs obtained from
+Uses `run_toi.py` to create and execute the notebooks for the TOIs obtained from
 https://exofop.ipac.caltech.edu/tess/
 
 """
@@ -16,9 +16,9 @@ from multiprocessing import Pool
 import numpy as np
 import pandas as pd
 
-from .run_toi import run_toi
-from .utils import setup_logger, RUNNER_LOGGER_NAME
-from .tess_atlas_version import __version__
+from tess_atlas.notebook_preprocessors.run_toi import run_toi
+from tess_atlas.utils import setup_logger, RUNNER_LOGGER_NAME
+from tess_atlas.tess_atlas_version import __version__
 
 TOI_DATABASE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"

@@ -12,14 +12,17 @@ import logging
 import jupytext
 import pkg_resources
 
-from .utils import execute_ipynb
-from .tess_atlas_version import __version__
-from .logger import RUNNER_LOGGER_NAME, setup_logger
+
+from tess_atlas.tess_atlas_version import __version__
+from tess_atlas.utils import RUNNER_LOGGER_NAME, setup_logger
+from .notebook_executor import execute_ipynb
+
+TOI_TEMPLATE_FNAME = "notebook_templates/toi_template.py"
 
 
 def get_template_filename():
     template_py_filename = pkg_resources.resource_filename(
-        __name__, "template.py"
+        "tess_atlas", TOI_TEMPLATE_FNAME
     )
     template_ipynb_filename = template_py_filename.replace(".py", ".ipynb")
     template_py_pointer = jupytext.read(template_py_filename, fmt="py:light")

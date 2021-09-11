@@ -1,30 +1,17 @@
-# -*- coding: utf-8 -*-
-
-__all__ = [
-    "get_tic_database",
-    "get_tic_id_for_toi",
-    "get_tic_data_from_database",
-    "calculate_time_fold",
-    "PlanetCandidate",
-    "LightCurveData",
-    "TICEntry",
-]
-
 import functools
 import json
 import logging
 import os
 from typing import Dict, List, Optional
 
-import lightkurve as lk
-import numpy as np
+import arviz as az
 import pandas as pd
 from IPython.display import display
 from pymc3.sampling import MultiTrace
 
-import arviz as az
-
-from .logger import NOTEBOOK_LOGGER_NAME
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+from .lightcurve_data import LightCurveData
+from .planet_candidate import PlanetCandidate
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -67,172 +54,6 @@ def get_tic_data_from_database(toi_numbers: List[int]) -> pd.DataFrame:
     if len(tois_for_tic) < 1:
         raise ValueError(f"TOI data for TICs-{tics} does not exist.")
     return tois_for_tic
-
-
-def calculate_time_fold(t, t0, p):
-    """Function to get time-fold"""
-    hp = 0.5 * p
-    return (t - t0 + hp) % p - hp
-
-
-class LightCurveData:
-    """Stores Light Curve data for a single target"""
-
-    def __init__(
-        self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
-    ):
-        """
-        :param np.ndarray time: The time in days.
-        :param np.ndarray flux: The relative flux in parts per thousand.
-        :param np.ndarray fluex_err: The flux err in parts per thousand.
-        """
-        self.time = time
-        self.flux = flux
-        self.flux_err = flux_err
-
-    @classmethod
-    def from_mast(cls, tic: int):
-        """Uses lightkurve to get TESS data for a TIC from MAST"""
-        logger.info(
-            f"Searching for lightkurve data with target='TIC {tic}', "
-            "mission='TESS'"
-        )
-        search = lk.search_lightcurve(target=f"TIC {tic}", mission="TESS")
-        logger.debug(f"Search  succeeded: {search}")
-
-        # Restrict to short cadence no "fast" cadence
-        search = search[np.where(search.table["t_exptime"] == 120)]
-
-        logger.info(
-            f"Downloading {len(search)} observations of light curve data "
-            f"(TIC {tic})"
-        )
-        data = search.download_all()
-        if data is None:
-            raise ValueError(f"No light curves for TIC {tic}")
-        logger.info("Completed light curve data download")
-        data = data.stitch()
-        data = data.remove_nans().remove_outliers(sigma=7)
-        t = data.time.value
-        inds = np.argsort(t)
-        return cls(
-            time=np.ascontiguousarray(t[inds], dtype=np.float64),
-            flux=np.ascontiguousarray(
-                1e3 * (data.flux.value[inds] - 1), dtype=np.float64
-            ),
-            flux_err=np.ascontiguousarray(
-                1e3 * data.flux_err.value[inds], dtype=np.float64
-            ),
-        )
-
-    def to_dict(self):
-        return {
-            "time": self.time,
-            "flux": self.flux,
-            "flux_err": self.flux_err,
-        }
-
-    def save_data(self, outdir):
-        pd.DataFrame(self.to_dict()).to_csv(
-            os.path.join(outdir, "lightcurve.csv"), index=False
-        )
-        logger.info(f"Saved lightcurve data.")
-
-
-class PlanetCandidate:
-    """Plant Candidate obtained by TESS."""
-
-    def __init__(
-        self,
-        toi_id: float,
-        period: float,
-        time: np.ndarray,
-        t0: float,
-        depth: float,
-        duration: float,
-    ):
-        """
-        :param float toi_id: The toi number X.Y where the Y represents the
-            TOI sub number (e.g. 103.1)
-        :param np.ndarray time: The list of times for which we have data for
-        :param float period: Planet candidate orbital period (in days)
-        :param float t0: Epoch (timestamp) of the primary transit in
-            Barycentric Julian Date
-        :param float depth: Planet candidate transit depth, in parts per
-            million
-        :param float duration: Planet candidate transit duration, in days.
-        """
-        self.toi_id = toi_id
-        self.t0 = t0
-        self.period = period
-        self.depth = depth
-        self.duration = duration
-        self.__time = time
-
-    @property
-    def index(self):
-        return int(str(self.toi_id).split(".")[1])
-
-    @property
-    def num_periods(self):
-        """number of periods between t0 and tmax"""
-        return (np.floor(max(self.__time) - self.t0) / self.period).astype(int)
-
-    @property
-    def tmax(self):
-        """Time of the last transit"""
-        return self.t0 + self.num_periods * self.period
-
-    @property
-    def period_min(self):
-        """the minimum possible period"""
-        return np.maximum(
-            np.abs(self.t0 - self.__time.max()),
-            np.abs(self.__time.min() - self.t0),
-        )
-
-    @property
-    def duration_max(self):
-        if self.has_data_only_for_single_transit:
-            return 1.0
-        return max(1.5 * self.duration, 0.1)
-
-    @property
-    def duration_min(self):
-        return min(self.duration, 2 * np.min(np.diff(self.__time)))
-
-    @property
-    def has_data_only_for_single_transit(self):
-        return (self.period <= 0.0) or np.isnan(self.period)
-
-    @classmethod
-    def from_toi_database_entry(
-        cls, toi_data: Dict, lightcurve: LightCurveData
-    ):
-        unpack_data = dict(
-            toi_id=toi_data["TOI"],
-            period=toi_data["Period (days)"],
-            t0=toi_data["Epoch (BJD)"] - 2457000,  # convert to TBJD
-            depth=toi_data["Depth (ppm)"]
-            * 1e-3,  # convert to parts per thousand
-            duration=toi_data["Duration (hours)"] / 24.0,  # convert to days,
-            time=lightcurve.time,
-        )
-        return cls(**unpack_data)
-
-    def get_timefold(self, t):
-        """Used in plotting"""
-        return calculate_time_fold(t, self.t0, self.period)
-
-    def to_dict(self):
-        return {
-            "TOI": self.toi_id,
-            "Period (days)": self.period,
-            "Epoch (TBJD)": self.t0,
-            "Depth (ppt)": self.depth,
-            "Duration (days)": self.duration,
-            "Single Transit": self.has_data_only_for_single_transit,
-        }
 
 
 class TICEntry:

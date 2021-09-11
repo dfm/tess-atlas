@@ -2,12 +2,11 @@
 
 import os
 import shutil
-import subprocess
 import unittest
 
 import nbformat
 
-from tess_atlas import run_toi
+from tess_atlas.notebook_preprocessors import run_toi
 from tess_atlas.tess_atlas_version import __version__
 
 SINGLE_PLANET = 103

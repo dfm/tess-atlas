@@ -22,7 +22,7 @@ python -m pip install -e .
 ## Run one notebook
 To run the analysis for one notebook, you can run
 ```bash
-run_toi_in_pool <toi id number>
+run_toi <toi id number>
 ```
 where an example `<toi id number> = 724`
 

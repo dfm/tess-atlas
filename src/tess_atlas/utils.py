@@ -4,26 +4,31 @@ import logging
 import multiprocessing as mp
 import os
 import warnings
+import sys
 
 import matplotlib.pyplot as plt
 import nbformat
 from IPython import get_ipython
 from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
 
+from .logger import RUNNER_LOGGER_NAME, NOTEBOOK_LOGGER_NAME, setup_logger
+from .tess_atlas_version import __version__
 
-def execute_ipynb(notebook_filename: str, version: str):
+
+def execute_ipynb(notebook_filename: str):
     success = True
     with open(notebook_filename) as f:
         notebook = nbformat.read(f, as_version=4)
 
     ep = ExecutePreprocessor(timeout=-1)
-
-    logging.info(f"Executing {notebook_filename}")
+    runner_logger = logging.getLogger(RUNNER_LOGGER_NAME)
+    runner_logger.info(f"Executing {notebook_filename}")
     try:
         # Note that path specifies in which folder to execute the notebook.
-        ep.preprocess(notebook, {"metadata": {"path": f"notebooks/{version}"}})
+        run_path = os.path.dirname(notebook_filename)
+        ep.preprocess(notebook, {"metadata": {"path": run_path}})
     except CellExecutionError as e:
-        logging.error(
+        runner_logger.error(
             f"Preprocessing {notebook_filename} failed:\n\n {e.traceback}"
         )
         success = False
@@ -60,7 +65,9 @@ def notebook_initalisations():
     ]:
         logger = logging.getLogger(logger_name)
         logger.setLevel(logging.ERROR)
-    logging.getLogger().setLevel(logging.INFO)
+
+    notebook_logger = setup_logger(NOTEBOOK_LOGGER_NAME)
+    notebook_logger.setLevel(logging.INFO)
 
     plt.style.use("default")
     plt.rcParams["savefig.dpi"] = 100

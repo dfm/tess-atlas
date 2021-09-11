@@ -24,7 +24,9 @@ from pymc3.sampling import MultiTrace
 
 import arviz as az
 
-logging.getLogger().setLevel(logging.INFO)
+from .logger import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 TIC_DATASOURCE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
@@ -91,24 +93,24 @@ class LightCurveData:
     @classmethod
     def from_mast(cls, tic: int):
         """Uses lightkurve to get TESS data for a TIC from MAST"""
-        logging.info(
+        logger.info(
             f"Searching for lightkurve data with target='TIC {tic}', "
             "mission='TESS'"
         )
         search = lk.search_lightcurve(target=f"TIC {tic}", mission="TESS")
-        logging.debug(f"Search  succeeded: {search}")
+        logger.debug(f"Search  succeeded: {search}")
 
         # Restrict to short cadence no "fast" cadence
         search = search[np.where(search.table["t_exptime"] == 120)]
 
-        logging.info(
+        logger.info(
             f"Downloading {len(search)} observations of light curve data "
             f"(TIC {tic})"
         )
         data = search.download_all()
         if data is None:
             raise ValueError(f"No light curves for TIC {tic}")
-        logging.info("Completed light curve data download")
+        logger.info("Completed light curve data download")
         data = data.stitch()
         data = data.remove_nans().remove_outliers(sigma=7)
         t = data.time.value
@@ -134,7 +136,7 @@ class LightCurveData:
         pd.DataFrame(self.to_dict()).to_csv(
             os.path.join(outdir, "lightcurve.csv"), index=False
         )
-        logging.info(f"Saved lightcurve data.")
+        logger.info(f"Saved lightcurve data.")
 
 
 class PlanetCandidate:
@@ -272,7 +274,7 @@ class TICEntry:
         if fname is None:
             fname = self.inference_trace_filename
         if os.path.isfile(fname):
-            logging.debug(f"Trace loaded from {self.inference_trace_filename}")
+            logger.info(f"Trace loaded from {self.inference_trace_filename}")
             self.inference_trace = az.from_netcdf(
                 self.inference_trace_filename
             )
@@ -283,7 +285,7 @@ class TICEntry:
         if fname is None:
             fname = self.inference_trace_filename
         az.to_netcdf(self.inference_trace, filename=fname)
-        logging.info(f"Trace saved at {fname}")
+        logger.info(f"Trace saved at {fname}")
 
     @classmethod
     def generate_tic_from_toi_number(

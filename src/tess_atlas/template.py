@@ -81,8 +81,10 @@ from tess_atlas.data import TICEntry
 from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
 
 from tess_atlas.utils import notebook_initalisations
+from tess_atlas.logger import NOTEBOOK_LOGGER_NAME
 
 notebook_initalisations()
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
@@ -317,7 +319,7 @@ def get_optimized_init_params(
     model, planet_params, noise_params, stellar_params, period_params
 ):
     """Get params with maximimal log prob for sampling starting point"""
-    logging.info("Optimizing sampling starting point")
+    logger.info("Optimizing sampling starting point")
     with model:
         theta = model.test_point
         kwargs = dict(start=theta, verbose=False, progress=False)
@@ -326,7 +328,7 @@ def get_optimized_init_params(
         theta = pmx.optimize(**kwargs, vars=noise_params)
         theta = pmx.optimize(**kwargs, vars=stellar_params)
         theta = pmx.optimize(**kwargs, vars=period_params)
-    logging.info("Optimization complete!")
+    logger.info("Optimization complete!")
     return theta
 
 

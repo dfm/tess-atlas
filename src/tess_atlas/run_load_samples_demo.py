@@ -14,6 +14,9 @@ import pkg_resources
 
 from tess_atlas.tess_atlas_version import __version__
 from tess_atlas.utils import execute_ipynb
+from tess_atlas.logger import RUNNER_LOGGER_NAME
+
+runner_logger = logging.getLogger(RUNNER_LOGGER_NAME)
 
 
 def get_load_samples_demo_notebook_filename(version=None):
@@ -31,11 +34,11 @@ def get_load_samples_demo_notebook_filename(version=None):
 def main():
     version = __version__
     ipynb_fn = get_load_samples_demo_notebook_filename(version)
-    successful_operation = execute_ipynb(ipynb_fn, version)
+    successful_operation = execute_ipynb(ipynb_fn)
     if successful_operation:
-        logging.info(f"Preprocessed {ipynb_fn}")
+        runner_logger.info(f"Preprocessed {ipynb_fn}")
     else:
-        logging.warning(f"Couldnt process {ipynb_fn}")
+        runner_logger.warning(f"Couldnt process {ipynb_fn}")
 
 
 if __name__ == "__main__":

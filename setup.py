@@ -96,6 +96,7 @@ if __name__ == "__main__":
             "console_scripts": [
                 "run_toi=tess_atlas.notebook_preprocessors.run_toi:main",
                 "run_tois=tess_atlas.notebook_preprocessors.run_tois:main",
+                "runs_stats_plotter=tess_atlas.analysis.stats_plotter:main",
             ]
         },
     )

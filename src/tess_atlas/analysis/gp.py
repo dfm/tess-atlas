@@ -10,7 +10,7 @@ import pymc3 as pm
 import pymc3_ext as pmx
 from celerite2.theano import GaussianProcess, terms
 
-from .data import TICEntry
+from tess_atlas.data import TICEntry
 
 
 def get_kernel_params(tic_entry: TICEntry):

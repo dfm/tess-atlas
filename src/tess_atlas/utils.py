@@ -3,34 +3,34 @@
 import logging
 import multiprocessing as mp
 import os
+import sys
 import warnings
 
 import matplotlib.pyplot as plt
-import nbformat
 from IPython import get_ipython
-from nbconvert.preprocessors import CellExecutionError, ExecutePreprocessor
+
+RUNNER_LOGGER_NAME = "TESS-ATLAS-RUNNER"
+NOTEBOOK_LOGGER_NAME = "TESS-ATLAS"
 
 
-def execute_ipynb(notebook_filename: str, version: str):
-    success = True
-    with open(notebook_filename) as f:
-        notebook = nbformat.read(f, as_version=4)
-
-    ep = ExecutePreprocessor(timeout=-1)
-
-    logging.info(f"Executing {notebook_filename}")
-    try:
-        # Note that path specifies in which folder to execute the notebook.
-        ep.preprocess(notebook, {"metadata": {"path": f"notebooks/{version}"}})
-    except CellExecutionError as e:
-        logging.error(
-            f"Preprocessing {notebook_filename} failed:\n\n {e.traceback}"
-        )
-        success = False
-    finally:
-        with open(notebook_filename, mode="wt") as f:
-            nbformat.write(notebook, f)
-    return success
+def setup_logger(logger_name, outdir=""):
+    logging.getLogger().setLevel(logging.INFO)
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
+    sh = logging.StreamHandler(sys.stdout)
+    sh.setFormatter(formatter)
+    logger.handlers.clear()
+    logger.addHandler(sh)
+    if outdir != "":
+        os.makedirs(outdir, exist_ok=True)
+        filename = os.path.join(outdir, f"{logger_name}_runner.log")
+        fh = logging.FileHandler(filename)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
+    return logger
 
 
 def notebook_initalisations():
@@ -60,7 +60,9 @@ def notebook_initalisations():
     ]:
         logger = logging.getLogger(logger_name)
         logger.setLevel(logging.ERROR)
-    logging.getLogger().setLevel(logging.INFO)
+
+    notebook_logger = setup_logger(NOTEBOOK_LOGGER_NAME)
+    notebook_logger.setLevel(logging.INFO)
 
     plt.style.use("default")
     plt.rcParams["savefig.dpi"] = 100

@@ -46,10 +46,10 @@
 # ## Table of Contents
 #
 # 1. [Getting started](#Getting-started)
-# 2. [Data & de-trending](#Data-%26amp%3B-de-trending)
-# 3. [Removing stellar variability](#Removing-stellar-variability)
-# 4. [Transit model in PyMC3 & exoplanet](#Transit-model-in-PyMC3-%26amp%3B-exoplanet)
-# 5. [Sampling](#Sampling)
+# 2. [Downloading Data](#Downloading-Data)
+# 3. [Fitting stellar parameters](#Fitting-stellar-parameters)
+# 4. [Results](#Results)
+# 5. [Citations](#Citations)
 # 6. [Posterior constraints](#Posterior-constraints)
 # 7. [Attribution](#Attribution)
 #
@@ -78,16 +78,25 @@ from celerite2.theano import GaussianProcess, terms
 from pymc3.sampling import MultiTrace
 
 from tess_atlas.data import TICEntry
-from tess_atlas.eccenticity_reweighting import calculate_eccentricity_weights
+from tess_atlas.analysis.eccenticity_reweighting import (
+    calculate_eccentricity_weights,
+)
+
+from tess_atlas.utils import notebook_initalisations
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+notebook_initalisations()
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+
+# + pycharm={"name": "#%%\n"} tags=["exe"]
+os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
     plot_folded_lightcurve,
+    plot_phase,
     plot_lightcurve,
     plot_posteriors,
 )
-from tess_atlas.utils import notebook_initalisations
-
-notebook_initalisations()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 TOI_NUMBER = {{{TOINUMBER}}}
@@ -312,7 +321,7 @@ def get_optimized_init_params(
     model, planet_params, noise_params, stellar_params, period_params
 ):
     """Get params with maximimal log prob for sampling starting point"""
-    logging.info("Optimizing sampling starting point")
+    logger.info("Optimizing sampling starting point")
     with model:
         theta = model.test_point
         kwargs = dict(start=theta, verbose=False, progress=False)
@@ -321,7 +330,7 @@ def get_optimized_init_params(
         theta = pmx.optimize(**kwargs, vars=noise_params)
         theta = pmx.optimize(**kwargs, vars=stellar_params)
         theta = pmx.optimize(**kwargs, vars=period_params)
-    logging.info("Optimization complete!")
+    logger.info("Optimization complete!")
     return theta
 
 
@@ -381,11 +390,7 @@ plot_posteriors(tic_entry, trace)
 # We can also plot the best-fitting light-curve model
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-model_lightcurves = [
-    init_params["lightcurves"][:, i] * 1e3
-    for i in range(tic_entry.planet_count)
-]
-plot_lightcurve(tic_entry, model_lightcurves)
+plot_phase(tic_entry, trace)
 
 # -
 
@@ -418,5 +423,16 @@ with planet_transit_model:
     txt, bib = xo.citations.get_citations_for_model()
 print(txt)
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
-print("\n".join(bib.splitlines()[:10]) + "\n...")
+# + pycharm={"name": "#%%\n"} tags=["exe", "output_scroll"]
+print("\n".join(bib.splitlines()) + "\n...")
+# -
+
+# ### Packages used:
+#
+
+# + pycharm={"name": "#%%\n"} tags=["exe", "output_scroll"]
+import pkg_resources
+
+dists = [str(d).replace(" ", "==") for d in pkg_resources.working_set]
+for i in dists:
+    print(i)

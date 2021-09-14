@@ -9,7 +9,7 @@ import shutil
 
 import pymc3 as pm
 
-from tess_atlas import run_load_samples_demo
+from tess_atlas.notebook_preprocessors import run_load_samples_demo
 from tess_atlas.data import TICEntry
 
 DATA = dict(TOI=103, TIC=336732616)
@@ -17,7 +17,6 @@ version = "TEST_LOADER_DEMO"
 
 
 def get_outdir():
-
     outdir = os.path.join(f"./notebooks/{version}/toi_{DATA['TOI']}_files/")
     os.makedirs(outdir, exist_ok=True)
     return outdir
@@ -42,6 +41,6 @@ def test_load_samples():
     create_fake_sample_files(version)
     fn = run_load_samples_demo.get_load_samples_demo_notebook_filename(version)
     assert os.path.exists(fn)
-    successful_operation = run_load_samples_demo.execute_ipynb(fn, version)
+    successful_operation = run_load_samples_demo.execute_ipynb(fn)
     assert successful_operation
     shutil.rmtree(get_outdir())

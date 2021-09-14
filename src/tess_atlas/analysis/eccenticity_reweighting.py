@@ -7,7 +7,10 @@ import pandas as pd
 from astroquery.mast import Catalogs
 from pymc3.sampling import MultiTrace
 
-from .data import TICEntry
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+from tess_atlas.data import TICEntry
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
 def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
@@ -19,7 +22,7 @@ def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
     if not np.all(np.isfinite(tic_rho_star)):
         raise ValueError("The TIC has no measured density")
 
-    logging.info("rho_star = {0} ± {1}".format(*tic_rho_star))
+    logger.info("rho_star = {0} ± {1}".format(*tic_rho_star))
 
     # Extract the implied density from the fit
     rho_circ = np.repeat(trace["rho_circ"], 500, axis=0)

@@ -7,6 +7,7 @@ from typing import Dict, List, Optional
 import arviz as az
 import pandas as pd
 from IPython.display import display
+from IPython.display import HTML
 from pymc3.sampling import MultiTrace
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
@@ -15,9 +16,9 @@ from .planet_candidate import PlanetCandidate
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
-TIC_DATASOURCE = (
-    "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"
-)
+EXOFOP = "https://exofop.ipac.caltech.edu/tess/"
+TIC_DATASOURCE = EXOFOP + "download_toi.php?sort=toi&output=csv"
+TIC_SEARCH = EXOFOP + "target.php?id={tic_id}"
 
 DIR = os.path.dirname(__file__)
 
@@ -72,7 +73,12 @@ class TICEntry:
         self.candidates = candidates
         self.lightcurve = lightcurve
         self.meta_data = meta_data
+        self.meta_data["exofop_url"] = self.exofop_url
         self.outdir = os.path.join(f"toi_{self.toi_number}_files")
+
+    @property
+    def exofop_url(self):
+        return TIC_SEARCH.format(tic_id=self.tic_number)
 
     @property
     def planet_count(self):
@@ -144,6 +150,9 @@ class TICEntry:
         df = df.transpose()
         df.columns = df.loc["TOI"]
         display(df)
+        more_data_str = "More data on ExoFOP page"
+        html_str = f"<a href='{self.exofop_url}'>{more_data_str}</a>"
+        display(HTML(html_str))
 
     @property
     def inference_trace_filename(self):

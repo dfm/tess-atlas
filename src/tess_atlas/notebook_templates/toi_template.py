@@ -125,7 +125,7 @@ tic_entry = TICEntry.generate_tic_from_toi_number(toi=TOI_NUMBER)
 
 # -
 
-# The initial guesses for the parameters (determined by SPOC):
+# Some of the TOIs parameters stored on ExoFOP:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.display()

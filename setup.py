@@ -24,10 +24,10 @@ CLASSIFIERS = [
     "Programming Language :: Python :: 3",
 ]
 INSTALL_REQUIRES = [
-    "exoplanet>=0.4.0",
-    "celerite2>=0.0.2",
+    "exoplanet>=0.5.1",
+    "celerite2>=0.2.0",
     "pymc3>=3.9",
-    "pymc3-ext>=0.0.2",
+    "pymc3-ext>=1.2.1",
     "lightkurve>=2.0.b1",
     "plotly>=4.9.0",
     "arviz>=0.10.0",
@@ -37,6 +37,8 @@ INSTALL_REQUIRES = [
     "ipykernel",
     "jupytext",
     "kaleido",
+    "aesara-theano-fallbackpip",
+    "theano-pymc>=1.1.2",
 ]
 EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}
 EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [
@@ -96,6 +98,7 @@ if __name__ == "__main__":
             "console_scripts": [
                 "run_toi=tess_atlas.notebook_preprocessors.run_toi:main",
                 "run_tois=tess_atlas.notebook_preprocessors.run_tois:main",
+                "runs_stats_plotter=tess_atlas.analysis.stats_plotter:main",
             ]
         },
     )

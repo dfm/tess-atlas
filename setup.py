@@ -39,6 +39,7 @@ INSTALL_REQUIRES = [
     "kaleido",
     "aesara-theano-fallback",
     "theano-pymc>=1.1.2",
+    "fpdf",
 ]
 EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}
 EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [

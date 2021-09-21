@@ -37,7 +37,7 @@ INSTALL_REQUIRES = [
     "ipykernel",
     "jupytext",
     "kaleido",
-    "aesara-theano-fallbackpip",
+    "aesara-theano-fallback",
     "theano-pymc>=1.1.2",
 ]
 EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}

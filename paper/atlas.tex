@@ -19,8 +19,8 @@
 \begin{abstract}
 
 This is the \tess\ Atlas.
-\tess discovered N exoplanet candidates in N years of data.
-We provide revised transit parameters and accompanying posterior distributions for all the \tess objects of interest.
+\tess\ discovered N exoplanet candidates in N years of data.
+We provide revised transit parameters and accompanying posterior distributions for all the \tess\ objects of interest.
 
 \end{abstract}
 
@@ -51,7 +51,7 @@ phase or epoch $t0_n$,
 impact parameter $b_n$,
 and the radius of the planet $r_n$ in units of the stellar radius $R_\star$.
 
-We use \exoplanet, \lightkurve
+We use \exoplanet\, \lightkurve
 
 
 In the case when there are multiple transits present in the data, we use a second reference time $tmax$ instead of $P$
@@ -65,6 +65,22 @@ Likelihood, GP, Priors, \celerite
 
 
 Table with priors
+
+%
+%
+%GPs are stochastic models consisting of a mean function
+%$\mu_\vec{\theta}(\vec{x})$ and a covariance, autocorrelation, or ``kernel''
+%function $K$ parameterized by
+%$\vec{\theta}$ and $\vec{\alpha}$ respectively.
+%Under this model, the log-likelihood function $\mathcal{L}
+%(\vec{\theta},\,\vec{\alpha})$ with a dataset
+%
+%\begin{align}\eqlabel{gp-likelihood}
+%\ln \mathcal{L} (\vec{\theta},\,\vec{\alpha})
+%&= -\frac{1}{2} r(\vec{\theta})^{T}\, K(\vec{\alpha})^{-1}\, r(\vec{\theta}) \nonumber \\
+%   -\frac{1}{2} \log \det K(\vec{\alpha})
+%
+%\end{align}
 
 
 
@@ -84,7 +100,7 @@ I would like to thank.
 
 
 
-This work made use of the \tess catalog on ExoFOP
+This work made use of the \tess\ catalog on ExoFOP
 
 \vspace{5mm}
 \facilities{\tess, \gaia, \kepler, etc.}

@@ -39,7 +39,7 @@ INSTALL_REQUIRES = [
     "kaleido",
     "aesara-theano-fallback",
     "theano-pymc>=1.1.2",
-    "fpdf",
+    "jupyter-book",
 ]
 EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}
 EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [
@@ -100,6 +100,7 @@ if __name__ == "__main__":
                 "run_toi=tess_atlas.notebook_preprocessors.run_toi:main",
                 "run_tois=tess_atlas.notebook_preprocessors.run_tois:main",
                 "runs_stats_plotter=tess_atlas.analysis.stats_plotter:main",
+                "make_webpages=tess_atlas.webbuilder.build_pages:main",
             ]
         },
     )

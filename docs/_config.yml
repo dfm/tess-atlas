@@ -1,0 +1,21 @@
+# in _config.yml
+title: "TESS Atlas"
+author: the TESS Atlas community
+logo: _static/atlas_logo.png
+execute:
+  execute_notebooks: "off"
+
+# Define the name of the latex output file for PDF builds
+latex:
+  latex_documents:
+    targetname: book.tex
+
+html:
+  use_edit_page_button: false
+  use_repository_button: true
+  use_issues_button: true
+
+# Information about where the book exists on the web
+repository:
+  url: https://github.com/dfm/tess-atlas
+  branch: main

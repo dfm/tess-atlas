@@ -3,34 +3,63 @@
 """Module to build home page for TOIs"""
 import glob
 import os
-import sys
 
-NOTEBOOK_LOCATION = "notebooks/{version}/*.ipynb"
-DOCS = "docs/notebooks/"
+from jinja2 import Template
+
+HEADER = Template(
+    """
+---
+## {doc}`TOI {{toi_int}} <toi_notebooks/{{toi_fname}}>`
+"""
+)
+
+IMAGE = Template(
+    """
+```{image} toi_notebooks/{{rel_path}}
+:name: TOI {{toi_int}}
+```
+"""
+)
+
+ERROR = """
+```{error} Phase plot generation failed. There may be underlying errors.
+```
+"""
 
 
-def make_menu_page():
-    version = sys.argv[1].strip()
-    notebook_files = glob.glob(NOTEBOOK_LOCATION.format(version=version))
+def get_toi_str_from_path(path):
+    return get_toi_fname(path).split("_")[1]
+
+
+def get_toi_fname(path):
+    return os.path.basename(path).split(".")[0]
+
+
+def get_toi_number(path):
+    return int(get_toi_str_from_path(path))
+
+
+def make_menu_page(notebook_regex, path_to_menu_page):
+    notebook_files = glob.glob(notebook_regex)
+    notebook_dir = os.path.dirname(notebook_regex)
     lines = []
-    for filename in sorted(notebook_files):
-        toi = int(
-            os.path.splitext(os.path.split(filename)[1])[0].split("-")[1]
+    for notebook_path in sorted(notebook_files):
+        fname = get_toi_fname(notebook_path)
+        toi_int = get_toi_number(notebook_path)
+        lines.append(HEADER.render(toi_int=toi_int, toi_fname=fname))
+
+        toi_str = get_toi_str_from_path(notebook_path)
+        phase_regex = os.path.join(
+            notebook_dir, f"toi_{toi_str}_files/phase*.png"
         )
-        lines.append('<li><a href="toi-{0}.html">TOI {0}</a></li>'.format(toi))
+        phase_plots = glob.glob(phase_regex)
 
-    with open(os.path.join(DOCS, "index.html.tpl"), "r") as f:
-        txt = f.read()
+        if len(phase_plots) == 0:
+            lines.append(ERROR)
+        else:
+            for phase_plot in phase_plots:
+                rel_path = phase_plot.split(notebook_dir)[1]
+                lines.append(IMAGE.render(rel_path=rel_path, toi_int=toi_int))
 
-    txt = txt.replace("{{{VERSIONNUMBER}}}", version)
-    txt = txt.replace("{{{TOILIST}}}", "\n".join(lines))
-    with open(os.path.join(DOCS, f"{version}/index.html", "w")) as f:
-        f.write(txt)
-
-
-def main():
-    make_menu_page()
-
-
-if __name__ == "__main__":
-    main()
+    with open(path_to_menu_page, "a") as f:
+        f.writelines(lines)

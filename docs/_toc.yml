@@ -1,0 +1,9 @@
+format: jb-book
+root: index
+parts:
+  - chapters:
+    - file: content/example_loader
+    - file: citation
+    - file: content/toi_fits
+      sections:
+        - glob: content/toi_notebooks/toi_*

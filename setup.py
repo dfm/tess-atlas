@@ -28,7 +28,7 @@ INSTALL_REQUIRES = [
     "celerite2>=0.2.0",
     "pymc3>=3.9",
     "pymc3-ext>=1.2.1",
-    "lightkurve>=2.0.b1",
+    "lightkurve>=2.0.11",
     "plotly>=4.9.0",
     "arviz>=0.10.0",
     "corner",

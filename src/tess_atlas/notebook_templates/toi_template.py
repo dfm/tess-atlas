@@ -419,13 +419,23 @@ plot_phase(tic_entry, trace)
 # Therefore, if the transit is fit using stellar density (or duration, in this case) as one of the parameters, it is possible to make an independent measurement of the stellar density, and in turn infer the eccentricity of the orbit as a post-processing step.
 # The details of this eccentricity calculation method are described in [Dawson & Johnson (2012)].
 #
+# Here, if the TIC has associated stellar data, we use the method described above to obtain fits for the exoplanet's orbital eccentricity.
+#
 # [Dawson & Johnson (2012)]: https://arxiv.org/abs/1203.5537
 # Note: a different stellar density parameter is required for each planet (if there is more than one planet)
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-ecc_samples = calculate_eccentricity_weights(tic_entry, trace)
-ecc_samples.to_csv(os.path.join(tic_entry.outdir, "eccentricity_samples.csv"))
-plot_eccentricity_posteriors(tic_entry, ecc_samples)
+star = tic_entry.get_stellar_data()
+stellar_data_present = np.all(np.isfinite(list(star.values())))
+
+# + pycharm={"name": "#%%\n"} tags=["exe"]
+if stellar_data_present:
+    ecc_samples = calculate_eccentricity_weights(star, tic_entry, trace)
+    ecc_samples.to_csv(
+        os.path.join(tic_entry.outdir, "eccentricity_samples.csv")
+    )
+    plot_eccentricity_posteriors(tic_entry, ecc_samples)
+
 # -
 
 # ## Citations

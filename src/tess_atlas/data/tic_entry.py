@@ -9,6 +9,7 @@ import pandas as pd
 from IPython.display import display
 from IPython.display import HTML
 from pymc3.sampling import MultiTrace
+from astroquery.mast import Catalogs
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .lightcurve_data import LightCurveData
@@ -157,6 +158,17 @@ class TICEntry:
     @property
     def inference_trace_filename(self):
         return os.path.join(self.outdir, f"toi_{self.toi_number}.netcdf")
+
+    def get_stellar_data(self):
+        """Gets stellar information for TIC"""
+        star = Catalogs.query_object(
+            f"TIC {self.tic_number}", catalog="TIC", radius=0.001
+        )[
+            0
+        ]  # only selecting the 1st row
+        star = dict(rho=float(star["rho"]), e_rho=float(star["e_rho"]))
+        logger.info(f"rho_star = {star['rho']} ± {star['e_rho']}")
+        return star
 
     def get_trace_summary(self) -> pd.DataFrame:
         """Returns a dataframe with the mean+sd of each candidate's p, b, r  """

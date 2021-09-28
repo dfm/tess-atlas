@@ -4,7 +4,8 @@ import logging
 import corner
 import numpy as np
 import pandas as pd
-from astroquery.mast import Catalogs
+from typing import Dict
+
 from pymc3.sampling import MultiTrace
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
@@ -13,17 +14,9 @@ from tess_atlas.data import TICEntry
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
-def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
-    star = Catalogs.query_object(
-        f"TIC {tic_entry.tic_number}", catalog="TIC", radius=0.001
-    )
-    tic_rho_star = float(star["rho"]), float(star["e_rho"])
-
-    if not np.all(np.isfinite(tic_rho_star)):
-        raise ValueError("The TIC has no measured density")
-
-    logger.info("rho_star = {0} ± {1}".format(*tic_rho_star))
-
+def calculate_eccentricity_weights(
+    star: Dict[str, float], tic_entry: TICEntry, trace: MultiTrace
+):
     # Extract the implied density from the fit
     rho_circ = np.repeat(trace["rho_circ"], 500, axis=0)
     period = np.repeat(trace["p"], 500, axis=0)
@@ -38,7 +31,7 @@ def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
     rho = rho_circ / g[:, None] ** 3
 
     # Re-weight these samples to get weighted posterior samples
-    log_weights = -0.5 * ((rho - tic_rho_star[0]) / tic_rho_star[1]) ** 2
+    log_weights = -0.5 * ((rho - star["rho"]) / star["e_rho"]) ** 2
 
     list_of_samples_dataframes = []
 

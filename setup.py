@@ -101,6 +101,7 @@ if __name__ == "__main__":
                 "run_tois=tess_atlas.notebook_preprocessors.run_tois:main",
                 "runs_stats_plotter=tess_atlas.analysis.stats_plotter:main",
                 "make_webpages=tess_atlas.webbuilder.build_pages:main",
+                "make_slurm_job=tess_atlas.bath_job_generator.slurm_job_generator:main",
             ]
         },
     )

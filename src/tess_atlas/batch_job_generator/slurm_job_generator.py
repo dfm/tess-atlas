@@ -17,7 +17,7 @@ def make_slurm_file(outdir: str, toi_numbers: List[int], module_loads: str):
     path_to_python = shutil.which("python")
     path_to_env_activate = path_to_python.replace("python", "activate")
     file_contents = file_contents.replace(
-        "{{{TOTAL NUM}}}", str(len(toi_numbers))
+        "{{{TOTAL NUM}}}", str(len(toi_numbers) - 1)
     )
     file_contents = file_contents.replace("{{{MODULE LOADS}}}", module_loads)
     file_contents = file_contents.replace("{{{OUTDIR}}}", outdir)

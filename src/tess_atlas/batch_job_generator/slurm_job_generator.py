@@ -15,13 +15,14 @@ def make_slurm_file(outdir: str, toi_numbers: List[int], module_loads: str):
     logfile_name = os.path.join(outdir, "toi_slurm_jobs.log")
     jobfile_name = os.path.join(outdir, "slurm_job.sh")
     path_to_python = shutil.which("python")
+    path_to_env_activate = path_to_python.replace("python", "activate")
     file_contents = file_contents.replace(
         "{{{TOTAL NUM}}}", str(len(toi_numbers))
     )
     file_contents = file_contents.replace("{{{MODULE LOADS}}}", module_loads)
     file_contents = file_contents.replace("{{{OUTDIR}}}", outdir)
     file_contents = file_contents.replace(
-        "{{{LOAD ENV}}}", f"source {path_to_python}"
+        "{{{LOAD ENV}}}", f"source {path_to_env_activate}"
     )
     file_contents = file_contents.replace("{{{LOG FILE}}}", logfile_name)
     toi_str = " ".join([str(toi) for toi in toi_numbers])
@@ -40,9 +41,17 @@ def get_cli_args():
     parser = argparse.ArgumentParser(
         description="Create slurm job for analysing TOIs"
     )
-    parser.add_argument("toi_csv", help="CSV with the toi numbers to analysee")
-    parser.add_argument("outdir", help="outdir for jobs")
-    parser.add_argument("module_loads", help="Module loads")
+    parser.add_argument(
+        "--toi_csv",
+        help="CSV with the toi numbers to analyse (csv needs a column with `toi_numbers`)",
+    )
+    parser.add_argument(
+        "--outdir", help="outdir for jobs", default="notebooks"
+    )
+    parser.add_argument(
+        "--module_loads",
+        help="String containing all module loads in one line (each module separated by a space)",
+    )
     args = parser.parse_args()
     return args.toi_csv, args.outdir, args.module_loads
 

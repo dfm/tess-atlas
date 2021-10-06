@@ -7,9 +7,9 @@
 #SBATCH --time=300:00
 #SBATCH --mem-per-cpu=500MB
 #
-#SBATCH --array=0-{{{TOTAL NUM}}}
+#SBATCH --array=1-{{{TOTAL NUM}}}
 
-{{{MODULE LOADS}}}
+module load {{{MODULE LOADS}}}
 {{{LOAD ENV}}}
 
 

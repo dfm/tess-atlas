@@ -31,15 +31,17 @@ INSTALL_REQUIRES = [
     "lightkurve>=2.0.11",
     "plotly>=4.9.0",
     "arviz>=0.10.0",
-    "corner",
+    "corner>=2.2.1",
     "pandas",
     "jupyter",
     "ipykernel",
-    "jupytext",
+    "jupytext<1.11,>=1.8",  # pinned for jypyter-book
     "kaleido",
     "aesara-theano-fallback",
     "theano-pymc>=1.1.2",
     "jupyter-book",
+    "seaborn",
+    "jupyter_client==6.1.12",  # pinned beacuse of nbconvert bug https://github.com/jupyter/nbconvert/pull/1549#issuecomment-818734169
 ]
 EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}
 EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [
@@ -101,6 +103,7 @@ if __name__ == "__main__":
                 "run_tois=tess_atlas.notebook_preprocessors.run_tois:main",
                 "runs_stats_plotter=tess_atlas.analysis.stats_plotter:main",
                 "make_webpages=tess_atlas.webbuilder.build_pages:main",
+                "make_slurm_job=tess_atlas.batch_job_generator.slurm_job_generator:main",
             ]
         },
     )

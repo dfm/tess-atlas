@@ -87,7 +87,7 @@ def execute_toi_notebook(notebook_filename):
 
 def get_cli_args():
     """Get the TOI number from the CLI and return it"""
-    parser = argparse.ArgumentParser(prog="run_toi_in_pool")
+    parser = argparse.ArgumentParser(prog="run_toi")
     default_outdir = os.path.join(os.getcwd(), "notebooks")
     parser.add_argument(
         "toi_number", type=int, help="The TOI number to be analysed (e.g. 103)"

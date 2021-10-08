@@ -25,6 +25,10 @@ class TestData(unittest.TestCase):
         data = tess_data.TICEntry.generate_tic_from_toi_number(toi=103)
         self.assertIsInstance(data.to_dataframe(), pd.DataFrame)
 
+    def test_exofop_csv_getter(self):
+        db = tess_data.tic_entry.get_tic_database()
+        self.assertIsInstance(db, pd.DataFrame)
+
 
 if __name__ == "__main__":
     unittest.main()

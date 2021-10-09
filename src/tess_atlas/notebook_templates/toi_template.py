@@ -121,7 +121,7 @@ TOI_NUMBER = {{{TOINUMBER}}}
 #
 # Downloading the data (this may take a few minutes):
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-tic_entry = TICEntry.generate_tic_from_toi_number(toi=TOI_NUMBER)
+tic_entry = TICEntry.load_tic_data(toi=TOI_NUMBER)
 
 # -
 
@@ -425,16 +425,18 @@ plot_phase(tic_entry, trace)
 # Note: a different stellar density parameter is required for each planet (if there is more than one planet)
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-star = tic_entry.get_stellar_data()
-stellar_data_present = np.all(np.isfinite(list(star.values())))
+star = tic_entry.stellar_data
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-if stellar_data_present:
+if star.stellar_data_present:
+    logger.info(star)
     ecc_samples = calculate_eccentricity_weights(star, tic_entry, trace)
     ecc_samples.to_csv(
         os.path.join(tic_entry.outdir, "eccentricity_samples.csv")
     )
     plot_eccentricity_posteriors(tic_entry, ecc_samples)
+else:
+    logger.info("Stellar data not present for TIC. Skipping eccentricity calculations.")
 
 # -
 

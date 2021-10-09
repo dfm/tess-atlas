@@ -25,23 +25,18 @@ CLASSIFIERS = [
 ]
 INSTALL_REQUIRES = [
     "exoplanet>=0.5.1",
-    "celerite2>=0.2.0",
-    "pymc3>=3.9",
     "pymc3-ext>=0.1.0",
+    "theano-pymc>=1.1.2",
+    "celerite2>=0.2.0",
     "lightkurve>=2.0.11",
     "plotly>=4.9.0",
     "arviz>=0.10.0",
     "corner>=2.2.1",
-    "pandas",
-    "jupyter",
-    "ipykernel",
-    "jupytext<1.11,>=1.8",  # pinned for jypyter-book
-    "kaleido",
-    "aesara-theano-fallback",
-    "theano-pymc>=1.1.2",
-    "jupyter-book",
     "seaborn",
+    "nbconvert~=5.6",
     "jupyter_client==6.1.12",  # pinned beacuse of nbconvert bug https://github.com/jupyter/nbconvert/pull/1549#issuecomment-818734169
+    "jupyter-book",
+    'click~=7.1',
 ]
 EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}
 EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [

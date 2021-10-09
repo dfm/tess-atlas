@@ -15,7 +15,7 @@ logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
 def calculate_eccentricity_weights(
-    star: Dict[str, float], tic_entry: TICEntry, trace: MultiTrace
+    tic_entry: TICEntry, trace: MultiTrace
 ):
     # Extract the implied density from the fit
     rho_circ = np.repeat(trace["rho_circ"], 500, axis=0)
@@ -31,6 +31,7 @@ def calculate_eccentricity_weights(
     rho = rho_circ / g[:, None] ** 3
 
     # Re-weight these samples to get weighted posterior samples
+    star = tic_entry.stellar_data
     log_weights = -0.5 * ((rho - star["rho"]) / star["e_rho"]) ** 2
 
     list_of_samples_dataframes = []

@@ -3,6 +3,8 @@ from typing import Dict
 
 import numpy as np
 
+from .data_object import DataObject
+
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .lightcurve_data import LightCurveData
 
@@ -13,7 +15,7 @@ def calculate_time_fold(t, t0, p):
     return (t - t0 + hp) % p - hp
 
 
-class PlanetCandidate:
+class PlanetCandidate(DataObject):
     """Plant Candidate obtained by TESS."""
 
     def __init__(
@@ -80,7 +82,7 @@ class PlanetCandidate:
         return (self.period <= 0.0) or np.isnan(self.period)
 
     @classmethod
-    def from_toi_database_entry(
+    def from_database(
         cls, toi_data: Dict, lightcurve: LightCurveData
     ):
         unpack_data = dict(
@@ -93,6 +95,14 @@ class PlanetCandidate:
             time=lightcurve.time,
         )
         return cls(**unpack_data)
+
+    @classmethod
+    def from_cache(cls, toi_data: Dict, lightcurve: LightCurveData):
+        return cls.from_database(toi_data, lightcurve)
+
+    def save_data(self):
+        """Saving done by Tic Entry"""
+        pass
 
     def get_timefold(self, t):
         """Used in plotting"""

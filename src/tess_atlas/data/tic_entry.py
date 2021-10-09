@@ -9,11 +9,13 @@ import pandas as pd
 from IPython.display import display
 from IPython.display import HTML
 from pymc3.sampling import MultiTrace
-from astroquery.mast import Catalogs
+
+from .data_object import DataObject
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .lightcurve_data import LightCurveData
 from .planet_candidate import PlanetCandidate
+from .stellar_data import StellarData
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -21,10 +23,13 @@ EXOFOP = "https://exofop.ipac.caltech.edu/tess/"
 TIC_DATASOURCE = EXOFOP + "download_toi.php?sort=toi&output=csv"
 TIC_SEARCH = EXOFOP + "target.php?id={tic_id}"
 
+TOI_DIR = "toi_{toi}_files"
+
 DIR = os.path.dirname(__file__)
 
 
-@functools.lru_cache()
+TIC_FNAME = "tic_data.csv"
+
 def get_tic_database():
     # if we have a cached database file
     cached_file = os.path.join(DIR, "cached_tic_database.csv")
@@ -58,24 +63,36 @@ def get_tic_data_from_database(toi_numbers: List[int]) -> pd.DataFrame:
     return tois_for_tic
 
 
-class TICEntry:
+class TICEntry(DataObject):
     """Hold information about a TIC (TESS Input Catalog) entry"""
 
     def __init__(
-        self,
-        tic_number: int,
-        candidates: List[PlanetCandidate],
-        toi: int,
-        lightcurve: LightCurveData,
-        meta_data: Optional[Dict] = {},
+            self,
+            tic_number: int,
+            toi: int,
+            lightcurve: LightCurveData,
+            stellar_data: StellarData,
+            tic_data: pd.DataFrame,
+            loaded_from_cache:Optional[bool]=False
     ):
         self.tic_number = tic_number
         self.toi_number = toi
-        self.candidates = candidates
         self.lightcurve = lightcurve
-        self.meta_data = meta_data
-        self.meta_data["exofop_url"] = self.exofop_url
-        self.outdir = os.path.join(f"toi_{self.toi_number}_files")
+        self.stellar_data = stellar_data
+        self.tic_data = tic_data
+        self.candidates = self.get_candidates()
+        self.outdir = TOI_DIR.format(toi=toi)
+        self.loaded_from_cache = loaded_from_cache
+
+    def get_candidates(self):
+        candidates = []
+        for index, toi_data in self.tic_data.iterrows():
+            candidate = PlanetCandidate.from_database(
+                toi_data=toi_data.to_dict(),
+                lightcurve=self.lightcurve
+            )
+            candidates.append(candidate)
+        return candidates
 
     @property
     def exofop_url(self):
@@ -116,29 +133,40 @@ class TICEntry:
         logger.info(f"Trace saved at {fname}")
 
     @classmethod
-    def generate_tic_from_toi_number(
-        cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()
+    def load_tic_data(
+            cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()
     ):
-        # Load database entry for TIC
+        toi_dir = TOI_DIR.format(toi=toi)
+        if os.path.isdir(toi_dir):
+            return cls.from_cache(toi, toi_dir)
+        else:
+            return cls.from_database(toi)
+
+    @classmethod
+    def from_database(cls, toi: int):
         tic_data = get_tic_data_from_database([toi])
         tic_number = int(tic_data["TIC ID"].iloc[0])
-
-        # Load lighcurve for TIC
-        lightcurve = LightCurveData.from_mast(tic=tic_number)
-
-        candidates = []
-        for index, toi_data in tic_data.iterrows():
-            candidate = PlanetCandidate.from_toi_database_entry(
-                toi_data=toi_data.to_dict(), lightcurve=lightcurve
-            )
-            candidates.append(candidate)
-
         return cls(
             tic_number=tic_number,
-            candidates=candidates,
             toi=toi,
-            lightcurve=lightcurve,
-            meta_data=tic_data.to_dict("list"),
+            lightcurve=LightCurveData.from_database(tic=tic_number),
+            stellar_data=StellarData.from_database(tic=tic_number),
+            tic_data=tic_data
+        )
+
+    @classmethod
+    def from_cache(cls, toi:int, outdir:str):
+        tic_data = pd.read_csv(
+            os.path.join(outdir, TIC_FNAME)
+        )
+        tic_number = int(tic_data["TIC ID"].iloc[0])
+        return cls(
+            tic_number=tic_number,
+            toi=toi,
+            lightcurve=LightCurveData.from_cache(outdir),
+            stellar_data=StellarData.from_cache(outdir),
+            tic_data=tic_data,
+            loaded_from_cache=True
         )
 
     def to_dataframe(self):
@@ -159,17 +187,6 @@ class TICEntry:
     def inference_trace_filename(self):
         return os.path.join(self.outdir, f"toi_{self.toi_number}.netcdf")
 
-    def get_stellar_data(self):
-        """Gets stellar information for TIC"""
-        star = Catalogs.query_object(
-            f"TIC {self.tic_number}", catalog="TIC", radius=0.001
-        )[
-            0
-        ]  # only selecting the 1st row
-        star = dict(rho=float(star["rho"]), e_rho=float(star["e_rho"]))
-        logger.info(f"rho_star = {star['rho']} ± {star['e_rho']}")
-        return star
-
     def get_trace_summary(self) -> pd.DataFrame:
         """Returns a dataframe with the mean+sd of each candidate's p, b, r  """
         df = az.summary(
@@ -179,8 +196,8 @@ class TICEntry:
         )
         df = (
             df.transpose()
-            .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
-            .transpose()
+                .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
+                .transpose()
         )
         df = df[["mean", "sd"]]
         df["TOI"] = self.toi_number
@@ -198,9 +215,12 @@ class TICEntry:
     def outdir(self, outdir):
         os.makedirs(outdir, exist_ok=True)
         self.__outdir = outdir
-        self.cache_data()
+        self.save_data()
 
-    def cache_data(self):
-        with open(os.path.join(self.outdir, "meta_data.json"), "w") as outfile:
-            json.dump(self.meta_data, outfile, indent=4, sort_keys=True)
+    def save_data(self):
+        self.tic_data.to_csv(
+            os.path.join(self.outdir, TIC_FNAME)
+        )
         self.lightcurve.save_data(self.outdir)
+        self.stellar_data.save_data(self.outdir)
+

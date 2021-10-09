@@ -22,9 +22,11 @@ class TestData(unittest.TestCase):
             shutil.rmtree(self.outdir)
 
     def test_data_download(self):
-        data = tess_data.TICEntry.generate_tic_from_toi_number(toi=103)
+        data = tess_data.TICEntry.load_tic_data(toi=103)
         self.assertIsInstance(data.to_dataframe(), pd.DataFrame)
-
+        self.assertFalse(data.loaded_from_cache)
+        data = tess_data.TICEntry.load_tic_data(toi=103)
+        self.assertTrue(data.loaded_from_cache)
 
 if __name__ == "__main__":
     unittest.main()

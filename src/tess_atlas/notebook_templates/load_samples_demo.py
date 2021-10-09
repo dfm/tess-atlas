@@ -61,7 +61,7 @@ def get_tic_list_with_loaded_samples(
     analysed_tois: List[int]
 ) -> List[TICEntry]:
     tic_list = [
-        TICEntry.generate_tic_from_toi_number(toi) for toi in analysed_tois
+        TICEntry.load_tic_data(toi) for toi in analysed_tois
     ]
     for tic in tqdm.tqdm(tic_list, desc="Loading TIC Samples Sets"):
         tic.load_inference_trace()

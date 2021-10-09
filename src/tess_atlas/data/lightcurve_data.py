@@ -5,16 +5,20 @@ import lightkurve as lk
 import numpy as np
 import pandas as pd
 
+from .data_object import DataObject
+
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
+LIGHTCURVE_FNAME = "lightcurve.csv"
 
-class LightCurveData:
+
+class LightCurveData(DataObject):
     """Stores Light Curve data for a single target"""
 
     def __init__(
-        self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
+            self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
     ):
         """
         :param np.ndarray time: The time in days.
@@ -26,7 +30,7 @@ class LightCurveData:
         self.flux_err = flux_err
 
     @classmethod
-    def from_mast(cls, tic: int):
+    def from_database(cls, tic: int):
         """Uses lightkurve to get TESS data for a TIC from MAST"""
         logger.info(
             f"Searching for lightkurve data with target='TIC {tic}', "
@@ -60,15 +64,26 @@ class LightCurveData:
             ),
         )
 
+    @classmethod
+    def from_cache(cls, outdir: str):
+        df = pd.read_csv(
+            os.path.join(outdir, LIGHTCURVE_FNAME)
+        )
+        return cls(
+            time=df.time,
+            flux=df.flux,
+            flux_err=df.flux_err,
+        )
+
     def to_dict(self):
-        return {
-            "time": self.time,
-            "flux": self.flux,
-            "flux_err": self.flux_err,
-        }
+        return dict(
+            time=self.time,
+            flux=self.flux,
+            flux_err=self.flux_err,
+        )
 
     def save_data(self, outdir):
         pd.DataFrame(self.to_dict()).to_csv(
-            os.path.join(outdir, "lightcurve.csv"), index=False
+            os.path.join(outdir, LIGHTCURVE_FNAME), index=False
         )
         logger.info(f"Saved lightcurve data.")

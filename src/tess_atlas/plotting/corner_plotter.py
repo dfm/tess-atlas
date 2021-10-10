@@ -28,8 +28,9 @@ CORNER_KWARGS = dict(
 
 
 def plot_posteriors(
-    tic_entry: TICEntry, trace: pm.sampling.MultiTrace
+    tic_entry: TICEntry
 ) -> None:
+    trace = tic_entry.inference_data.trace
     samples = pm.trace_to_dataframe(trace, varnames=["p", "r", "b"])
     fig = corner.corner(samples, **CORNER_KWARGS, range=get_range(samples))
     fname = os.path.join(tic_entry.outdir, POSTERIOR_PLOT)

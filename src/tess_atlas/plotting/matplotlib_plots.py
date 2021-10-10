@@ -105,7 +105,8 @@ class MatplotlibPlotter(PlotterBackend):
         fig.savefig(fname)
 
     @staticmethod
-    def plot_phase(tic_entry: TICEntry, trace: MultiTrace):
+    def plot_phase(tic_entry: TICEntry):
+        trace = tic_entry.inference_data.trace
         colors = get_colors(tic_entry.planet_count)
         for i in range(tic_entry.planet_count):
             plt.figure(figsize=(7, 5))

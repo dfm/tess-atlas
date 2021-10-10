@@ -1,14 +1,10 @@
-import functools
-import json
 import logging
 import os
 from typing import Dict, List, Optional
 
-import arviz as az
 import pandas as pd
 from IPython.display import display
 from IPython.display import HTML
-from pymc3.sampling import MultiTrace
 
 from .data_object import DataObject
 
@@ -16,6 +12,7 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .lightcurve_data import LightCurveData
 from .planet_candidate import PlanetCandidate
 from .stellar_data import StellarData
+from .inference_data import InferenceData
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -27,18 +24,18 @@ TOI_DIR = "toi_{toi}_files"
 
 DIR = os.path.dirname(__file__)
 
-
 TIC_FNAME = "tic_data.csv"
 
-def get_tic_database():
+
+def get_tic_database() -> pd.DataFrame:
     # if we have a cached database file
     cached_file = os.path.join(DIR, "cached_tic_database.csv")
     if os.path.isfile(cached_file):
-        return pd.read_csv(cached_file)
-
-    # go online to grab database and cache
-    db = pd.read_csv(TIC_DATASOURCE)
-    db.to_csv(cached_file)
+        db = pd.read_csv(cached_file)
+    else:
+        # go online to grab database and cache
+        db = pd.read_csv(TIC_DATASOURCE)
+        db.to_csv(cached_file)
     return db
 
 
@@ -70,21 +67,23 @@ class TICEntry(DataObject):
             self,
             tic_number: int,
             toi: int,
+            tic_data: pd.DataFrame,
             lightcurve: LightCurveData,
             stellar_data: StellarData,
-            tic_data: pd.DataFrame,
-            loaded_from_cache:Optional[bool]=False
+            inference_data: Optional[InferenceData] = None,
+            loaded_from_cache: Optional[bool] = False
     ):
         self.tic_number = tic_number
         self.toi_number = toi
         self.lightcurve = lightcurve
         self.stellar_data = stellar_data
+        self.inference_data = inference_data
         self.tic_data = tic_data
         self.candidates = self.get_candidates()
         self.outdir = TOI_DIR.format(toi=toi)
         self.loaded_from_cache = loaded_from_cache
 
-    def get_candidates(self):
+    def get_candidates(self) -> List[PlanetCandidate]:
         candidates = []
         for index, toi_data in self.tic_data.iterrows():
             candidate = PlanetCandidate.from_database(
@@ -95,42 +94,12 @@ class TICEntry(DataObject):
         return candidates
 
     @property
-    def exofop_url(self):
+    def exofop_url(self) -> str:
         return TIC_SEARCH.format(tic_id=self.tic_number)
 
     @property
-    def planet_count(self):
+    def planet_count(self) -> int:
         return len(self.candidates)
-
-    @property
-    def inference_trace(self) -> az.InferenceData:
-        return self._inference_trace
-
-    @inference_trace.setter
-    def inference_trace(self, inference_trace):
-        if isinstance(inference_trace, MultiTrace):
-            self._inference_trace = az.from_pymc3(inference_trace)
-        elif isinstance(inference_trace, az.InferenceData):
-            self._inference_trace = inference_trace
-        else:
-            raise TypeError(f"Unknown type: {type(inference_trace)}")
-
-    def load_inference_trace(self, fname=None):
-        if fname is None:
-            fname = self.inference_trace_filename
-        if os.path.isfile(fname):
-            logger.info(f"Trace loaded from {self.inference_trace_filename}")
-            self.inference_trace = az.from_netcdf(
-                self.inference_trace_filename
-            )
-        else:
-            raise FileNotFoundError(f"{fname} not found.")
-
-    def save_inference_trace(self, fname=None):
-        if fname is None:
-            fname = self.inference_trace_filename
-        az.to_netcdf(self.inference_trace, filename=fname)
-        logger.info(f"Trace saved at {fname}")
 
     @classmethod
     def load_tic_data(
@@ -151,25 +120,29 @@ class TICEntry(DataObject):
             toi=toi,
             lightcurve=LightCurveData.from_database(tic=tic_number),
             stellar_data=StellarData.from_database(tic=tic_number),
+            inference_data=None,
             tic_data=tic_data
         )
 
     @classmethod
-    def from_cache(cls, toi:int, outdir:str):
-        tic_data = pd.read_csv(
-            os.path.join(outdir, TIC_FNAME)
-        )
+    def from_cache(cls, toi: int, outdir: str):
+        fpath = TICEntry.get_filepath(outdir)
+        tic_data = pd.read_csv(fpath)
         tic_number = int(tic_data["TIC ID"].iloc[0])
+        inference_data = None
+        if os.path.isfile(InferenceData.get_filepath(outdir)):
+            inference_data = InferenceData.from_cache(outdir),
         return cls(
             tic_number=tic_number,
             toi=toi,
             lightcurve=LightCurveData.from_cache(outdir),
             stellar_data=StellarData.from_cache(outdir),
+            inference_data=inference_data,
             tic_data=tic_data,
             loaded_from_cache=True
         )
 
-    def to_dataframe(self):
+    def to_dataframe(self) -> pd.DataFrame:
         return pd.DataFrame(
             [candidate.to_dict() for candidate in self.candidates]
         )
@@ -184,30 +157,6 @@ class TICEntry(DataObject):
         display(HTML(html_str))
 
     @property
-    def inference_trace_filename(self):
-        return os.path.join(self.outdir, f"toi_{self.toi_number}.netcdf")
-
-    def get_trace_summary(self) -> pd.DataFrame:
-        """Returns a dataframe with the mean+sd of each candidate's p, b, r  """
-        df = az.summary(
-            self.inference_trace,
-            var_names=["~lightcurves"],
-            filter_vars="like",
-        )
-        df = (
-            df.transpose()
-                .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
-                .transpose()
-        )
-        df = df[["mean", "sd"]]
-        df["TOI"] = self.toi_number
-        df["parameter"] = df.index
-        df.set_index(
-            ["TOI", "parameter"], inplace=True, append=False, drop=True
-        )
-        return df
-
-    @property
     def outdir(self):
         return self.__outdir
 
@@ -217,10 +166,15 @@ class TICEntry(DataObject):
         self.__outdir = outdir
         self.save_data()
 
-    def save_data(self):
-        self.tic_data.to_csv(
-            os.path.join(self.outdir, TIC_FNAME)
-        )
+    @staticmethod
+    def get_filepath(outdir):
+        return os.path.join(outdir, TIC_FNAME)
+
+    def save_data(self, trace=None):
+        fpath = self.get_filepath(self.outdir)
+        self.tic_data.to_csv(fpath)
         self.lightcurve.save_data(self.outdir)
         self.stellar_data.save_data(self.outdir)
-
+        if trace is not None:
+            self.inference_data = InferenceData(trace)
+            self.inference_data.save_data(self.outdir)

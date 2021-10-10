@@ -83,7 +83,11 @@ class LightCurveData(DataObject):
         )
 
     def save_data(self, outdir):
-        pd.DataFrame(self.to_dict()).to_csv(
-            os.path.join(outdir, LIGHTCURVE_FNAME), index=False
-        )
+        fpath = self.get_filepath(outdir)
+        df = pd.DataFrame(self.to_dict())
+        df.to_csv(fpath, index=False)
         logger.info(f"Saved lightcurve data.")
+
+    @staticmethod
+    def get_filepath(outdir):
+        return os.path.join(outdir, LIGHTCURVE_FNAME)

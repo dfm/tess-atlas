@@ -57,12 +57,14 @@ class StellarData(DataObject):
 
     @classmethod
     def from_cache(cls, outdir):
-        with open(os.path.join(outdir, STELLAR_FNAME), 'r') as f:
+        fpath = StellarData.get_filepath(outdir)
+        with open(fpath, 'r') as f:
             data = json.load(f)
         return cls(**data)
 
     def save_data(self, outdir):
-        with open(os.path.join(outdir, STELLAR_FNAME), 'w') as f:
+        fpath = self.get_filepath(outdir)
+        with open(fpath, 'w') as f:
             json.dump(self.to_dict(), fp=f, indent=2)
 
     def density_data_present(self):
@@ -83,3 +85,7 @@ class StellarData(DataObject):
             radius=self.radius,
             radius_error=self.radius_error,
         )
+
+    @staticmethod
+    def get_filepath(outdir):
+        return os.path.join(outdir, STELLAR_FNAME)

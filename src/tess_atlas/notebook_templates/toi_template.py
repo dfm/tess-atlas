@@ -390,6 +390,8 @@ trace = start_model_sampling(planet_transit_model)
 tic_entry.save_data(trace=trace)
 tic_entry.inference_data.get_summary_dataframe()
 
+# + tags=["exe"]
+tic_entry.inference_data.trace
 
 # -
 # ## Results
@@ -425,10 +427,10 @@ plot_phase(tic_entry)
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 star = tic_entry.stellar_data
+star.display()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 if star.density_data_present:
-    logger.info(star)
     ecc_samples = calculate_eccentricity_weights(star, tic_entry, trace)
     ecc_samples.to_csv(
         os.path.join(tic_entry.outdir, "eccentricity_samples.csv")

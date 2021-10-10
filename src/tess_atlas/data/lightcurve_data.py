@@ -18,7 +18,7 @@ class LightCurveData(DataObject):
     """Stores Light Curve data for a single target"""
 
     def __init__(
-            self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
+        self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
     ):
         """
         :param np.ndarray time: The time in days.
@@ -66,21 +66,17 @@ class LightCurveData(DataObject):
 
     @classmethod
     def from_cache(cls, outdir: str):
-        df = pd.read_csv(
-            os.path.join(outdir, LIGHTCURVE_FNAME)
-        )
+        fname = LightCurveData.get_filepath(outdir)
+        df = pd.read_csv(fname)
+        logger.info(f"Lightcurve loaded from {fname}")
         return cls(
-            time=df.time,
-            flux=df.flux,
-            flux_err=df.flux_err,
+            time=np.array(df.time),
+            flux=np.array(df.flux),
+            flux_err=np.array(df.flux_err),
         )
 
     def to_dict(self):
-        return dict(
-            time=self.time,
-            flux=self.flux,
-            flux_err=self.flux_err,
-        )
+        return dict(time=self.time, flux=self.flux, flux_err=self.flux_err)
 
     def save_data(self, outdir):
         fpath = self.get_filepath(outdir)

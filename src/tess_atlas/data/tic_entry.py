@@ -110,6 +110,9 @@ class TICEntry(DataObject):
 
     @classmethod
     def from_database(cls, toi: int):
+        logger.info(
+            "Downloading data for analysis (this may take a few moments)"
+        )
         tic_data = get_tic_data_from_database([toi])
         tic_number = int(tic_data["TIC ID"].iloc[0])
         return cls(
@@ -124,11 +127,12 @@ class TICEntry(DataObject):
     @classmethod
     def from_cache(cls, toi: int, outdir: str):
         fpath = TICEntry.get_filepath(outdir)
+        logger.info("Loading cached data")
         tic_data = pd.read_csv(fpath)
         tic_number = int(tic_data["TIC ID"].iloc[0])
         inference_data = None
         if os.path.isfile(InferenceData.get_filepath(outdir)):
-            inference_data = (InferenceData.from_cache(outdir),)
+            inference_data = InferenceData.from_cache(outdir)
         return cls(
             tic_number=tic_number,
             toi=toi,
@@ -174,8 +178,8 @@ class TICEntry(DataObject):
                 TICEntry.get_filepath(outdir),
                 LightCurveData.get_filepath(outdir),
                 StellarData.get_filepath(outdir),
-            ]  # min required cached data (InferenceData is optional)
-            if all(os.path.isdir(d) for d in cached_data):
+            ]  # InferenceData is optional so not checking if cached
+            if all(os.path.isfile(d) for d in cached_data):
                 return True
         return False
 

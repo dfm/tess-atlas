@@ -396,13 +396,13 @@ tic_entry.inference_data.get_summary_dataframe()
 # Below are plots of the posterior probability distributuions:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_posteriors(tic_entry, trace)
+plot_posteriors(tic_entry)
 
 # -
 # We can also plot the best-fitting light-curve model
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_phase(tic_entry, trace)
+plot_phase(tic_entry)
 
 # -
 
@@ -435,7 +435,9 @@ if star.density_data_present:
     )
     plot_eccentricity_posteriors(tic_entry, ecc_samples)
 else:
-    logger.info("Stellar data not present for TIC. Skipping eccentricity calculations.")
+    logger.info(
+        "Stellar data not present for TIC. Skipping eccentricity calculations."
+    )
 
 # -
 

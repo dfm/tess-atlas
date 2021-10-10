@@ -64,14 +64,14 @@ class TICEntry(DataObject):
     """Hold information about a TIC (TESS Input Catalog) entry"""
 
     def __init__(
-            self,
-            tic_number: int,
-            toi: int,
-            tic_data: pd.DataFrame,
-            lightcurve: LightCurveData,
-            stellar_data: StellarData,
-            inference_data: Optional[InferenceData] = None,
-            loaded_from_cache: Optional[bool] = False
+        self,
+        tic_number: int,
+        toi: int,
+        tic_data: pd.DataFrame,
+        lightcurve: LightCurveData,
+        stellar_data: StellarData,
+        inference_data: Optional[InferenceData] = None,
+        loaded_from_cache: Optional[bool] = False,
     ):
         self.tic_number = tic_number
         self.toi_number = toi
@@ -87,8 +87,7 @@ class TICEntry(DataObject):
         candidates = []
         for index, toi_data in self.tic_data.iterrows():
             candidate = PlanetCandidate.from_database(
-                toi_data=toi_data.to_dict(),
-                lightcurve=self.lightcurve
+                toi_data=toi_data.to_dict(), lightcurve=self.lightcurve
             )
             candidates.append(candidate)
         return candidates
@@ -102,11 +101,9 @@ class TICEntry(DataObject):
         return len(self.candidates)
 
     @classmethod
-    def load_tic_data(
-            cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()
-    ):
+    def load_tic_data(cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()):
         toi_dir = TOI_DIR.format(toi=toi)
-        if os.path.isdir(toi_dir):
+        if TICEntry.cached_files_present(outdir=toi_dir):
             return cls.from_cache(toi, toi_dir)
         else:
             return cls.from_database(toi)
@@ -121,7 +118,7 @@ class TICEntry(DataObject):
             lightcurve=LightCurveData.from_database(tic=tic_number),
             stellar_data=StellarData.from_database(tic=tic_number),
             inference_data=None,
-            tic_data=tic_data
+            tic_data=tic_data,
         )
 
     @classmethod
@@ -131,7 +128,7 @@ class TICEntry(DataObject):
         tic_number = int(tic_data["TIC ID"].iloc[0])
         inference_data = None
         if os.path.isfile(InferenceData.get_filepath(outdir)):
-            inference_data = InferenceData.from_cache(outdir),
+            inference_data = (InferenceData.from_cache(outdir),)
         return cls(
             tic_number=tic_number,
             toi=toi,
@@ -139,7 +136,7 @@ class TICEntry(DataObject):
             stellar_data=StellarData.from_cache(outdir),
             inference_data=inference_data,
             tic_data=tic_data,
-            loaded_from_cache=True
+            loaded_from_cache=True,
         )
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -167,8 +164,20 @@ class TICEntry(DataObject):
         self.save_data()
 
     @staticmethod
-    def get_filepath(outdir):
+    def get_filepath(outdir: str) -> str:
         return os.path.join(outdir, TIC_FNAME)
+
+    @staticmethod
+    def cached_files_present(outdir: str) -> bool:
+        if os.path.isdir(outdir):
+            cached_data = [
+                TICEntry.get_filepath(outdir),
+                LightCurveData.get_filepath(outdir),
+                StellarData.get_filepath(outdir),
+            ]  # min required cached data (InferenceData is optional)
+            if all(os.path.isdir(d) for d in cached_data):
+                return True
+        return False
 
     def save_data(self, trace=None):
         fpath = self.get_filepath(self.outdir)

@@ -4,7 +4,6 @@ import os
 
 
 class DataObject(ABC):
-
     @classmethod
     def from_database(cls):
         raise NotImplementedError()
@@ -17,5 +16,5 @@ class DataObject(ABC):
         raise NotImplementedError()
 
     @staticmethod
-    def get_filepath():
+    def get_filepath(outdir: str) -> str:
         raise NotImplementedError()

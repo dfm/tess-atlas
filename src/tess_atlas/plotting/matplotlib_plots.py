@@ -106,12 +106,12 @@ class MatplotlibPlotter(PlotterBackend):
 
     @staticmethod
     def plot_phase(tic_entry: TICEntry):
-        trace = tic_entry.inference_data.trace
+        posterior = tic_entry.inference_data.trace.posterior
         colors = get_colors(tic_entry.planet_count)
         for i in range(tic_entry.planet_count):
             plt.figure(figsize=(7, 5))
-            p = np.median(trace["p"][:, i])
-            t0 = np.median(trace["t0"][:, i])
+            p = np.median(posterior["p"][:, i])
+            t0 = np.median(posterior["t0"][:, i])
 
             # Plot the folded data
             x_fold = (tic_entry.lightcurve.time - t0 + 0.5 * p) % p - 0.5 * p
@@ -128,7 +128,8 @@ class MatplotlibPlotter(PlotterBackend):
             inds = np.argsort(x_fold)
             inds = inds[np.abs(x_fold)[inds] < 0.3]
             pred = (
-                trace["lightcurves"][:, inds, i] * 1e3 + trace["f0"][:, None]
+                posterior["lightcurves"][:, inds, i] * 1e3
+                + posterior["f0"][:, None]
             )
             pred = np.percentile(pred, [16, 50, 84], axis=0)
             plt.plot(x_fold[inds], pred[1], color=colors[i], label="model")
@@ -144,7 +145,7 @@ class MatplotlibPlotter(PlotterBackend):
 
             # Annotate the plot with the planet's period
             txt = "period = {0:.4f} +/- {1:.4f} d".format(
-                np.mean(trace["p"][:, i]), np.std(trace["p"][:, i])
+                np.mean(posterior["p"][:, i]), np.std(posterior["p"][:, i])
             )
             plt.annotate(
                 txt,

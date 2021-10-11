@@ -73,7 +73,6 @@ import pandas as pd
 import pymc3 as pm
 import pymc3_ext as pmx
 import aesara_theano_fallback.tensor as tt
-from aesara_theano_fallback import aesara as theano
 
 from celerite2.theano import GaussianProcess, terms
 from pymc3.sampling import MultiTrace

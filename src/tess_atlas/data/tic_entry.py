@@ -6,13 +6,18 @@ import pandas as pd
 from IPython.display import display
 from IPython.display import HTML
 
+from pymc3.sampling import MultiTrace
+
+
 from .data_object import DataObject
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .lightcurve_data import LightCurveData
 from .planet_candidate import PlanetCandidate
 from .stellar_data import StellarData
+
 from .inference_data import InferenceData
+
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -27,7 +32,7 @@ DIR = os.path.dirname(__file__)
 TIC_FNAME = "tic_data.csv"
 
 
-def get_tic_database() -> pd.DataFrame:
+def get_tic_database():
     # if we have a cached database file
     cached_file = os.path.join(DIR, "cached_tic_database.csv")
     if os.path.isfile(cached_file):

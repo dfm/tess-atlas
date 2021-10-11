@@ -8,6 +8,7 @@ import json
 from IPython.display import display
 from IPython.display import HTML
 
+
 import numpy as np
 
 from .data_object import DataObject

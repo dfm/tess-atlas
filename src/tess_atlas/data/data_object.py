@@ -1,7 +1,5 @@
 from abc import abstractmethod, ABC
 
-import os
-
 
 class DataObject(ABC):
     @classmethod

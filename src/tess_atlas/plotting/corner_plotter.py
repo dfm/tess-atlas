@@ -5,7 +5,9 @@ import corner
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pymc3 as pm
+import arviz as az
+
+from typing import List
 
 from tess_atlas.data import TICEntry
 from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT
@@ -27,12 +29,14 @@ CORNER_KWARGS = dict(
 )
 
 
-def plot_posteriors(
-    tic_entry: TICEntry
-) -> None:
+def plot_posteriors(tic_entry: TICEntry) -> None:
     trace = tic_entry.inference_data.trace
-    samples = pm.trace_to_dataframe(trace, varnames=["p", "r", "b"])
-    fig = corner.corner(samples, **CORNER_KWARGS, range=get_range(samples))
+    fig = corner.corner(
+        trace,
+        var_names=["p", "r", "b"],
+        **CORNER_KWARGS,
+        range=get_range(samples),
+    )
     fname = os.path.join(tic_entry.outdir, POSTERIOR_PLOT)
     logging.debug(f"Saving {fname}")
     fig.savefig(fname)
@@ -58,5 +62,9 @@ def plot_eccentricity_posteriors(
         fig.savefig(fname)
 
 
-def get_range(samples):
-    return [[samples[l].min(), samples[l].max()] for l in samples]
+def get_range(samples: pd.DataFrame) -> List[List[int]]:
+    if isinstance(samples, pd.DataFrame):
+        return [[samples[l].min(), samples[l].max()] for l in samples]
+    elif isinstance(samples, az.InferenceData):
+        # TODO: get ranges of samples from az.InferenceData object
+        return []

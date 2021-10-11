@@ -2,17 +2,17 @@ from abc import abstractmethod, ABC
 
 
 class DataObject(ABC):
-
     @classmethod
-    @abstractmethod
     def from_database(cls):
-        pass
+        raise NotImplementedError()
 
     @classmethod
-    @abstractmethod
     def from_cache(cls):
-        pass
+        raise NotImplementedError()
 
-    @abstractmethod
     def save_data(self):
-        pass
+        raise NotImplementedError()
+
+    @staticmethod
+    def get_filepath(outdir: str) -> str:
+        raise NotImplementedError()

@@ -73,7 +73,6 @@ import pandas as pd
 import pymc3 as pm
 import pymc3_ext as pmx
 import aesara_theano_fallback.tensor as tt
-from aesara_theano_fallback import aesara as theano
 
 from celerite2.theano import GaussianProcess, terms
 from pymc3.sampling import MultiTrace
@@ -387,23 +386,24 @@ trace = start_model_sampling(planet_transit_model)
 # Lets save the posteriors and sampling metadata for future use, and take a look at summary statistics
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-tic_entry.inference_trace = trace
-tic_entry.save_inference_trace()
-tic_entry.inference_trace
+tic_entry.save_data(trace=trace)
+tic_entry.inference_data.get_summary_dataframe()
 
+# + tags=["exe"]
+tic_entry.inference_data.trace
 
 # -
 # ## Results
 # Below are plots of the posterior probability distributuions:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_posteriors(tic_entry, trace)
+plot_posteriors(tic_entry)
 
 # -
 # We can also plot the best-fitting light-curve model
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_phase(tic_entry, trace)
+plot_phase(tic_entry)
 
 # -
 
@@ -426,17 +426,19 @@ plot_phase(tic_entry, trace)
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 star = tic_entry.stellar_data
+star.display()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-if star.stellar_data_present:
-    logger.info(star)
+if star.density_data_present:
     ecc_samples = calculate_eccentricity_weights(star, tic_entry, trace)
     ecc_samples.to_csv(
         os.path.join(tic_entry.outdir, "eccentricity_samples.csv")
     )
     plot_eccentricity_posteriors(tic_entry, ecc_samples)
 else:
-    logger.info("Stellar data not present for TIC. Skipping eccentricity calculations.")
+    logger.info(
+        "Stellar data not present for TIC. Skipping eccentricity calculations."
+    )
 
 # -
 

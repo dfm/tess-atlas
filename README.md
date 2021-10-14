@@ -9,7 +9,7 @@
 </p>
 
 ## Installation instructions
-To intall the necessary packages, run
+To install the necessary packages, run
 ```bash
 python -m pip install -e .
 ```
@@ -19,14 +19,20 @@ python -m pip install -e .
 2. Commit the completed TOIs to a branch and make a PR to main
 3. Once PR to main completed, run `make website` to convert the notebooks to HTML and upload to the gh-pages branch and deploy to github-pages
 
-## Run one notebook
-To run the analysis for one notebook, you can run
+## How to use
+To run the analysis for one TOI, you can run
 ```bash
 run_toi <toi id number>
 ```
 where an example `<toi id number> = 724`
 
-To run all the notebooks, you can run
+To only setup the notebook + data needed for the analysis for one TOI, you can run
+```bash
+run_toi <toi id number> --setup
+```
+where an example `<toi id number> = 724`
+
+To run all the notebooks (in batches of 8), you can run
 ```bash
 run_tois
 ```

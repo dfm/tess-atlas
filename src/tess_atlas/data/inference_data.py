@@ -10,7 +10,6 @@ from .data_object import DataObject
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
-TRACE_FNAME = "trace.netcdf"
 SAMPLES_FNAME = "samples.csv"
 
 
@@ -34,7 +33,7 @@ class InferenceData(DataObject):
             raise TypeError(f"Unknown type: {type(trace)}")
 
     @classmethod
-    def from_cache(cls, outdir: str):
+    def load(cls, outdir: str):
         fname = InferenceData.get_filepath(outdir)
         if not os.path.isfile(fname):
             raise FileNotFoundError(f"{fname} not found.")
@@ -50,7 +49,7 @@ class InferenceData(DataObject):
         logger.info(f"Trace saved at {fname}")
 
     def get_summary_dataframe(self) -> pd.DataFrame:
-        """Returns a dataframe with the mean+sd of each candidate's p, b, r  """
+        """Returns a dataframe with the mean+sd of each candidate's p, b, r"""
         df = az.summary(
             self.trace, var_names=["~lightcurves"], filter_vars="like"
         )
@@ -65,8 +64,8 @@ class InferenceData(DataObject):
         return df
 
     @staticmethod
-    def get_filepath(outdir):
-        return os.path.join(outdir, TRACE_FNAME)
+    def get_filepath(outdir, fname="trace.netcdf"):
+        return os.path.join(outdir, fname)
 
     def get_samples_dataframe(self) -> pd.DataFrame:
         df = self.trace.to_dataframe(groups=["posterior"])

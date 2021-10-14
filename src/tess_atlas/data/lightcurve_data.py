@@ -11,31 +11,33 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
-LIGHTCURVE_FNAME = "lightcurve.csv"
-
 
 class LightCurveData(DataObject):
     """Stores Light Curve data for a single target"""
 
     def __init__(
-        self, time: np.ndarray, flux: np.ndarray, flux_err: np.ndarray
+        self,
+        time: np.ndarray,
+        flux: np.ndarray,
+        flux_err: np.ndarray,
+        outdir: str,
     ):
         """
         :param np.ndarray time: The time in days.
         :param np.ndarray flux: The relative flux in parts per thousand.
         :param np.ndarray fluex_err: The flux err in parts per thousand.
+        :param str: the outdir to store lk data
         """
         self.time = time
         self.flux = flux
         self.flux_err = flux_err
+        self.outdir = outdir
 
     @classmethod
-    def from_database(cls, tic: int):
+    def from_database(cls, tic: int, outdir: str):
         """Uses lightkurve to get TESS data for a TIC from MAST"""
-        logger.info(
-            f"Searching for lightkurve data with target='TIC {tic}', "
-            "mission='TESS'"
-        )
+
+        logger.info("Downloading LightCurveData from MAST")
         search = lk.search_lightcurve(target=f"TIC {tic}", mission="TESS")
         logger.debug(f"Search  succeeded: {search}")
 
@@ -46,7 +48,7 @@ class LightCurveData(DataObject):
             f"Downloading {len(search)} observations of light curve data "
             f"(TIC {tic})"
         )
-        data = search.download_all()
+        data = search.download_all(download_dir=outdir)
         if data is None:
             raise ValueError(f"No light curves for TIC {tic}")
         logger.info("Completed light curve data download")
@@ -62,10 +64,11 @@ class LightCurveData(DataObject):
             flux_err=np.ascontiguousarray(
                 1e3 * data.flux_err.value[inds], dtype=np.float64
             ),
+            outdir=outdir,
         )
 
     @classmethod
-    def from_cache(cls, outdir: str):
+    def from_cache(cls, tic: int, outdir: str):
         fname = LightCurveData.get_filepath(outdir)
         df = pd.read_csv(fname)
         logger.info(f"Lightcurve loaded from {fname}")
@@ -73,6 +76,7 @@ class LightCurveData(DataObject):
             time=np.array(df.time),
             flux=np.array(df.flux),
             flux_err=np.array(df.flux_err),
+            outdir=outdir,
         )
 
     def to_dict(self):
@@ -85,5 +89,5 @@ class LightCurveData(DataObject):
         logger.info(f"Saved lightcurve data.")
 
     @staticmethod
-    def get_filepath(outdir):
-        return os.path.join(outdir, LIGHTCURVE_FNAME)
+    def get_filepath(outdir, fname="lightcurve.csv"):
+        return os.path.join(outdir, fname)

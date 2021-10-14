@@ -106,7 +106,9 @@ class TICEntry(DataObject):
         return len(self.candidates)
 
     @classmethod
-    def load_tic_data(cls, toi: int, tic_data: pd.DataFrame = pd.DataFrame()):
+    def load_tic_data(
+        cls, toi: int, tic_data: Optional[pd.DataFrame] = pd.DataFrame()
+    ):
         toi_dir = TOI_DIR.format(toi=toi)
         if TICEntry.cached_files_present(outdir=toi_dir):
             return cls.from_cache(toi, toi_dir)

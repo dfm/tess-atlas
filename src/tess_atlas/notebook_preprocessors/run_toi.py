@@ -6,83 +6,14 @@ import argparse
 import os
 import re
 import time
-from typing import Optional
+from typing import Optional, Tuple
 import logging
 
-import jupytext
-import pkg_resources
-
-
-from tess_atlas.tess_atlas_version import __version__
-from tess_atlas.utils import RUNNER_LOGGER_NAME, setup_logger
+from ..tess_atlas_version import __version__
+from ..utils import RUNNER_LOGGER_NAME, setup_logger
 from .notebook_executor import execute_ipynb
-
-TOI_TEMPLATE_FNAME = "notebook_templates/toi_template.py"
-
-
-def get_template_filename():
-    template_py_filename = pkg_resources.resource_filename(
-        "tess_atlas", TOI_TEMPLATE_FNAME
-    )
-    template_ipynb_filename = template_py_filename.replace(".py", ".ipynb")
-    template_py_pointer = jupytext.read(template_py_filename, fmt="py:light")
-    jupytext.write(template_py_pointer, template_ipynb_filename)
-    return template_ipynb_filename
-
-
-def create_toi_notebook_from_template_notebook(
-    toi_number: int,
-    outdir: Optional[str] = "notebooks",
-    quickrun: Optional[bool] = False,
-):
-    """Creates a jupyter notebook for the TOI
-
-    Args:
-        toi_number: int
-            The TOI Id number
-        quickrun: bool
-            If True changes some constants to run the notebooks faster (useful for
-            testing and debugging).
-
-    Returns:
-        notebook_filename: str
-            The filepath of the generated notebook
-    """
-    notebook_filename = os.path.join(
-        outdir, f"{__version__}/toi_{toi_number}.ipynb"
-    )
-    os.makedirs(os.path.dirname(notebook_filename), exist_ok=True)
-
-    with open(get_template_filename(), "r") as f:
-        txt = f.read()
-        txt = txt.replace("{{{TOINUMBER}}}", f"{toi_number}")
-        txt = txt.replace("{{{VERSIONNUMBER}}}", f"'{__version__}'")
-        if quickrun:
-            txt = re.sub(r"tune=[0-9]+", f"tune={5}", txt)
-            txt = re.sub(r"draws=[0-9]+", f"draws={10}", txt)
-            txt = re.sub(r"chains=[0-9]+", f"chains={1}", txt)
-            txt = re.sub(r"cores=[0-9]+", f"cores={1}", txt)
-
-    with open(notebook_filename, "w") as f:
-        f.write(txt)
-
-    return notebook_filename
-
-
-def execute_toi_notebook(notebook_filename):
-    """Executes the TOI notebook and git adds the notebook on a successful run.
-    Prints an error on failure to run the notebook.
-
-    Args:
-        notebook_filename: str
-            Filepath of the notebook
-
-    Returns:
-        success: bool
-            True if successful run of notebook
-    """
-    execution_successful = execute_ipynb(notebook_filename)
-    return execution_successful
+from ..data.tic_entry import TICEntry
+from .toi_notebook_generator import create_toi_notebook_from_template_notebook
 
 
 def get_cli_args():
@@ -103,37 +34,79 @@ def get_cli_args():
         action="store_true",  # False by default
         help="Run with reduced sampler settings (useful for debugging)",
     )
-    args = parser.parse_args()
-    return args.toi_number, args.outdir, args.quickrun
-
-
-def run_toi(toi_number, outdir, quickrun):
-    t_start = time.time()
-    notebook_filename = create_toi_notebook_from_template_notebook(
-        toi_number, outdir, quickrun=quickrun
+    parser.add_argument(
+        "--setup",
+        action="store_true",  # False by default
+        help="Setup data for run before executing notebook",
     )
-    run_status = execute_toi_notebook(notebook_filename)
-    t_end = time.time()
-    run_duration = t_end - t_start
-    record_run_stats(toi_number, run_status, run_duration, outdir)
-    return run_status, run_duration
+    args = parser.parse_args()
+    return args.toi_number, args.outdir, args.quickrun, args.setup
 
 
-def record_run_stats(toi_number, run_status, run_duration, outdir):
+def run_toi(
+    toi_number: int,
+    outdir: str,
+    quickrun: Optional[bool] = False,
+    setup: Optional[bool] = False,
+) -> Tuple[bool, float]:
+    """Creates+preprocesses TOI notebook and records the executions' stats.
+
+    Args:
+        toi_number: int
+            The TOI Id number
+        quickrun: bool
+            If True changes sampler settings to run the notebooks faster
+            (useful for testing/debugging -- produces non-scientific results)
+        outdir: str
+            Base outdir for TOI. Notebook will be saved at
+            {outdir}/{tess_atlas_version}/toi_{toi_number}.ipynb}
+        setup: bool
+            If true creates notebook + downloads data needed for analysis
+            but does not execute notebook
+
+    Returns:
+        execution_successful: bool
+            True if successful run of notebook
+        run_duration: float
+            Time of analysis (in seconds)
+    """
+    t0 = time.time()
+    notebook_filename = create_toi_notebook_from_template_notebook(
+        toi_number, outdir, quickrun=quickrun, setup=setup
+    )
+    execution_successful = True
+    if not setup:
+        execution_successful = execute_ipynb(notebook_filename)
+        record_run_stats(
+            toi_number, execution_successful, time.time() - t0, outdir
+        )
+    return execution_successful, time.time() - t0
+
+
+def record_run_stats(
+    toi_number: int,
+    execution_successful: bool,
+    run_duration: float,
+    outdir: str,
+):
+    """Creates/Appends to a CSV the runtime and status of the TOI analysis."""
     fname = os.path.join(outdir, __version__, "run_stats.csv")
     if not os.path.isfile(fname):
         open(fname, "w").write("toi,execution_complete,duration_in_s\n")
-    open(fname, "a").write(f"{toi_number},{run_status},{run_duration}\n")
+    open(fname, "a").write(
+        f"{toi_number},{execution_successful},{run_duration}\n"
+    )
 
 
 def main():
-    toi_number, outdir, quickrun = get_cli_args()
+    toi_number, outdir, quickrun, setup = get_cli_args()
     logger = setup_logger(
         RUNNER_LOGGER_NAME, outdir=os.path.join(outdir, __version__)
     )
-    run_status, run_duration = run_toi(toi_number, outdir, quickrun)
+    success, run_duration = run_toi(toi_number, outdir, quickrun, setup)
+    job_str = "setup" if setup else "execution"
     logger.info(
-        f"TOI {toi_number} execution passed: {run_status} ({run_duration:.2f}s)"
+        f"TOI {toi_number} {job_str} complete: {success} ({run_duration:.2f}s)"
     )
 
 

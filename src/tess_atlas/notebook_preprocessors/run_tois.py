@@ -57,12 +57,17 @@ def get_cli_args():
         action="store_true",  # False by default
         help="Run with reduced sampler settings (useful for debugging)",
     )
+    parser.add_argument(
+        "--setup",
+        action="store_true",  # False by default
+        help="Create notebooks and download data for analysis (dont execute notebooks)",
+    )
     args = parser.parse_args()
-    return args.outdir, args.toi_database, args.quickrun
+    return args.outdir, args.toi_database, args.quickrun, args.setup
 
 
 def main():
-    outdir, toi_database, quickrun = get_cli_args()
+    outdir, toi_database, quickrun, setup = get_cli_args()
     logger = setup_logger(
         outdir=os.path.join(outdir, __version__),
         logger_name=RUNNER_LOGGER_NAME,
@@ -74,7 +79,7 @@ def main():
     logger.info(f"Number of TOIs to analyse: {len(toi_ids)}")
     np.random.shuffle(toi_ids)
     run_toi_args = [
-        dict(toi_number=toi_id, outdir=outdir, quickrun=quickrun)
+        dict(toi_number=toi_id, outdir=outdir, quickrun=quickrun, setup=setup)
         for toi_id in toi_ids
     ]
     with Pool(8) as pool:

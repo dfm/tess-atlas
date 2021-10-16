@@ -47,7 +47,7 @@ def create_toi_notebook(
 def download_toi_data(toi_number: int, notebook_dir: str):
     curr_dir = os.getcwd()
     os.chdir(notebook_dir)
-    tic_data = TICEntry.load_tic_data(toi_number)
+    tic_data = TICEntry.load(toi_number)
     tic_data.save_data()
     os.chdir(curr_dir)
 

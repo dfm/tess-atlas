@@ -29,8 +29,6 @@ TOI_DIR = "toi_{toi}_files"
 
 DIR = os.path.dirname(__file__)
 
-TIC_FNAME = "tic_data.csv"
-
 
 def get_tic_database():
     # if we have a cached database file
@@ -70,23 +68,22 @@ class TICEntry(DataObject):
 
     def __init__(
         self,
-        tic_number: int,
         toi: int,
         tic_data: pd.DataFrame,
-        lightcurve: LightCurveData,
-        stellar_data: StellarData,
-        inference_data: Optional[InferenceData] = None,
         loaded_from_cache: Optional[bool] = False,
     ):
-        self.tic_number = tic_number
         self.toi_number = toi
-        self.lightcurve = lightcurve
-        self.stellar_data = stellar_data
-        self.inference_data = inference_data
         self.tic_data = tic_data
-        self.candidates = self.get_candidates()
         self.outdir = TOI_DIR.format(toi=toi)
+        data_kwargs = dict(tic=self.tic_number, outdir=self.outdir)
+        self.lightcurve = LightCurveData.load(**data_kwargs)
+        self.stellar_data = StellarData.load(**data_kwargs)
+        self.inference_data = None
+        if os.path.isfile(InferenceData.get_filepath(self.outdir)):
+            self.inference_data = InferenceData.load(self.outdir)
+        self.candidates = self.get_candidates()
         self.loaded_from_cache = loaded_from_cache
+        self.save_data()
 
     def get_candidates(self) -> List[PlanetCandidate]:
         candidates = []
@@ -102,52 +99,36 @@ class TICEntry(DataObject):
         return TIC_SEARCH.format(tic_id=self.tic_number)
 
     @property
+    def tic_number(self) -> int:
+        try:
+            return int(self.tic_data["TIC ID"].iloc[0])
+        except Exception:
+            print(self.tic_data)
+
+    @property
     def planet_count(self) -> int:
         return len(self.candidates)
 
     @classmethod
-    def load_tic_data(
-        cls, toi: int, tic_data: Optional[pd.DataFrame] = pd.DataFrame()
-    ):
+    def load(cls, toi: int):
         toi_dir = TOI_DIR.format(toi=toi)
-        if TICEntry.cached_files_present(outdir=toi_dir):
+        cache_fn = TICEntry.get_filepath(toi_dir)
+        if TICEntry.cached_data_present(cache_fn):
             return cls.from_cache(toi, toi_dir)
         else:
             return cls.from_database(toi)
 
     @classmethod
     def from_database(cls, toi: int):
-        logger.info(
-            "Downloading data for analysis (this may take a few moments)"
-        )
-        tic_data = get_tic_data_from_database([toi])
-        tic_number = int(tic_data["TIC ID"].iloc[0])
-        return cls(
-            tic_number=tic_number,
-            toi=toi,
-            lightcurve=LightCurveData.from_database(tic=tic_number),
-            stellar_data=StellarData.from_database(tic=tic_number),
-            inference_data=None,
-            tic_data=tic_data,
-        )
+        logger.info("Querying ExoFOP for TIC data")
+        return cls(toi=toi, tic_data=get_tic_data_from_database([toi]))
 
     @classmethod
     def from_cache(cls, toi: int, outdir: str):
         fpath = TICEntry.get_filepath(outdir)
         logger.info("Loading cached data")
-        tic_data = pd.read_csv(fpath)
-        tic_number = int(tic_data["TIC ID"].iloc[0])
-        inference_data = None
-        if os.path.isfile(InferenceData.get_filepath(outdir)):
-            inference_data = InferenceData.from_cache(outdir)
         return cls(
-            tic_number=tic_number,
-            toi=toi,
-            lightcurve=LightCurveData.from_cache(outdir),
-            stellar_data=StellarData.from_cache(outdir),
-            inference_data=inference_data,
-            tic_data=tic_data,
-            loaded_from_cache=True,
+            toi=toi, tic_data=pd.read_csv(fpath), loaded_from_cache=True
         )
 
     def to_dataframe(self) -> pd.DataFrame:
@@ -172,23 +153,10 @@ class TICEntry(DataObject):
     def outdir(self, outdir):
         os.makedirs(outdir, exist_ok=True)
         self.__outdir = outdir
-        self.save_data()
 
     @staticmethod
-    def get_filepath(outdir: str) -> str:
-        return os.path.join(outdir, TIC_FNAME)
-
-    @staticmethod
-    def cached_files_present(outdir: str) -> bool:
-        if os.path.isdir(outdir):
-            cached_data = [
-                TICEntry.get_filepath(outdir),
-                LightCurveData.get_filepath(outdir),
-                StellarData.get_filepath(outdir),
-            ]  # InferenceData is optional so not checking if cached
-            if all(os.path.isfile(d) for d in cached_data):
-                return True
-        return False
+    def get_filepath(outdir, fname="tic_data.csv"):
+        return os.path.join(outdir, fname)
 
     def save_data(self, trace=None):
         fpath = self.get_filepath(self.outdir)

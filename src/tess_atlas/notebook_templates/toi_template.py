@@ -120,7 +120,7 @@ TOI_NUMBER = {{{TOINUMBER}}}
 #
 # Downloading the data (this may take a few minutes):
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-tic_entry = TICEntry.load_tic_data(toi=TOI_NUMBER)
+tic_entry = TICEntry.load(toi=TOI_NUMBER)
 
 # -
 

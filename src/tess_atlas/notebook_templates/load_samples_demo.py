@@ -60,7 +60,7 @@ def get_analysed_toi_sample_filenames() -> pd.DataFrame:
 def get_tic_list_with_loaded_samples(
     analysed_tois: List[int]
 ) -> List[TICEntry]:
-    tic_list = [TICEntry.load_tic_data(toi) for toi in analysed_tois]
+    tic_list = [TICEntry.load(toi) for toi in analysed_tois]
     for tic in tqdm.tqdm(tic_list, desc="Loading TIC Samples Sets"):
         tic.load_inference_trace()
     return tic_list

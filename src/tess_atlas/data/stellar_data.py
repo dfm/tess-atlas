@@ -17,8 +17,6 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
-STELLAR_FNAME = "stellar_data.json"
-
 
 class StellarData(DataObject):
     def __init__(
@@ -29,6 +27,7 @@ class StellarData(DataObject):
         radius_error: float,
         mass: float,
         mass_error: float,
+        outdir: str,
     ):
         """
         :param float density: (units: Solar)
@@ -42,13 +41,15 @@ class StellarData(DataObject):
         self.mass_error = mass_error
         self.radius = radius
         self.radius_error = radius_error
+        self.outdir = outdir
 
     @classmethod
-    def from_database(cls, tic: int):
+    def from_database(cls, tic: int, outdir: str):
         """
         MAST has info on the TIC's associated stellar info.
         Properties of the catalog are here: https://arxiv.org/pdf/1905.10694.pdf
         """
+        logger.info(f"Downloading StellarData from MAST")
         try:
             astropy_star_datatable = Catalogs.query_object(
                 f"TIC {tic}", catalog="TIC", radius=0.001
@@ -67,15 +68,16 @@ class StellarData(DataObject):
             mass_error=star.get("e_mass", np.nan),
             radius=star.get("radius", np.nan),
             radius_error=star.get("e_radius", np.nan),
+            outdir=outdir,
         )
 
     @classmethod
-    def from_cache(cls, outdir):
+    def from_cache(cls, tic: int, outdir: str):
         fpath = StellarData.get_filepath(outdir)
         with open(fpath, "r") as f:
             data = json.load(f)
         logger.info(f"StellarData loaded from {fpath}")
-        return cls(**data)
+        return cls(**data, outdir=outdir)
 
     def save_data(self, outdir):
         fpath = self.get_filepath(outdir)
@@ -122,8 +124,8 @@ class StellarData(DataObject):
         )
 
     @staticmethod
-    def get_filepath(outdir):
-        return os.path.join(outdir, STELLAR_FNAME)
+    def get_filepath(outdir: str, fname="stellar_data.json") -> str:
+        return os.path.join(outdir, fname)
 
 
 def no_nans_present(data):

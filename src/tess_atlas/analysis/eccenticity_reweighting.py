@@ -14,9 +14,7 @@ from tess_atlas.data import TICEntry
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
-def calculate_eccentricity_weights(
-    tic_entry: TICEntry, trace: MultiTrace
-):
+def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
     # Extract the implied density from the fit
     rho_circ = np.repeat(trace["rho_circ"], 500, axis=0)
     period = np.repeat(trace["p"], 500, axis=0)

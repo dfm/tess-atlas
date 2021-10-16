@@ -82,9 +82,7 @@ class PlanetCandidate(DataObject):
         return (self.period <= 0.0) or np.isnan(self.period)
 
     @classmethod
-    def from_database(
-        cls, toi_data: Dict, lightcurve: LightCurveData
-    ):
+    def from_database(cls, toi_data: Dict, lightcurve: LightCurveData):
         unpack_data = dict(
             toi_id=toi_data["TOI"],
             period=toi_data["Period (days)"],

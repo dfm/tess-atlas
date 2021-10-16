@@ -17,7 +17,10 @@ def get_data_table():
 
 def get_stellar_data():
     """Gets stellar information for TIC"""
-    from astroquery.mast import Catalogs  # loading here so the script doesnt when testing base python (w/o astroquery installed)
+    from astroquery.mast import (
+        Catalogs,
+    )  # loading here so the script doesnt when testing base python (w/o astroquery installed)
+
     print("Starting astroquery")
     star = Catalogs.query_object(
         f"TIC {TIC_NUM}", catalog="TIC", radius=0.001
@@ -31,6 +34,7 @@ def get_stellar_data():
 
 def get_lk_data():
     import lightkurve as lk  # loading here just so the script doesnt die when using base python (w/o lk installed)
+
     search = lk.search_lightcurve(target=f"TIC {TIC_NUM}", mission="TESS")
     # Restrict to short cadence no "fast" cadence
     search = search[np.where(search.table["t_exptime"] == 120)]

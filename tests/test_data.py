@@ -28,5 +28,6 @@ class TestData(unittest.TestCase):
         data = tess_data.TICEntry.load_tic_data(toi=103)
         self.assertTrue(data.loaded_from_cache)
 
+
 if __name__ == "__main__":
     unittest.main()

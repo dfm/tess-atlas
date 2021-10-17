@@ -105,38 +105,58 @@ class MatplotlibPlotter(PlotterBackend):
         fig.savefig(fname)
 
     @staticmethod
-    def plot_phase(tic_entry: TICEntry):
+    def plot_phase(tic_entry):
+        """Adapted from exoplanet tutorials
+        https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
+        """
         posterior = tic_entry.inference_data.trace.posterior
         colors = get_colors(tic_entry.planet_count)
+
+        t = tic_entry.lightcurve.time
+        y = tic_entry.lightcurve.flux
+        yerr = tic_entry.lightcurve.flux_err
+
         for i in range(tic_entry.planet_count):
             plt.figure(figsize=(7, 5))
-            p = np.median(posterior["p"][:, i])
-            t0 = np.median(posterior["t0"][:, i])
+
+            # Get the posterior median orbital parameters
+            p = np.median(posterior["p"].values[:, :, i])
+            t0 = np.median(posterior["t0"].values[:, :, i])
+            lcs = posterior["lightcurves"].values
+
+            # Compute the median of posterior estimate of the contribution from
+            # the other planets and remove this from the data
+            # (to plot just the planet we care about)
+            ith_flux = y
+            for j in range(tic_entry.planet_count):
+                if j != i:
+                    ith_flux -= np.median(lcs[:, :, :, j], axis=(0, 1))
+            # TODO: check if this works for multi-planet systems
 
             # Plot the folded data
-            x_fold = (tic_entry.lightcurve.time - t0 + 0.5 * p) % p - 0.5 * p
+            x_fold = (t - t0 + 0.5 * p) % p - 0.5 * p
             plt.errorbar(
                 x_fold,
-                tic_entry.lightcurve.flux,
-                yerr=tic_entry.lightcurve.flux_err,
+                ith_flux,
+                yerr=yerr,
                 fmt=".k",
                 label="data",
                 zorder=-1000,
-                alpha=0.33,
             )
 
+            # Plot the folded model
             inds = np.argsort(x_fold)
             inds = inds[np.abs(x_fold)[inds] < 0.3]
-            pred = (
-                posterior["lightcurves"][:, inds, i] * 1e3
-                + posterior["f0"][:, None]
+            scaled_lcs = lcs[:, :, inds, i] * 1e3
+            pred = scaled_lcs + posterior["f0"].values[:, :, None]
+            quants = np.percentile(pred, [16, 50, 84], axis=(0, 1))
+            plt.plot(
+                x_fold[inds], quants[1, :], color=colors[i], label="model"
             )
-            pred = np.percentile(pred, [16, 50, 84], axis=0)
-            plt.plot(x_fold[inds], pred[1], color=colors[i], label="model")
             art = plt.fill_between(
                 x_fold[inds],
-                pred[0],
-                pred[2],
+                quants[0, :],
+                quants[2, :],
                 color=colors[i],
                 alpha=0.5,
                 zorder=1000,
@@ -144,9 +164,9 @@ class MatplotlibPlotter(PlotterBackend):
             art.set_edgecolor("none")
 
             # Annotate the plot with the planet's period
-            txt = "period = {0:.4f} +/- {1:.4f} d".format(
-                np.mean(posterior["p"][:, i]), np.std(posterior["p"][:, i])
-            )
+            p_mean = np.mean(posterior["p"].values[:, :, i])
+            p_std = np.mean(posterior["p"].values[:, :, i])
+            txt = f"period = {p_mean:.4f} +/- {p_std:.4f} d"
             plt.annotate(
                 txt,
                 (0, 0),

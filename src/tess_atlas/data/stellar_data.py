@@ -139,6 +139,7 @@ def get_tic_stellar_data_from_mast(
             astropy_star_datatable = Catalogs.query_object(
                 f"TIC {tic}", catalog="TIC", radius=0.001
             )
+            logger.debug(f"Downloading StellarData from MAST successful")
             df = astropy_star_datatable.to_pandas()
             star = df.to_dict("records")[0]  # only selecting the 1st as a dict
             return star

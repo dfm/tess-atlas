@@ -48,6 +48,21 @@ def notebook_initalisations():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
 
+    plt.style.use("default")
+    plt.rcParams["savefig.dpi"] = 100
+    plt.rcParams["figure.dpi"] = 100
+    plt.rcParams["font.size"] = 16
+    plt.rcParams["font.family"] = "sans-serif"
+    plt.rcParams["font.sans-serif"] = ["Liberation Sans"]
+    plt.rcParams["font.cursive"] = ["Liberation Sans"]
+    plt.rcParams["mathtext.fontset"] = "custom"
+    plt.rcParams["image.cmap"] = "inferno"
+
+    # make sure that THEANO has cache dir for each thread (prevent locking issues)
+    os.environ["THEANO_FLAGS"] = f"compiledir=./theano_cache/{os.getpid()}"
+
+
+def get_logger():
     # Logging setup
     for logger_name in [
         "theano.gof.compilelock",
@@ -63,13 +78,4 @@ def notebook_initalisations():
 
     notebook_logger = setup_logger(NOTEBOOK_LOGGER_NAME)
     notebook_logger.setLevel(logging.INFO)
-
-    plt.style.use("default")
-    plt.rcParams["savefig.dpi"] = 100
-    plt.rcParams["figure.dpi"] = 100
-    plt.rcParams["font.size"] = 16
-    plt.rcParams["font.family"] = "sans-serif"
-    plt.rcParams["font.sans-serif"] = ["Liberation Sans"]
-    plt.rcParams["font.cursive"] = ["Liberation Sans"]
-    plt.rcParams["mathtext.fontset"] = "custom"
-    plt.rcParams["image.cmap"] = "inferno"
+    return notebook_logger

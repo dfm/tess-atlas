@@ -83,7 +83,13 @@ class TICEntry(DataObject):
             self.inference_data = InferenceData.load(self.outdir)
         self.candidates = self.get_candidates()
         self.loaded_from_cache = loaded_from_cache
-        self.save_data()
+        if not self.loaded_from_cache:
+            self.save_data()
+
+        # make sure that THEANO has cache dir for each thread (prevent locking issues)
+        os.environ[
+            "THEANO_FLAGS"
+        ] = f"compiledir={self.outdir}/cache/{os.getpid()}"
 
     def get_candidates(self) -> List[PlanetCandidate]:
         candidates = []

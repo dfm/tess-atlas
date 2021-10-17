@@ -48,7 +48,7 @@ def notebook_execution(toi_id, outdir, quickrun=True, remove_after=False):
     notebook_fn = run_toi.create_toi_notebook_from_template_notebook(
         toi_number=toi_id, quickrun=quickrun, outdir=outdir
     )
-    success = run_toi.execute_toi_notebook(notebook_fn)
+    success = run_toi.execute_ipynb(notebook_fn)
 
     samples_file = (
         f"{outdir}/{__version__}/toi_{toi_id}_files/toi_{toi_id}.netcdf"

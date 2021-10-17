@@ -27,8 +27,6 @@ TOI_DATABASE = (
 
 def run_toi_in_pool(kwargs):
     logger = logging.getLogger(RUNNER_LOGGER_NAME)
-    # make sure that THEANO has cache dir for each thread (prevent locking issues)
-    os.environ["THEANO_FLAGS"] = f"compiledir=./cache/{os.getpid()}"
     logger.info(f"Running TOI with {kwargs}")
     run_status, run_duration = run_toi(**kwargs)
     logger.info(

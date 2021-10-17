@@ -1,19 +1,18 @@
-from astroquery.mast import Catalogs
-from astroquery.exceptions import ResolverError, NoResultsWarning
-import logging
-
-import pandas as pd
-import os
 import json
-from IPython.display import display
-from IPython.display import HTML
-
+import logging
+import os
+import time
+from typing import Dict
 
 import numpy as np
-
-from .data_object import DataObject
+from IPython.display import HTML
+from IPython.display import display
+from astroquery.exceptions import ResolverError, NoResultsWarning
+from astroquery.mast import Catalogs
+from requests.models import HTTPError
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+from .data_object import DataObject
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -51,11 +50,7 @@ class StellarData(DataObject):
         """
         logger.info(f"Downloading StellarData from MAST")
         try:
-            astropy_star_datatable = Catalogs.query_object(
-                f"TIC {tic}", catalog="TIC", radius=0.001
-            )
-            df = astropy_star_datatable.to_pandas()
-            star = df.to_dict("records")[0]  # only selecting the 1st as a dict
+            star = get_tic_stellar_data_from_mast(tic)
         except (ResolverError, NoResultsWarning):
             logger.warning(
                 f"No stellar data associated with TIC {tic}. Eccentricity post-processing step may fail."
@@ -130,3 +125,31 @@ class StellarData(DataObject):
 
 def no_nans_present(data):
     return np.all(np.isfinite(data))
+
+
+def get_tic_stellar_data_from_mast(
+    tic: int, num_retry=3, wait_time=0.2
+) -> Dict[str, float]:
+    logger.debug(
+        f"astroquery.mast.Catalogs.query_object('TIC {tic}', catalog='TIC', radius=0.001)"
+    )
+    for attempt_number in range(num_retry):
+        try:
+            astropy_star_datatable = Catalogs.query_object(
+                f"TIC {tic}", catalog="TIC", radius=0.001
+            )
+            df = astropy_star_datatable.to_pandas()
+            star = df.to_dict("records")[0]  # only selecting the 1st as a dict
+            return star
+        except HTTPError as e:
+            if attempt_number < num_retry - 1:
+                logger.warning(
+                    f"astroquery.mast call (attempt {attempt_number}) failed: {e}. "
+                    f"Retrying after {wait_time}s."
+                )
+                time.sleep(wait_time)
+                continue
+    logger.error(
+        f"astroquery.mast call failed. Eccentricity post-processing will fail."
+    )
+    return {}

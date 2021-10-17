@@ -25,7 +25,7 @@ CLASSIFIERS = [
 ]
 INSTALL_REQUIRES = [
     "tomli>=1.0.0",
-    "docutil==0.16",
+    "docutils==0.16",
     "exoplanet>=0.5.1",
     "pymc3-ext>=0.1.0",
     "theano-pymc>=1.1.2",

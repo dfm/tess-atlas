@@ -64,9 +64,12 @@
 # Then we'll set up the plotting styles and do all of the imports:
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
-import logging
-import os
+from tess_atlas.utils import notebook_initalisations
 
+notebook_initalisations()
+
+# + pycharm={"name": "#%%\n"} tags=["exe"]
+import os
 import exoplanet as xo
 import numpy as np
 import pandas as pd
@@ -81,12 +84,9 @@ from tess_atlas.data import TICEntry
 from tess_atlas.analysis.eccenticity_reweighting import (
     calculate_eccentricity_weights,
 )
+from tess_atlas.utils import get_logger
 
-from tess_atlas.utils import notebook_initalisations
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
-notebook_initalisations()
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = get_logger()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
@@ -361,6 +361,7 @@ plot_lightcurve(tic_entry, model_lightcurves)
 
 # + tags=["exe"]
 plot_folded_lightcurve(tic_entry, model_lightcurves)
+
 
 # -
 

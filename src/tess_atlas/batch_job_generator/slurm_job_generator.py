@@ -64,6 +64,11 @@ def get_cli_args():
         "--module_loads",
         help="String containing all module loads in one line (each module separated by a space)",
     )
+    parser.add_argument(
+        "--setup",
+        action="store_true",  # False by default
+        help="Create notebooks and download data for analysis (dont execute notebooks)",
+    )
     args = parser.parse_args()
     return args.toi_csv, args.outdir, args.module_loads, args.setup
 
@@ -99,8 +104,8 @@ def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
 
 
 def main():
-    toi_csv, outdir, module_loads, setup = get_cli_args()
-    setup_jobs(toi_csv, outdir, module_loads, setup)
+    toi_csv, outdir, module_loads = get_cli_args()
+    setup_jobs(toi_csv, outdir, module_loads)
 
 
 if __name__ == "__main__":

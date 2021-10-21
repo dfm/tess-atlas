@@ -21,9 +21,9 @@ def make_slurm_file(
     outdir: str,
     toi_numbers: List[int],
     module_loads: str,
+    jobname: str,
     extra_jobargs: Optional[str] = "",
     time: Optional[str] = "300:00",
-    jobname: Optional[str] = "analysis",
 ):
     template = load_template()
     path_to_python = shutil.which("python")
@@ -31,7 +31,7 @@ def make_slurm_file(
     file_contents = template.render(
         time=time,
         outdir=os.path.abspath(outdir),
-        log_file=os.path.join(outdir, "toi_slurm_jobs.log"),
+        log_file=os.path.join(outdir, f"toi_{jobname}_slurm_jobs.log"),
         module_loads=module_loads,
         total_num=str(len(toi_numbers) - 1),
         load_env=f"source {path_to_env_activate}",
@@ -73,27 +73,39 @@ def get_cli_args():
     return args.toi_csv, args.outdir, args.module_loads, args.setup
 
 
-def setup_jobs(
-    toi_csv: str, outdir: str, module_loads: str, setup: bool
-) -> None:
+def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
     os.makedirs(outdir, exist_ok=True)
     toi_numbers = get_toi_numbers(toi_csv)
 
-    extra_jobargs, time, name = "", "300:00", "analysis"
-    if setup:
-        extra_jobargs, time, name = "--setup", "20:00", "generation"
-
-    fname = make_slurm_file(
-        outdir, toi_numbers, module_loads, extra_jobargs, time, name
+    generation_fn = make_slurm_file(
+        outdir,
+        toi_numbers,
+        module_loads,
+        extra_jobargs="--setup",
+        time="20:00",
+        jobname="generation",
     )
+    analysis_fn = make_slurm_file(
+        outdir,
+        toi_numbers,
+        module_loads,
+        extra_jobargs="",
+        time="300:00",
+        jobname="analysis",
+    )
+
     print(
-        f"Jobfile created, to run job: \nsbatch {'-p datamover' if setup else ''} {fname}"
+        f"""Jobfiles created, to run job:
+    >>> sbatch -p datamover {generation_fn}
+    (wait till above complete)
+    >>> sbatch {analysis_fn}
+    """
     )
 
 
 def main():
-    toi_csv, outdir, module_loads, setup = get_cli_args()
-    setup_jobs(toi_csv, outdir, module_loads, setup)
+    toi_csv, outdir, module_loads = get_cli_args()
+    setup_jobs(toi_csv, outdir, module_loads)
 
 
 if __name__ == "__main__":

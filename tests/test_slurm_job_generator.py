@@ -6,6 +6,9 @@ import pandas as pd
 from tess_atlas.batch_job_generator.slurm_job_generator import setup_jobs
 
 
+CLEAN_AFTER = False
+
+
 class JobgenTest(unittest.TestCase):
     def setUp(self):
         self.start_dir = os.getcwd()
@@ -23,12 +26,11 @@ class JobgenTest(unittest.TestCase):
     def tearDown(self):
         import shutil
 
-        if os.path.exists(self.outdir):
+        if os.path.exists(self.outdir) and CLEAN_AFTER:
             shutil.rmtree(self.outdir)
 
     def test_slurmfile(self):
-        setup_jobs(self.toi_fn, self.outdir, self.module_loads, setup=True)
-        setup_jobs(self.toi_fn, self.outdir, self.module_loads, setup=False)
+        setup_jobs(self.toi_fn, self.outdir, self.module_loads)
 
 
 if __name__ == "__main__":

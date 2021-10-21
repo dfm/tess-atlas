@@ -12,7 +12,6 @@
 module load {{module_loads}}
 {{load_env}}
 
-
-TOI_NUMBERS=({{toi_nums}})
+TOI_NUMBERS=({{toi_numbers}})
 
 srun run_toi ${TOI_NUMBERS[$SLURM_ARRAY_TASK_ID]} --outdir {{outdir}}} {{extra_jobargs}}

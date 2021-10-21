@@ -1,18 +1,18 @@
 #!/bin/bash
 #
 #SBATCH --job-name=run_tois
-#SBATCH --output={{{LOG FILE}}}
+#SBATCH --output={{log_file}}
 #
 #SBATCH --ntasks=1
-#SBATCH --time=300:00
+#SBATCH --time={{time}}
 #SBATCH --mem-per-cpu=500MB
 #
-#SBATCH --array=0-{{{TOTAL NUM}}}
+#SBATCH --array=0-{{total_num}}
 
-module load {{{MODULE LOADS}}}
-{{{LOAD ENV}}}
+module load {{module_loads}}
+{{load_env}}
 
 
-TOI_NUMBERS=({{{TOI NUMBERS}}})
+TOI_NUMBERS=({{toi_nums}})
 
-srun run_toi ${TOI_NUMBERS[$SLURM_ARRAY_TASK_ID]} --outdir {{{OUTDIR}}}
+srun run_toi ${TOI_NUMBERS[$SLURM_ARRAY_TASK_ID]} --outdir {{outdir}}} {{extra_jobargs}}

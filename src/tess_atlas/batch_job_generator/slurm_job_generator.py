@@ -1,35 +1,47 @@
 import argparse
 import os
 import shutil
-from typing import List
+from typing import List, Optional
 
+import jinja2
 import pandas as pd
 
-TEMPLATE_FILE = os.path.join(os.path.dirname(__file__), "slurm_template.sh")
+DIR = os.path.dirname(__file__)
+TEMPLATE_FILE = "slurm_template.sh"
 
 
-def make_slurm_file(outdir: str, toi_numbers: List[int], module_loads: str):
-    with open(TEMPLATE_FILE, "r") as f:
-        file_contents = f.read()
-    outdir = os.path.abspath(outdir)
-    logfile_name = os.path.join(outdir, "toi_slurm_jobs.log")
-    jobfile_name = os.path.join(outdir, "slurm_job.sh")
+def load_template():
+    template_loader = jinja2.FileSystemLoader(searchpath=DIR)
+    template_env = jinja2.Environment(loader=template_loader)
+    template = template_env.get_template(TEMPLATE_FILE)
+    return template
+
+
+def make_slurm_file(
+    outdir: str,
+    toi_numbers: List[int],
+    module_loads: str,
+    extra_jobargs: Optional[str] = "",
+    time: Optional[str] = "300:00",
+    jobname: Optional[str] = "analysis",
+):
+    template = load_template()
     path_to_python = shutil.which("python")
     path_to_env_activate = path_to_python.replace("python", "activate")
-    file_contents = file_contents.replace(
-        "{{{TOTAL NUM}}}", str(len(toi_numbers) - 1)
+    file_contents = template.render(
+        time=time,
+        outdir=os.path.abspath(outdir),
+        log_file=os.path.join(outdir, "toi_slurm_jobs.log"),
+        module_loads=module_loads,
+        total_num=str(len(toi_numbers) - 1),
+        load_env=f"source {path_to_env_activate}",
+        toi_numbers=" ".join([str(toi) for toi in toi_numbers]),
+        extra_jobargs=extra_jobargs,
     )
-    file_contents = file_contents.replace("{{{MODULE LOADS}}}", module_loads)
-    file_contents = file_contents.replace("{{{OUTDIR}}}", outdir)
-    file_contents = file_contents.replace(
-        "{{{LOAD ENV}}}", f"source {path_to_env_activate}"
-    )
-    file_contents = file_contents.replace("{{{LOG FILE}}}", logfile_name)
-    toi_str = " ".join([str(toi) for toi in toi_numbers])
-    file_contents = file_contents.replace("{{{TOI NUMBERS}}}", toi_str)
+    jobfile_name = os.path.join(outdir, f"slurm_{jobname}_job.sh")
     with open(jobfile_name, "w") as f:
         f.write(file_contents)
-    print(f"Jobfile created, to run job: \nsbatch {jobfile_name}")
+    return jobfile_name
 
 
 def get_toi_numbers(toi_csv: str):
@@ -52,15 +64,36 @@ def get_cli_args():
         "--module_loads",
         help="String containing all module loads in one line (each module separated by a space)",
     )
+    parser.add_argument(
+        "--setup",
+        action="store_true",  # False by default
+        help="Create notebooks and download data for analysis (dont execute notebooks)",
+    )
     args = parser.parse_args()
-    return args.toi_csv, args.outdir, args.module_loads
+    return args.toi_csv, args.outdir, args.module_loads, args.setup
+
+
+def setup_jobs(
+    toi_csv: str, outdir: str, module_loads: str, setup: bool
+) -> None:
+    os.makedirs(outdir, exist_ok=True)
+    toi_numbers = get_toi_numbers(toi_csv)
+
+    extra_jobargs, time, name = "", "300:00", "analysis"
+    if setup:
+        extra_jobargs, time, name = "--setup", "20:00", "generation"
+
+    fname = make_slurm_file(
+        outdir, toi_numbers, module_loads, extra_jobargs, time, name
+    )
+    print(
+        f"Jobfile created, to run job: \nsbatch {'-p datamover' if setup else ''} {fname}"
+    )
 
 
 def main():
-    toi_csv, outdir, module_loads = get_cli_args()
-    os.makedirs(outdir, exist_ok=True)
-    toi_numbers = get_toi_numbers(toi_csv)
-    make_slurm_file(outdir, toi_numbers, module_loads)
+    toi_csv, outdir, module_loads, setup = get_cli_args()
+    setup_jobs(toi_csv, outdir, module_loads, setup)
 
 
 if __name__ == "__main__":

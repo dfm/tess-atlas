@@ -1,7 +1,9 @@
 import os
 import unittest
 
-from tess_atlas.batch_job_generator.slurm_job_generator import make_slurm_file
+import pandas as pd
+
+from tess_atlas.batch_job_generator.slurm_job_generator import setup_jobs
 
 
 class JobgenTest(unittest.TestCase):
@@ -9,6 +11,14 @@ class JobgenTest(unittest.TestCase):
         self.start_dir = os.getcwd()
         self.outdir = f"test_jobgen"
         os.makedirs(self.outdir, exist_ok=True)
+        self.module_loads = "module load 1"
+        self.toi_list = "module load 1"
+        self.toi_fn = f"{self.outdir}/toi.csv"
+        self.make_toi_file()
+
+    def make_toi_file(self):
+        df = pd.DataFrame(dict(id=[0, 1], toi_numbers=[100, 101]))
+        df.to_csv(self.toi_fn, index=False)
 
     def tearDown(self):
         import shutil
@@ -17,7 +27,8 @@ class JobgenTest(unittest.TestCase):
             shutil.rmtree(self.outdir)
 
     def test_slurmfile(self):
-        make_slurm_file(self.outdir, [100, 101, 102], "module load 1")
+        setup_jobs(self.toi_fn, self.outdir, self.module_loads, setup=True)
+        setup_jobs(self.toi_fn, self.outdir, self.module_loads, setup=False)
 
 
 if __name__ == "__main__":

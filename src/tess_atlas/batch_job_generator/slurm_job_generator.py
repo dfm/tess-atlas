@@ -1,7 +1,7 @@
 import argparse
 import os
 import shutil
-from typing import List, Optional
+from typing import List
 
 import jinja2
 import pandas as pd
@@ -22,8 +22,8 @@ def make_slurm_file(
     toi_numbers: List[int],
     module_loads: str,
     jobname: str,
-    extra_jobargs: Optional[str] = "",
-    time: Optional[str] = "300:00",
+    extra_jobargs: str,
+    time: str,
 ):
     template = load_template()
     path_to_python = shutil.which("python")
@@ -64,13 +64,8 @@ def get_cli_args():
         "--module_loads",
         help="String containing all module loads in one line (each module separated by a space)",
     )
-    parser.add_argument(
-        "--setup",
-        action="store_true",  # False by default
-        help="Create notebooks and download data for analysis (dont execute notebooks)",
-    )
     args = parser.parse_args()
-    return args.toi_csv, args.outdir, args.module_loads, args.setup
+    return args.toi_csv, args.outdir, args.module_loads
 
 
 def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:

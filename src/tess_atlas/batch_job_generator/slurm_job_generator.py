@@ -29,6 +29,7 @@ def make_slurm_file(
     path_to_python = shutil.which("python")
     path_to_env_activate = path_to_python.replace("python", "activate")
     file_contents = template.render(
+        jobname=f"run_toi_{jobname}",
         time=time,
         outdir=os.path.abspath(outdir),
         log_file=os.path.join(outdir, f"toi_{jobname}_slurm_jobs.log"),

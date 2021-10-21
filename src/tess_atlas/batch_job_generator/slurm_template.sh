@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=run_tois
+#SBATCH --job-name={{jobname}}
 #SBATCH --output={{log_file}}
 #
 #SBATCH --ntasks=1
@@ -14,4 +14,4 @@ module load {{module_loads}}
 
 TOI_NUMBERS=({{toi_numbers}})
 
-srun run_toi ${TOI_NUMBERS[$SLURM_ARRAY_TASK_ID]} --outdir {{outdir}}} {{extra_jobargs}}
+srun run_toi ${TOI_NUMBERS[$SLURM_ARRAY_TASK_ID]} --outdir {{outdir}} {{extra_jobargs}}

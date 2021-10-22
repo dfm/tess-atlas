@@ -2,9 +2,10 @@ name: build_paper
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - paper/**
 
 jobs:
   build:

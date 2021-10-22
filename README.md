@@ -37,6 +37,11 @@ To run all the notebooks (in batches of 8), you can run
 run_tois
 ```
 
+To make the slurm files needed to analyse a CSV of TOIs you can run:
+```bash
+make_slurm_job --toi_csv toi_ids.csv --module_loads "git/2.18.0 gcc/9.2.0 openmpi/4.0.2 python/3.8.5"
+```
+
 ## Run tests on template.ipynb
 ```bash
 python -m pip install -e ".[test]"

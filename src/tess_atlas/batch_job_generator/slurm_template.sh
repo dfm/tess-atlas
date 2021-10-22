@@ -5,7 +5,7 @@
 #
 #SBATCH --ntasks=1
 #SBATCH --time={{time}}
-#SBATCH --mem-per-cpu=500MB
+#SBATCH --mem-per-cpu={{mem}}
 #
 #SBATCH --array=0-{{total_num}}
 

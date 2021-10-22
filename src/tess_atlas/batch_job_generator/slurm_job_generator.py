@@ -24,6 +24,7 @@ def make_slurm_file(
     jobname: str,
     extra_jobargs: str,
     time: str,
+    mem: str,
 ):
     template = load_template()
     path_to_python = shutil.which("python")
@@ -38,11 +39,26 @@ def make_slurm_file(
         load_env=f"source {path_to_env_activate}",
         toi_numbers=" ".join([str(toi) for toi in toi_numbers]),
         extra_jobargs=extra_jobargs,
+        mem=mem,
     )
     jobfile_name = os.path.join(outdir, f"slurm_{jobname}_job.sh")
     with open(jobfile_name, "w") as f:
         f.write(file_contents)
     return jobfile_name
+
+
+def create_main_submitter(outdir, generation_fn, analysis_fn):
+    lines = [
+        "#!/bin/bash",
+        f"GEN_ID=$(sbatch -p datamover --parsable {os.path.abspath(generation_fn)})",
+        f"sbatch --dependency=afterok:$GEN_ID {os.path.abspath(analysis_fn)}",
+        "squeue -u $USER -o '%.4u %.20j %.10A %.4C %.10E %R'",
+        "",
+    ]
+    subfn = os.path.join(outdir, "submit.sh")
+    with open(subfn, "w") as f:
+        f.write("\n".join(lines))
+    return subfn
 
 
 def get_toi_numbers(toi_csv: str):
@@ -80,6 +96,7 @@ def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
         extra_jobargs="--setup",
         time="20:00",
         jobname="generation",
+        mem="500MB",
     )
     analysis_fn = make_slurm_file(
         outdir,
@@ -88,15 +105,12 @@ def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
         extra_jobargs="",
         time="300:00",
         jobname="analysis",
+        mem="4GB",
     )
 
-    print(
-        f"""Jobfiles created, to run job:
-    >>> sbatch -p datamover {generation_fn}
-    (wait till above complete)
-    >>> sbatch {analysis_fn}
-    """
-    )
+    submit_file = create_main_submitter(outdir, generation_fn, analysis_fn)
+
+    print(f"To run job:\n>>> bash {submit_file}")
 
 
 def main():

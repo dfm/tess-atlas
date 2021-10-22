@@ -45,6 +45,20 @@ def make_slurm_file(
     return jobfile_name
 
 
+def create_main_submitter(outdir, generation_fn, analysis_fn):
+    lines = [
+        "#!/bin/bash",
+        f"sbatch -p datamover {os.path.abspath(generation_fn)}",
+        f"sbatch {os.path.abspath(analysis_fn)}",
+        "squeue -o '%u %.20j %.8A %.4C %.10E %R'",
+        "",
+    ]
+    subfn = os.path.join(outdir, "submit.sh")
+    with open(subfn, "w") as f:
+        f.write("\n".join(lines))
+    return subfn
+
+
 def get_toi_numbers(toi_csv: str):
     df = pd.read_csv(toi_csv)
     return list(df.toi_numbers.values)
@@ -90,13 +104,9 @@ def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
         jobname="analysis",
     )
 
-    print(
-        f"""Jobfiles created, to run job:
-    >>> sbatch -p datamover {generation_fn}
-    (wait till above complete)
-    >>> sbatch {analysis_fn}
-    """
-    )
+    submit_file = create_main_submitter(outdir, generation_fn, analysis_fn)
+
+    print(f"To run job:\n>>> bash {submit_file}")
 
 
 def main():

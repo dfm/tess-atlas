@@ -4,26 +4,23 @@
 \input{dfmsymbols}
 
 \shorttitle{The \tess\ Atlas}
-\shortauthors{Foreman-Mackey et al.}
+\shortauthors{the authors}
 
 \begin{document}
 
 \title{The \tess\ Atlas}
 
-\correspondingauthor{Daniel Foreman-Mackey}
-\email{foreman.mackey@gmail.com}
 
-\author[0000-0002-9328-5652]{Daniel Foreman-Mackey}
-\affiliation{Center for Computational Astrophysics,
-             Flatiron Institute,
-             162 5th Ave,
-             New York, NY 10010}
 
-\author{others}
+\author{Author list TBD}
+% \input{authors}
+
 
 \begin{abstract}
 
 This is the \tess\ Atlas.
+\tess\ discovered N exoplanet candidates in N years of data.
+We provide revised transit parameters and accompanying posterior distributions for all the \tess\ objects of interest.
 
 \end{abstract}
 
@@ -32,25 +29,68 @@ This is the \tess\ Atlas.
 
 \section{Introduction} \label{sec:intro}
 
-This is some text.
+In this work we present the uniform modeling of all TESS object of interest (TOIs) utilizing Bayesian framework that provides robust estimates of the uncertainities for all of the planet parameters.
 
-\section{Stellar properties}
+Section~\ref{sec:prob-model} describes our transit lightcurve model and the Bayesian framework we use to estimate parameters of exoplanet systems from the observed data.
 
-To fit for the properties of our stellar targets in a consistent manner, we fit stellar evolution and atmosphere models to the magnitudes and parallaxes measured by \gaia\ using the \isochrones\ software package \citep{Morton:2015}.
-This package wraps the \mist\ isochrones and bolometric corrections to provide a model that can be used for inferring stellar properties based on magnitudes, parallaxes, and spectroscopic constraints.
-We combine \isochrones\ with the \dynesty\ package to perform posterior inference using nested sampling which can be more robust than MCMC methods for inferences with potentially multimodal posteriors.
+\section{Probabilistic Model} \label{sec:prob-model}
 
-For consistency across the data set, we use only the information from the \gaia\ catalog as constraints because these are available for all targets in the sample.
-We fit the $G$, $G_\mathrm{BP}$, and $G_\mathrm{RP}$ photometry (and uncertainties) and the parallax and its uncertainty reported in the \gaia\ DR2 catalog.
-To estimate the uncertainties on the magnitudes, we use linearized propagation of uncertainty which should be well behaved for the targets in the \tess\ sample, but then we also fit for an excess noise parameter in each band to account for remaining uncertainty caused by the measurement and systematics in the stellar evolution and atmosphere models.
+\subsection{Transit lightcurve model}
+We assume that exoplanets are on circular, non-interacting Keplerian orbits around their host star.
+Additonally, we approximate the host star's stellar limb darkening profile using \citet{Kipping:2013}'s quadratic limb darkening law.
+Finally, we compute the exoplanet's resultant quadratic limb-darkened transit lightcurve using an analytical model implemented in \starry.
+The stellar variables in this model are parameterised by
+the baseline relative flux of the light curve $f0$,
+the mean stellar density $\rho_\star$,
+and two parameters describing the quadratic limb-darkening profile of the
+star $u_1, u_2$.
+Each of the $n$ exoplanets in the system are parameterised by the planets'
+orbital period $P_{n}$,
+transit duration $T_{n}$,
+phase or epoch $t0_n$,
+impact parameter $b_n$,
+and the radius of the planet $r_n$ in units of the stellar radius $R_\star$.
 
-To cross match \kepler\ targets, we use the \href{https://gaia-kepler.fun}{gaia-kepler.fun}, for \tess, we cross match using the \gaia-TAP service provided by \astroquery.
-We search with a radius of \dfmtodo{HOWMANY} arcseconds and select the closest (in projected distance) \gaia\ source with a \gaia\ $G$ band magnitude within 1 magnitude of the target's \tess\ or \kepler\ magnitude.
+We use \exoplanet\, \lightkurve
 
-As a sanity check, we compare the inferences made using \isochrones\ and \gaia\ observations to the masses and radii inferred for the \kepler\ asteroseismic targets \citep{Chaplin:2014} and the \cks\ sample of targets with high resolution spectroscopic measurements \citep{Petigura:2017,Johnson:2017}.
-\dfmtodo{Should also compare to a set of M dwarfs (perhaps the ones from Mann) to demonstrate that we're doing ok (or not).}
-In all cases we find that our estimates of stellar masses and radii are consistent within the quoted uncertainties, but emphasize that more precise constraints could be obtained by including spectroscopic or asteroseismic measurements.
 
+In the case when there are multiple transits present in the data, we use a second reference time $tmax$ instead of $P$
+
+
+
+\subsection{Bayesian Framework}
+
+
+Likelihood, GP, Priors, \celerite
+
+
+Table with priors
+
+%
+%
+%GPs are stochastic models consisting of a mean function
+%$\mu_\vec{\theta}(\vec{x})$ and a covariance, autocorrelation, or ``kernel''
+%function $K$ parameterized by
+%$\vec{\theta}$ and $\vec{\alpha}$ respectively.
+%Under this model, the log-likelihood function $\mathcal{L}
+%(\vec{\theta},\,\vec{\alpha})$ with a dataset
+%
+%\begin{align}\eqlabel{gp-likelihood}
+%\ln \mathcal{L} (\vec{\theta},\,\vec{\alpha})
+%&= -\frac{1}{2} r(\vec{\theta})^{T}\, K(\vec{\alpha})^{-1}\, r(\vec{\theta}) \nonumber \\
+%   -\frac{1}{2} \log \det K(\vec{\alpha})
+%
+%\end{align}
+
+
+
+
+
+\section{Results}
+
+\section{Discussion}
+
+\section{Data Availibility}
 
 
 
@@ -60,7 +100,7 @@ I would like to thank.
 
 
 
-This work made use of the \href{https://gaia-kepler.fun}{gaia-kepler.fun} crossmatch database created by Megan Bedell.
+This work made use of the \tess\ catalog on ExoFOP
 
 \vspace{5mm}
 \facilities{\tess, \gaia, \kepler, etc.}

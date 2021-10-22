@@ -50,7 +50,7 @@ def create_main_submitter(outdir, generation_fn, analysis_fn):
         "#!/bin/bash",
         f"GEN_ID=$(sbatch -p datamover --parsable {os.path.abspath(generation_fn)})",
         f"sbatch --dependency=afterok:$GEN_ID {os.path.abspath(analysis_fn)}",
-        "squeue -u $USER -o '%u %.20j %.8A %.4C %.10E %R'",
+        "squeue -u $USER -o '%.4u %.20j %.10A %.4C %.10E %R'",
         "",
     ]
     subfn = os.path.join(outdir, "submit.sh")

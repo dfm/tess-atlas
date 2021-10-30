@@ -26,7 +26,8 @@ def setup_logger(logger_name, outdir=""):
     logger.addHandler(sh)
     if outdir != "":
         os.makedirs(outdir, exist_ok=True)
-        filename = os.path.join(outdir, f"{logger_name}_runner.log")
+        fname = logger_name.replace("-", "_").lower()
+        filename = os.path.join(outdir, f"{fname}.log")
         fh = logging.FileHandler(filename)
         fh.setFormatter(formatter)
         logger.addHandler(fh)
@@ -47,6 +48,7 @@ def notebook_initalisations():
     # Warning
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
+    warnings.filterwarnings("ignore", category=UserWarning)
 
     plt.style.use("default")
     plt.rcParams["savefig.dpi"] = 100
@@ -62,10 +64,13 @@ def notebook_initalisations():
     os.environ["THEANO_FLAGS"] = f"compiledir=./theano_cache/{os.getpid()}"
 
 
-def get_logger():
+def get_notebook_logger(outdir=""):
     # Logging setup
     for logger_name in [
         "theano.gof.compilelock",
+        "filelock",
+        "lazylinker_c.py",
+        "theano.tensor.opt",
         "exoplanet",
         "matplotlib",
         "urllib3",
@@ -76,6 +81,6 @@ def get_logger():
         logger = logging.getLogger(logger_name)
         logger.setLevel(logging.ERROR)
 
-    notebook_logger = setup_logger(NOTEBOOK_LOGGER_NAME)
+    notebook_logger = setup_logger(NOTEBOOK_LOGGER_NAME, outdir)
     notebook_logger.setLevel(logging.INFO)
     return notebook_logger

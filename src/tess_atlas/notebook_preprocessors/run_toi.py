@@ -103,6 +103,9 @@ def main():
     logger = setup_logger(
         RUNNER_LOGGER_NAME, outdir=os.path.join(outdir, __version__)
     )
+    logger.info(
+        f"run_toi({toi_number}) {'quick' if quickrun else ''} {'setup' if setup else ''}"
+    )
     success, run_duration = run_toi(toi_number, outdir, quickrun, setup)
     job_str = "setup" if setup else "execution"
     logger.info(

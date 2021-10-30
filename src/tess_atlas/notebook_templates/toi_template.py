@@ -84,9 +84,8 @@ from tess_atlas.data import TICEntry
 from tess_atlas.analysis.eccenticity_reweighting import (
     calculate_eccentricity_weights,
 )
-from tess_atlas.utils import get_logger
+from tess_atlas.utils import get_notebook_logger
 
-logger = get_logger()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
@@ -100,6 +99,7 @@ from tess_atlas.plotting import (
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 TOI_NUMBER = {{{TOINUMBER}}}
+logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")
 
 # + [markdown] tags=["def"]
 # ## Downloading Data

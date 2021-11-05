@@ -1,24 +1,27 @@
 import logging
 import os
-from typing import Optional, List
+from typing import List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from tess_atlas.data import TICEntry
 from tess_atlas.data.inference_data_tools import get_posterior_samples
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+from ..analysis import compute_variable, get_untransformed_varnames
 from .labels import (
-    LIGHTCURVE_PLOT,
-    TIME_LABEL,
     FLUX_LABEL,
     FOLDED_LIGHTCURVE_PLOT,
-    TIME_SINCE_TRANSIT_LABEL,
+    LIGHTCURVE_PLOT,
     PHASE_PLOT,
+    TIME_LABEL,
+    TIME_SINCE_TRANSIT_LABEL,
 )
 from .plotter_backend import PlotterBackend
 from .plotting_utils import get_colors
 
-from ..analysis import compute_variable, get_untransformed_varnames
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
 class MatplotlibPlotter(PlotterBackend):
@@ -47,7 +50,7 @@ class MatplotlibPlotter(PlotterBackend):
         ax.legend(markerscale=5)
 
         fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
-        logging.debug(f"Saving {fname}")
+        logger.debug(f"Saving {fname}")
         plt.tight_layout()
         fig.savefig(fname)
 
@@ -103,7 +106,7 @@ class MatplotlibPlotter(PlotterBackend):
 
         plt.tight_layout()
         fname = os.path.join(tic_entry.outdir, FOLDED_LIGHTCURVE_PLOT)
-        logging.debug(f"Saving {fname}")
+        logger.debug(f"Saving {fname}")
         fig.savefig(fname)
 
     @staticmethod
@@ -197,5 +200,5 @@ class MatplotlibPlotter(PlotterBackend):
             fname = os.path.join(
                 tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i + 1}.")
             )
-            logging.debug(f"Saving {fname}")
+            logger.debug(f"Saving {fname}")
             plt.savefig(fname)

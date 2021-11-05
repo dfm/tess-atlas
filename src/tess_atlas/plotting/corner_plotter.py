@@ -1,22 +1,25 @@
 import logging
 import os
+from typing import List
 
+import arviz as az
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import arviz as az
 from corner.arviz_corner import (
-    convert_to_dataset,
     _var_names,
+    convert_to_dataset,
     get_coords,
     xarray_var_iter,
 )
 
-from typing import List
-
 from tess_atlas.data import TICEntry
-from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+
+from .labels import ECCENTRICITY_PLOT, POSTERIOR_PLOT
 
 CORNER_KWARGS = dict(
     smooth=0.9,
@@ -44,7 +47,7 @@ def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
         range=get_range(inference_data, params),
     )
     fname = os.path.join(tic_entry.outdir, POSTERIOR_PLOT)
-    logging.debug(f"Saving {fname}")
+    logger.debug(f"Saving {fname}")
     fig.savefig(fname)
 
 
@@ -65,7 +68,7 @@ def plot_eccentricity_posteriors(
         fname = os.path.join(
             tic_entry.outdir, f"planet_{n}_{ECCENTRICITY_PLOT}"
         )
-        logging.debug(f"Saving {fname}")
+        logger.debug(f"Saving {fname}")
         fig.savefig(fname)
 
 
@@ -82,7 +85,7 @@ def get_range(data, params: List[str]) -> List[List[int]]:
 def convert_to_numpy_list(
     inference_data: az.InferenceData, params: List[str]
 ) -> np.ndarray:
-    """ Converts from az.InferenceData --> 2D np.ndarray
+    """Converts from az.InferenceData --> 2D np.ndarray
 
     List[posterior_param_list_1, posterior_param_list_2...]
     each item in list is a list for the specific param

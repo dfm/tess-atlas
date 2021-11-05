@@ -1,16 +1,16 @@
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
+
 import numpy as np
 import theano
+from arviz import InferenceData
+from pymc3 import Model
 from pymc3.util import (
     get_default_varnames,
     get_untransformed_name,
     is_transformed_name,
 )
-from pymc3 import Model
-from arviz import InferenceData
-from tqdm.auto import tqdm
-
 from theano.tensor.var import TensorVariable
+from tqdm.auto import tqdm
 
 
 def get_untransformed_varnames(model: Model) -> List[str]:

@@ -17,8 +17,8 @@ import numpy as np
 import pandas as pd
 
 from tess_atlas.notebook_preprocessors.run_toi import run_toi
-from tess_atlas.utils import setup_logger, RUNNER_LOGGER_NAME
 from tess_atlas.tess_atlas_version import __version__
+from tess_atlas.utils import RUNNER_LOGGER_NAME, setup_logger
 
 TOI_DATABASE = (
     "https://exofop.ipac.caltech.edu/tess/download_toi.php?sort=toi&output=csv"

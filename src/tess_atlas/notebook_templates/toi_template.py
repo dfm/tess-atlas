@@ -70,33 +70,32 @@ notebook_initalisations()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 import os
+
+import aesara_theano_fallback.tensor as tt
 import exoplanet as xo
 import numpy as np
 import pandas as pd
 import pymc3 as pm
 import pymc3_ext as pmx
-import aesara_theano_fallback.tensor as tt
-
+from arviz import InferenceData
 from celerite2.theano import GaussianProcess, terms
 
-from arviz import InferenceData
-from tess_atlas.data import TICEntry
-from tess_atlas.data.inference_data_tools import summary
 from tess_atlas.analysis import (
     calculate_eccentricity_weights,
     compute_variable,
     get_untransformed_varnames,
 )
+from tess_atlas.data import TICEntry
+from tess_atlas.data.inference_data_tools import summary
 from tess_atlas.utils import get_notebook_logger
-
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
     plot_folded_lightcurve,
-    plot_phase,
     plot_lightcurve,
+    plot_phase,
     plot_posteriors,
 )
 
@@ -302,7 +301,7 @@ def build_planet_transit_model(tic_entry):
             stellar_params=stellar_priors,
             period_params=p_params,
         )
-    return my_planet_transit_model, my_params, gp
+    return my_planet_transit_model, my_params
 
 
 def test_model(model):
@@ -322,7 +321,7 @@ def test_model(model):
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-planet_transit_model, params, gp = build_planet_transit_model(tic_entry)
+planet_transit_model, params = build_planet_transit_model(tic_entry)
 model_varnames = get_untransformed_varnames(planet_transit_model)
 test_model(planet_transit_model)
 

@@ -1,18 +1,22 @@
 import logging
 import os
-from typing import Optional, List
+from typing import List, Optional
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from tess_atlas.data import TICEntry
-from .plotter_backend import PlotterBackend
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
 from .labels import (
-    TIME_LABEL,
     FLUX_LABEL,
-    LIGHTCURVE_PLOT,
     FOLDED_LIGHTCURVE_PLOT,
+    LIGHTCURVE_PLOT,
+    TIME_LABEL,
 )
+from .plotter_backend import PlotterBackend
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
 class PlotlyPlotter(PlotterBackend):
@@ -51,7 +55,7 @@ class PlotlyPlotter(PlotterBackend):
                 )
             )
         fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
-        logging.debug(f"Saving {fname}")
+        logger.debug(f"Saving {fname}")
         fig.write_image(fname)
         return fig
 
@@ -108,6 +112,6 @@ class PlotlyPlotter(PlotterBackend):
         fig.update_layout(height=300 * tic_entry.planet_count)
         fig.update(layout_coloraxis_showscale=False)
         fname = os.path.join(tic_entry.outdir, FOLDED_LIGHTCURVE_PLOT)
-        logging.debug(f"Saving {fname}")
+        logger.debug(f"Saving {fname}")
         fig.write_image(fname)
         return fig

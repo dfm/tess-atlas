@@ -1,5 +1,5 @@
-from abc import abstractmethod, ABC
 import os
+from abc import ABC, abstractmethod
 
 
 class DataObject(ABC):

@@ -1,7 +1,8 @@
 import os
-from .corner_plotter import plot_posteriors, plot_eccentricity_posteriors
-from .plotly_plots import PlotlyPlotter
+
+from .corner_plotter import plot_eccentricity_posteriors, plot_posteriors
 from .matplotlib_plots import MatplotlibPlotter
+from .plotly_plots import PlotlyPlotter
 
 if os.environ.get("INTERACTIVE_PLOTS", default="False") == "TRUE":
     plot_lightcurve = PlotlyPlotter.plot_lightcurve

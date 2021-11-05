@@ -14,22 +14,30 @@ NOTEBOOK_LOGGER_NAME = "TESS-ATLAS"
 
 
 def setup_logger(logger_name, outdir=""):
-    logging.getLogger().setLevel(logging.INFO)
     logger = logging.getLogger(logger_name)
+    logger.handlers.clear()
     logger.setLevel(logging.INFO)
+
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
+
+    # console logging
     sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)
-    logger.handlers.clear()
+    sh.setLevel(logging.INFO)
     logger.addHandler(sh)
-    if outdir != "":
+
+    if outdir != "":  # setup file logging
+        # create log file
         os.makedirs(outdir, exist_ok=True)
         fname = logger_name.replace("-", "_").lower()
         filename = os.path.join(outdir, f"{fname}.log")
+
+        # setup log-file handler
         fh = logging.FileHandler(filename)
         fh.setFormatter(formatter)
+        fh.setLevel(logging.DEBUG)
         logger.addHandler(fh)
     return logger
 
@@ -82,5 +90,4 @@ def get_notebook_logger(outdir=""):
         logger.setLevel(logging.ERROR)
 
     notebook_logger = setup_logger(NOTEBOOK_LOGGER_NAME, outdir)
-    notebook_logger.setLevel(logging.INFO)
     return notebook_logger

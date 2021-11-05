@@ -5,9 +5,9 @@ import lightkurve as lk
 import numpy as np
 import pandas as pd
 
-from .data_object import DataObject
-
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+from .data_object import DataObject
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

@@ -4,9 +4,8 @@ import logging
 import corner
 import numpy as np
 import pandas as pd
-from typing import Dict
 
-from pymc3.sampling import MultiTrace
+from arviz import InferenceData
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from tess_atlas.data import TICEntry
@@ -14,10 +13,15 @@ from tess_atlas.data import TICEntry
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
-def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
+def calculate_eccentricity_weights(
+    tic_entry: TICEntry, inference_data: InferenceData
+):
     # Extract the implied density from the fit
-    rho_circ = np.repeat(trace["rho_circ"], 500, axis=0)
-    period = np.repeat(trace["p"], 500, axis=0)
+    post = inference_data.posterior
+    rho_circ = post.rho_circ.values.flatten()
+    period = post.p.values.flatten()
+    rho_circ = np.repeat(rho_circ, 500, axis=0)
+    period = np.repeat(period, 500, axis=0)
 
     # Sample eccentricity and omega uniformly
     ecc = np.random.uniform(0, 1, len(rho_circ))
@@ -30,7 +34,7 @@ def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
 
     # Re-weight these samples to get weighted posterior samples
     star = tic_entry.stellar_data
-    log_weights = -0.5 * ((rho - star["rho"]) / star["e_rho"]) ** 2
+    log_weights = -0.5 * ((rho - star.density) / star.density_error) ** 2
 
     list_of_samples_dataframes = []
 
@@ -49,7 +53,7 @@ def calculate_eccentricity_weights(tic_entry: TICEntry, trace: MultiTrace):
 
         # Log the expected posterior quantiles
         q = corner.quantile(ecc, [0.16, 0.5, 0.84], weights=weights)
-        logging.info(
+        logger.info(
             f"e[{n}] = {q[1]:.2f} + {np.diff(q)[1]:.2f} - {np.diff(q)[0]:.2f}".format(
                 q[1], np.diff(q)
             )

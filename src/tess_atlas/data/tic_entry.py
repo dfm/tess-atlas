@@ -6,7 +6,7 @@ import pandas as pd
 from IPython.display import display
 from IPython.display import HTML
 
-from pymc3.sampling import MultiTrace
+from arviz import InferenceData
 
 
 from .data_object import DataObject
@@ -15,8 +15,11 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .lightcurve_data import LightCurveData
 from .planet_candidate import PlanetCandidate
 from .stellar_data import StellarData
-
-from .inference_data import InferenceData
+from .inference_data_tools import (
+    load_inference_data,
+    save_inference_data,
+    get_idata_fname,
+)
 
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
@@ -79,8 +82,8 @@ class TICEntry(DataObject):
         self.lightcurve = LightCurveData.load(**data_kwargs)
         self.stellar_data = StellarData.load(**data_kwargs)
         self.inference_data = None
-        if os.path.isfile(InferenceData.get_filepath(self.outdir)):
-            self.inference_data = InferenceData.load(self.outdir)
+        if os.path.isfile(get_idata_fname(self.outdir)):
+            self.inference_data = load_inference_data(self.outdir)
         self.candidates = self.get_candidates()
         self.loaded_from_cache = loaded_from_cache
         if not self.loaded_from_cache:
@@ -159,11 +162,12 @@ class TICEntry(DataObject):
     def get_filepath(outdir, fname="tic_data.csv"):
         return os.path.join(outdir, fname)
 
-    def save_data(self, trace=None):
+    def save_data(self, inference_data: Optional[InferenceData] = None):
         fpath = self.get_filepath(self.outdir)
         self.tic_data.to_csv(fpath)
         self.lightcurve.save_data(self.outdir)
         self.stellar_data.save_data(self.outdir)
-        if trace is not None:
-            self.inference_data = InferenceData(trace)
-            self.inference_data.save_data(self.outdir)
+        if inference_data is not None:
+            self.inference_data = inference_data
+            save_inference_data(inference_data, self.outdir)
+        logger.info(f"Saved data in {self.outdir}")

@@ -10,12 +10,10 @@ from corner.arviz_corner import (
     convert_to_dataset,
     _var_names,
     get_coords,
-    xarray_to_ndarray,
     xarray_var_iter,
 )
 
-
-from typing import List, Type
+from typing import List
 
 from tess_atlas.data import TICEntry
 from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT
@@ -37,14 +35,13 @@ CORNER_KWARGS = dict(
 )
 
 
-def plot_posteriors(tic_entry: TICEntry) -> None:
-    inference_data = tic_entry.inference_data
+def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
     params = ["p", "r", "b"]
     fig = corner.corner(
-        inference_data.trace,
+        inference_data,
         var_names=params,
         **CORNER_KWARGS,
-        range=get_range(inference_data.trace, params),
+        range=get_range(inference_data, params),
     )
     fname = os.path.join(tic_entry.outdir, POSTERIOR_PLOT)
     logging.debug(f"Saving {fname}")
@@ -76,21 +73,21 @@ def get_range(data, params: List[str]) -> List[List[int]]:
     if isinstance(data, pd.DataFrame):
         return [[data[p].min(), data[p].max()] for p in params]
     elif isinstance(data, az.InferenceData):
-        data_array = convert_az_inference_data_to_numpy_list(data, params)
+        data_array = convert_to_numpy_list(data, params)
         return [[min(d), max(d)] for d in data_array]
     else:
         raise TypeError("Unexpected type provided to get_range")
 
 
-def convert_az_inference_data_to_numpy_list(
-    data: az.InferenceData, params: List[str]
+def convert_to_numpy_list(
+    inference_data: az.InferenceData, params: List[str]
 ) -> np.ndarray:
     """ Converts from az.InferenceData --> 2D np.ndarray
 
     List[posterior_param_list_1, posterior_param_list_2...]
     each item in list is a list for the specific param
     """
-    dataset = convert_to_dataset(data, group="posterior")
+    dataset = convert_to_dataset(inference_data, group="posterior")
     var_names = _var_names(params, dataset)
     plotters = list(
         xarray_var_iter(

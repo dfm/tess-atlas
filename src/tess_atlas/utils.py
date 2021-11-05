@@ -16,13 +16,14 @@ NOTEBOOK_LOGGER_NAME = "TESS-ATLAS"
 def setup_logger(logger_name, outdir=""):
     logger = logging.getLogger(logger_name)
     logger.handlers.clear()
+    logger.setLevel(logging.INFO)
 
     formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
 
     # console logging
-    sh = logging.StreamHandler()
+    sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)
     sh.setLevel(logging.INFO)
     logger.addHandler(sh)

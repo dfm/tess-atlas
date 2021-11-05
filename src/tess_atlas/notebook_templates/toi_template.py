@@ -301,7 +301,7 @@ def build_planet_transit_model(tic_entry):
             stellar_params=stellar_priors,
             period_params=p_params,
         )
-    return my_planet_transit_model, my_params, gp
+    return my_planet_transit_model, my_params
 
 
 def test_model(model):
@@ -321,7 +321,7 @@ def test_model(model):
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-planet_transit_model, params, gp = build_planet_transit_model(tic_entry)
+planet_transit_model, params = build_planet_transit_model(tic_entry)
 model_varnames = get_untransformed_varnames(planet_transit_model)
 test_model(planet_transit_model)
 

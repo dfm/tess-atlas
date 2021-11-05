@@ -78,7 +78,6 @@ class StellarData(DataObject):
         fpath = self.get_filepath(outdir)
         with open(fpath, "w") as f:
             json.dump(self.to_dict(), fp=f, indent=2)
-        logger.info("Saved stellar data")
 
     def density_data_present(self):
         return no_nans_present([self.density, self.density_error])

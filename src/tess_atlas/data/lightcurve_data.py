@@ -86,7 +86,6 @@ class LightCurveData(DataObject):
         fpath = self.get_filepath(outdir)
         df = pd.DataFrame(self.to_dict())
         df.to_csv(fpath, index=False)
-        logger.info(f"Saved lightcurve data.")
 
     @staticmethod
     def get_filepath(outdir, fname="lightcurve.csv"):

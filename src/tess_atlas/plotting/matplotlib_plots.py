@@ -4,9 +4,9 @@ from typing import Optional, List
 
 import matplotlib.pyplot as plt
 import numpy as np
-from pymc3.sampling import MultiTrace
 
 from tess_atlas.data import TICEntry
+from tess_atlas.data.inference_data_tools import get_posterior_samples
 from .labels import (
     LIGHTCURVE_PLOT,
     TIME_LABEL,
@@ -17,6 +17,8 @@ from .labels import (
 )
 from .plotter_backend import PlotterBackend
 from .plotting_utils import get_colors
+
+from ..analysis import compute_variable, get_untransformed_varnames
 
 
 class MatplotlibPlotter(PlotterBackend):
@@ -105,11 +107,11 @@ class MatplotlibPlotter(PlotterBackend):
         fig.savefig(fname)
 
     @staticmethod
-    def plot_phase(tic_entry):
+    def plot_phase(tic_entry, inference_data, model):
         """Adapted from exoplanet tutorials
         https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
         """
-        posterior = tic_entry.inference_data.trace.posterior
+        posterior = inference_data.posterior
         colors = get_colors(tic_entry.planet_count)
 
         t = tic_entry.lightcurve.time
@@ -120,9 +122,17 @@ class MatplotlibPlotter(PlotterBackend):
             plt.figure(figsize=(7, 5))
 
             # Get the posterior median orbital parameters
-            p = np.median(posterior["p"].values[:, :, i])
-            t0 = np.median(posterior["t0"].values[:, :, i])
-            lcs = posterior["lightcurves"].values
+            p = np.median(posterior["p"].values[..., i])
+            t0 = np.median(posterior["t0"].values[..., i])
+
+            samples = get_posterior_samples(
+                inference_data=inference_data,
+                varnames=get_untransformed_varnames(model),
+                size=1000,
+            )
+            lcs = compute_variable(
+                model=model, samples=samples, target=model.lightcurve_models
+            )
 
             # Compute the median of posterior estimate of the contribution from
             # the other planets and remove this from the data
@@ -130,7 +140,7 @@ class MatplotlibPlotter(PlotterBackend):
             ith_flux = y
             for j in range(tic_entry.planet_count):
                 if j != i:
-                    ith_flux -= np.median(lcs[:, :, :, j], axis=(0, 1))
+                    ith_flux -= np.median(lcs[..., j], axis=(0, 1))
             # TODO: check if this works for multi-planet systems
 
             # Plot the folded data
@@ -147,8 +157,8 @@ class MatplotlibPlotter(PlotterBackend):
             # Plot the folded model
             inds = np.argsort(x_fold)
             inds = inds[np.abs(x_fold)[inds] < 0.3]
-            scaled_lcs = lcs[:, :, inds, i] * 1e3
-            pred = scaled_lcs + posterior["f0"].values[:, :, None]
+            scaled_lcs = lcs[..., inds, i] * 1e3
+            pred = scaled_lcs + posterior["f0"].values[..., None]
             quants = np.percentile(pred, [16, 50, 84], axis=(0, 1))
             plt.plot(
                 x_fold[inds], quants[1, :], color=colors[i], label="model"
@@ -164,8 +174,8 @@ class MatplotlibPlotter(PlotterBackend):
             art.set_edgecolor("none")
 
             # Annotate the plot with the planet's period
-            p_mean = np.mean(posterior["p"].values[:, :, i])
-            p_std = np.mean(posterior["p"].values[:, :, i])
+            p_mean = np.mean(posterior["p"].values[..., i])
+            p_std = np.mean(posterior["p"].values[..., i])
             txt = f"period = {p_mean:.4f} +/- {p_std:.4f} d"
             plt.annotate(
                 txt,
@@ -181,11 +191,11 @@ class MatplotlibPlotter(PlotterBackend):
             plt.legend(fontsize=10, loc=4)
             plt.xlabel(TIME_SINCE_TRANSIT_LABEL)
             plt.ylabel(FLUX_LABEL)
-            plt.title(f"Planet {i+1}")
+            plt.title(f"Planet {i + 1}")
             plt.xlim(-0.3, 0.3)
             plt.tight_layout()
             fname = os.path.join(
-                tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i+1}.")
+                tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i + 1}.")
             )
             logging.debug(f"Saving {fname}")
             plt.savefig(fname)

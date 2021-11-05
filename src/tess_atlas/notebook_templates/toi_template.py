@@ -78,11 +78,14 @@ import pymc3_ext as pmx
 import aesara_theano_fallback.tensor as tt
 
 from celerite2.theano import GaussianProcess, terms
-from pymc3.sampling import MultiTrace
 
+from arviz import InferenceData
 from tess_atlas.data import TICEntry
-from tess_atlas.analysis.eccenticity_reweighting import (
+from tess_atlas.data.inference_data_tools import summary
+from tess_atlas.analysis import (
     calculate_eccentricity_weights,
+    compute_variable,
+    get_untransformed_varnames,
 )
 from tess_atlas.utils import get_notebook_logger
 
@@ -282,7 +285,7 @@ def build_planet_transit_model(tic_entry):
         star = xo.LimbDarkLightCurve(u_prior)
         lightcurve_models = star.get_light_curve(orbit=orbit, r=r_priors, t=t)
         lightcurve = 1e3 * pm.math.sum(lightcurve_models, axis=-1) + f0_prior
-        lightcurve_models = pm.Deterministic("lightcurves", lightcurve_models)
+        my_planet_transit_model.lightcurve_models = lightcurve_models
         rho_circ = pm.Deterministic("rho_circ", orbit.rho_star)
 
         # Finally the GP likelihood
@@ -320,8 +323,8 @@ def test_model(model):
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 planet_transit_model, params, gp = build_planet_transit_model(tic_entry)
+model_varnames = get_untransformed_varnames(planet_transit_model)
 test_model(planet_transit_model)
-
 
 # -
 
@@ -353,14 +356,21 @@ init_params = get_optimized_init_params(planet_transit_model, **params)
 # Now we can plot our initial model:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-model_lightcurves = [
-    init_params["lightcurves"][:, i] * 1e3
-    for i in range(tic_entry.planet_count)
-]
-plot_lightcurve(tic_entry, model_lightcurves)
+
+
+lightcurve_models = compute_variable(
+    model=planet_transit_model,
+    samples=[[init_params[n] for n in model_varnames]],
+    target=planet_transit_model.lightcurve_models,
+)
+
 
 # + tags=["exe"]
-plot_folded_lightcurve(tic_entry, model_lightcurves)
+plot_lightcurve(tic_entry, lightcurve_models * 1e3)
+
+
+# + tags=["exe"]
+plot_folded_lightcurve(tic_entry, lightcurve_models)
 
 
 # -
@@ -370,41 +380,40 @@ plot_folded_lightcurve(tic_entry, model_lightcurves)
 # With the model and priors defined, we can begin sampling
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
-def start_model_sampling(model) -> MultiTrace:
+def run_inference(model) -> InferenceData:
     np.random.seed(TOI_NUMBER)
     with model:
-        samples_trace = pmx.sample(
-            tune=2000, draws=2000, chains=2, cores=1, start=init_params
+        sampling_kwargs = dict(tune=2000, draws=2000, chains=2, cores=1)
+        inference_data = pmx.sample(
+            **sampling_kwargs, start=init_params, return_inferencedata=True
         )
-        return samples_trace
+        return inference_data
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-trace = start_model_sampling(planet_transit_model)
+inference_data = run_inference(planet_transit_model)
+inference_data
 
 # -
 
 # Lets save the posteriors and sampling metadata for future use, and take a look at summary statistics
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-tic_entry.save_data(trace=trace)
-tic_entry.inference_data.get_summary_dataframe()
-
-# + tags=["exe"]
-tic_entry.inference_data.trace
+tic_entry.save_data(inference_data=inference_data)
+summary(inference_data)
 
 # -
 # ## Results
 # Below are plots of the posterior probability distributuions:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_posteriors(tic_entry)
+plot_posteriors(tic_entry, inference_data)
 
 # -
 # We can also plot the best-fitting light-curve model
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_phase(tic_entry)
+plot_phase(tic_entry, inference_data, planet_transit_model)
 
 # -
 
@@ -431,7 +440,7 @@ star.display()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 if star.density_data_present:
-    ecc_samples = calculate_eccentricity_weights(star, tic_entry, trace)
+    ecc_samples = calculate_eccentricity_weights(tic_entry, inference_data)
     ecc_samples.to_csv(
         os.path.join(tic_entry.outdir, "eccentricity_samples.csv")
     )

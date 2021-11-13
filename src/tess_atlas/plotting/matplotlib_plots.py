@@ -6,7 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from tess_atlas.data import TICEntry
-from tess_atlas.data.inference_data_tools import get_posterior_samples
+from tess_atlas.data.inference_data_tools import (
+    get_posterior_samples,
+    convert_to_samples_dict,
+)
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 from ..analysis import compute_variable, get_untransformed_varnames
@@ -27,12 +30,19 @@ logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 class MatplotlibPlotter(PlotterBackend):
     @staticmethod
     def plot_lightcurve(
-        tic_entry: TICEntry, model_lightcurves: Optional[List[float]] = None
+        tic_entry: TICEntry, model_lightcurves: Optional[np.ndarray] = None
     ) -> plt.Figure:
-        """Plot lightcurve data + transit fits (if provided) in one plot"""
+        """Plot lightcurve data + transit fits (if provided) in one plot
+
+        model_lightcurves: (lightcurve_num, lightcurve_y_vals, planet_id)
+
+        """
         if model_lightcurves is None:
             model_lightcurves = []
-        colors = get_colors(len(model_lightcurves))
+        else:
+            model_lightcurves = model_lightcurves.T
+
+        colors = get_colors(tic_entry.planet_count)
         fig, ax = plt.subplots(1, figsize=(7, 5))
 
         lc = tic_entry.lightcurve
@@ -56,11 +66,13 @@ class MatplotlibPlotter(PlotterBackend):
 
     @staticmethod
     def plot_folded_lightcurve(
-        tic_entry: TICEntry, model_lightcurves: Optional[List[float]] = None
+        tic_entry: TICEntry, model_lightcurves: Optional[np.ndarray] = None
     ) -> plt.Figure:
         """Subplots of folded lightcurves + transit fits (if provided) for each transit"""
         if model_lightcurves is None:
             model_lightcurves = []
+        else:
+            model_lightcurves = model_lightcurves.T
 
         fig, axes = plt.subplots(
             tic_entry.planet_count, figsize=(7, 5 * tic_entry.planet_count)
@@ -124,18 +136,23 @@ class MatplotlibPlotter(PlotterBackend):
         for i in range(tic_entry.planet_count):
             plt.figure(figsize=(7, 5))
 
-            # Get the posterior median orbital parameters
-            p = np.median(posterior["p"].values[..., i])
-            t0 = np.median(posterior["t0"].values[..., i])
-
+            varnames = get_untransformed_varnames(model)
             samples = get_posterior_samples(
-                inference_data=inference_data,
-                varnames=get_untransformed_varnames(model),
-                size=1000,
+                inference_data=inference_data, varnames=varnames, size=1000
             )
+
             lcs = compute_variable(
                 model=model, samples=samples, target=model.lightcurve_models
             )
+
+            samples_dict = convert_to_samples_dict(varnames, samples)
+
+            # Get the posterior median orbital parameters
+            p = np.median(samples_dict["p"])
+            p_mean = np.mean(samples_dict["p"])
+            p_std = np.std(samples_dict["p"])
+            t0 = np.median(samples_dict["t0"])
+            f0_array = samples_dict["f0"]
 
             # Compute the median of posterior estimate of the contribution from
             # the other planets and remove this from the data
@@ -161,8 +178,12 @@ class MatplotlibPlotter(PlotterBackend):
             inds = np.argsort(x_fold)
             inds = inds[np.abs(x_fold)[inds] < 0.3]
             scaled_lcs = lcs[..., inds, i] * 1e3
-            pred = scaled_lcs + posterior["f0"].values[..., None]
-            quants = np.percentile(pred, [16, 50, 84], axis=(0, 1))
+
+            pred = scaled_lcs.copy()
+            for pred_num, f0 in enumerate(f0_array):
+                pred[pred_num, :] += f0
+
+            quants = np.percentile(pred, [16, 50, 84], axis=0)
             plt.plot(
                 x_fold[inds], quants[1, :], color=colors[i], label="model"
             )
@@ -177,8 +198,7 @@ class MatplotlibPlotter(PlotterBackend):
             art.set_edgecolor("none")
 
             # Annotate the plot with the planet's period
-            p_mean = np.mean(posterior["p"].values[..., i])
-            p_std = np.mean(posterior["p"].values[..., i])
+
             txt = f"period = {p_mean:.4f} +/- {p_std:.4f} d"
             plt.annotate(
                 txt,

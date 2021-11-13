@@ -71,7 +71,22 @@ def get_posterior_samples(
         indices = np.random.randint(len(flat_samps.sample), size=size)
     else:
         indices = np.arange(len(flat_samps.sample))
-    return [[flat_samps[n].values[..., i] for n in varnames] for i in indices]
+    return np.array(
+        [[flat_samps[n].values[..., i] for n in varnames] for i in indices]
+    )
+
+
+def convert_to_samples_dict(varnames: List[str], samples: np.ndarray):
+    """samples obtained from get_posterior_samples"""
+    samples_dict = {}
+    for i, label in enumerate(varnames):
+        if label != "u":
+            samples_dict[label] = np.hstack(samples[..., i])
+        else:
+            u_vals = np.hstack(samples[..., i])
+            samples_dict["u_1"] = u_vals[::2]
+            samples_dict["u_2"] = u_vals[1::2]
+    return samples_dict
 
 
 def save_samples(inference_data, outdir):

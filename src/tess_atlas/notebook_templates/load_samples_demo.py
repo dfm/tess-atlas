@@ -35,9 +35,7 @@ import pandas as pd
 import tqdm
 
 from tess_atlas.data import TICEntry
-from tess_atlas.utils import notebook_initalisations
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME, notebook_initalisations
 
 notebook_initalisations()
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
@@ -58,7 +56,7 @@ def get_analysed_toi_sample_filenames() -> pd.DataFrame:
 
 
 def get_tic_list_with_loaded_samples(
-    analysed_tois: List[int]
+    analysed_tois: List[int],
 ) -> List[TICEntry]:
     tic_list = [TICEntry.load(toi) for toi in analysed_tois]
     for tic in tqdm.tqdm(tic_list, desc="Loading TIC Samples Sets"):

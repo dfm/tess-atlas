@@ -3,24 +3,20 @@ import os
 from typing import Dict, List, Optional
 
 import pandas as pd
-from IPython.display import display
-from IPython.display import HTML
-
 from arviz import InferenceData
-
-
-from .data_object import DataObject
+from IPython.display import HTML, display
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+from .data_object import DataObject
+from .inference_data_tools import (
+    get_idata_fname,
+    load_inference_data,
+    save_inference_data,
+)
 from .lightcurve_data import LightCurveData
 from .planet_candidate import PlanetCandidate
 from .stellar_data import StellarData
-from .inference_data_tools import (
-    load_inference_data,
-    save_inference_data,
-    get_idata_fname,
-)
-
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

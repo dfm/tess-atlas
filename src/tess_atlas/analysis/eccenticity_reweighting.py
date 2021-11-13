@@ -4,11 +4,10 @@ import logging
 import corner
 import numpy as np
 import pandas as pd
-
 from arviz import InferenceData
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from tess_atlas.data import TICEntry
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

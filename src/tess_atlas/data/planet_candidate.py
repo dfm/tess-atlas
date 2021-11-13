@@ -1,11 +1,8 @@
-import logging
 from typing import Dict
 
 import numpy as np
 
 from .data_object import DataObject
-
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .lightcurve_data import LightCurveData
 
 

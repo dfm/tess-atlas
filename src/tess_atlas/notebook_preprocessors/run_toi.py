@@ -3,16 +3,16 @@
 """Module to create and run a TOI notebook from the template notebook"""
 
 import argparse
+import logging
 import os
 import re
 import time
 from typing import Optional, Tuple
-import logging
 
+from ..data.tic_entry import TICEntry
 from ..tess_atlas_version import __version__
 from ..utils import RUNNER_LOGGER_NAME, setup_logger
 from .notebook_executor import execute_ipynb
-from ..data.tic_entry import TICEntry
 from .toi_notebook_generator import create_toi_notebook_from_template_notebook
 
 

@@ -86,6 +86,7 @@ from tess_atlas.analysis import (
     calculate_eccentricity_weights,
     compute_variable,
     get_untransformed_varnames,
+    sample_prior,
 )
 from tess_atlas.utils import get_notebook_logger
 
@@ -357,7 +358,6 @@ init_params = get_optimized_init_params(planet_transit_model, **params)
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 
-
 lightcurve_models = compute_variable(
     model=planet_transit_model,
     samples=[[init_params[n] for n in model_varnames]],
@@ -372,6 +372,10 @@ plot_lightcurve(tic_entry, lightcurve_models * 1e3)
 # + tags=["exe"]
 plot_folded_lightcurve(tic_entry, lightcurve_models)
 
+# + tags=["exe"]
+
+prior_samples = sample_prior(model=planet_transit_model)
+
 
 # -
 
@@ -384,6 +388,7 @@ def run_inference(model) -> InferenceData:
     np.random.seed(TOI_NUMBER)
     with model:
         sampling_kwargs = dict(tune=2000, draws=2000, chains=2, cores=1)
+        logger.info(f"Run sampler with kwargs: {sampling_kwargs}")
         inference_data = pmx.sample(
             **sampling_kwargs, start=init_params, return_inferencedata=True
         )

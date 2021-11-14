@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import arviz as az
+from pymc3.model import Model
 from corner.arviz_corner import (
     convert_to_dataset,
     _var_names,
@@ -13,10 +14,11 @@ from corner.arviz_corner import (
     xarray_var_iter,
 )
 
-from typing import List
+from typing import List, Dict
 
 from tess_atlas.data import TICEntry
-from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT
+from tess_atlas.analysis import get_untransformed_varnames, sample_prior
+from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT, PRIOR_PLOT
 
 CORNER_KWARGS = dict(
     smooth=0.9,
@@ -44,6 +46,33 @@ def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
         range=get_range(inference_data, params),
     )
     fname = os.path.join(tic_entry.outdir, POSTERIOR_PLOT)
+    logging.debug(f"Saving {fname}")
+    fig.savefig(fname)
+
+
+def plot_priors(tic_entry: TICEntry, model: Model, init_params: Dict):
+    varnames = get_untransformed_varnames(model)
+    log_params = [k.split("_")[0] for k in init_params.keys() if "log" in k]
+    log_params.append("rho_circ")
+    prior_samples = pd.DataFrame(sample_prior(model))
+    trues = {n: init_params[n] for n in varnames}
+    trues["u_1"] = trues["u"][0]
+    trues["u_2"] = trues["u"][1]
+    for param in log_params:
+        trues[f"log_{param}"] = np.log(trues[param])
+        prior_samples[f"log_{param}"] = np.log(prior_samples[param])
+        trues.pop(param)
+    log_rho_circ = np.log(prior_samples["rho_circ"].values)
+    log_rho_circ = np.random.choice(
+        log_rho_circ[~np.isnan(log_rho_circ)], len(prior_samples)
+    )
+    prior_samples["log_rho_circ"] = log_rho_circ
+    prior_samples.drop(log_params, axis=1, inplace=True)
+
+    fig = corner.corner(
+        pd.DataFrame(prior_samples), **CORNER_KWARGS, truths=trues
+    )
+    fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
     logging.debug(f"Saving {fname}")
     fig.savefig(fname)
 

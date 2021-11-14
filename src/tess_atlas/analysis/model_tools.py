@@ -7,10 +7,25 @@ from pymc3.util import (
     is_transformed_name,
 )
 from pymc3 import Model
+from pymc3.distributions.distribution import draw_values
 from arviz import InferenceData
 from tqdm.auto import tqdm
 
 from theano.tensor.var import TensorVariable
+
+
+def sample_prior(model: Model, size: Optional[int] = 10000):
+    varnames = get_untransformed_varnames(model)
+    samples = draw_values([model[v] for v in varnames], size=size)
+    prior_samples = {}
+    for i, label in enumerate(varnames):
+        if label != "u":
+            prior_samples[label] = np.hstack(samples[i])
+        else:
+            u_vals = np.hstack(samples[i])
+            prior_samples["u_1"] = u_vals[::2]
+            prior_samples["u_2"] = u_vals[1::2]
+    return prior_samples
 
 
 def get_untransformed_varnames(model: Model) -> List[str]:

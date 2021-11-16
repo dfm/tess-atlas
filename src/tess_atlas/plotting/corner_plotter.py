@@ -51,27 +51,28 @@ def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
 
 
 def plot_priors(tic_entry: TICEntry, model: Model, init_params: Dict):
+    # draw prior samples
     varnames = get_untransformed_varnames(model)
-    log_params = [k.split("_")[0] for k in init_params.keys() if "log" in k]
-    log_params.append("rho_circ")
     prior_samples = pd.DataFrame(sample_prior(model))
-    trues = {n: init_params[n] for n in varnames}
-    trues["u_1"] = trues["u"][0]
-    trues["u_2"] = trues["u"][1]
-    for param in log_params:
-        trues[f"log_{param}"] = np.log(trues[param])
-        prior_samples[f"log_{param}"] = np.log(prior_samples[param])
-        trues.pop(param)
-    log_rho_circ = np.log(prior_samples["rho_circ"].values)
-    log_rho_circ = np.random.choice(
-        log_rho_circ[~np.isnan(log_rho_circ)], len(prior_samples)
-    )
-    prior_samples["log_rho_circ"] = log_rho_circ
-    prior_samples.drop(log_params, axis=1, inplace=True)
 
-    fig = corner.corner(
-        pd.DataFrame(prior_samples), **CORNER_KWARGS, truths=trues
-    )
+    # reduce inital param dict to only include above params
+    init_params = {n: init_params[n] for n in varnames}
+    init_params["u_1"] = init_params["u"][0]
+    init_params["u_2"] = init_params["u"][1]
+
+    # log some parameters
+    param_to_log = [k.split("_")[0] for k in init_params.keys() if "log" in k]
+    param_to_log.append("rho_circ")
+    for param in param_to_log:
+        init_params[f"log_{param}"] = np.log(init_params[param])
+        prior_samples[f"log_{param}"] = np.log(prior_samples[param])
+        init_params.pop(param)
+        prior_samples.drop([param], axis=1, inplace=True)
+
+    # drop nans (from logging rho_circ)
+    prior_samples.dropna(inplace=True)
+
+    fig = corner.corner(prior_samples, **CORNER_KWARGS, truths=init_params)
     fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
     logging.debug(f"Saving {fname}")
     fig.savefig(fname)

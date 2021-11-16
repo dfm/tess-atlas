@@ -7,3 +7,5 @@ FOLDED_LIGHTCURVE_PLOT = "folded_flux_vs_time.png"
 POSTERIOR_PLOT = "posteriors.png"
 ECCENTRICITY_PLOT = "eccentricity_posteriors.png"
 PRIOR_PLOT = "priors.png"
+
+LATEX = {"p": r"$\rm{T}$", "r": r"$\rm{T}$", "rho_circ": "", "rho": ""}

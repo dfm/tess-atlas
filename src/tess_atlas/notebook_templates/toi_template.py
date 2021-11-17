@@ -99,6 +99,7 @@ from tess_atlas.plotting import (
     plot_phase,
     plot_lightcurve,
     plot_posteriors,
+    plot_priors,
 )
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -354,10 +355,9 @@ def get_optimized_init_params(
 init_params = get_optimized_init_params(planet_transit_model, **params)
 # -
 
-# Now we can plot our initial model:
+# Now we can plot our initial model and priors:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-
 lightcurve_models = compute_variable(
     model=planet_transit_model,
     samples=[[init_params[n] for n in model_varnames]],
@@ -373,9 +373,8 @@ plot_lightcurve(tic_entry, lightcurve_models * 1e3)
 plot_folded_lightcurve(tic_entry, lightcurve_models)
 
 # + tags=["exe"]
-
-prior_samples = sample_prior(model=planet_transit_model)
-
+prior_samples = sample_prior(planet_transit_model)
+plot_priors(tic_entry, prior_samples, init_params)
 
 # -
 

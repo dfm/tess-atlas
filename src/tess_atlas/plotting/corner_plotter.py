@@ -19,6 +19,14 @@ from typing import List, Dict
 from tess_atlas.data import TICEntry
 from tess_atlas.analysis import get_untransformed_varnames, sample_prior
 from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT, PRIOR_PLOT
+from .plotting_utils import format_prior_samples_and_initial_params
+
+import logging
+
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+
 
 CORNER_KWARGS = dict(
     smooth=0.9,
@@ -46,35 +54,19 @@ def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
         range=get_range(inference_data, params),
     )
     fname = os.path.join(tic_entry.outdir, POSTERIOR_PLOT)
-    logging.debug(f"Saving {fname}")
+    logger.debug(f"Saving {fname}")
     fig.savefig(fname)
 
 
-def plot_priors(tic_entry: TICEntry, model: Model, init_params: Dict):
-    # draw prior samples
-    varnames = get_untransformed_varnames(model)
-    prior_samples = pd.DataFrame(sample_prior(model))
-
-    # reduce inital param dict to only include above params
-    init_params = {n: init_params[n] for n in varnames}
-    init_params["u_1"] = init_params["u"][0]
-    init_params["u_2"] = init_params["u"][1]
-
-    # log some parameters
-    param_to_log = [k.split("_")[0] for k in init_params.keys() if "log" in k]
-    param_to_log.append("rho_circ")
-    for param in param_to_log:
-        init_params[f"log_{param}"] = np.log(init_params[param])
-        prior_samples[f"log_{param}"] = np.log(prior_samples[param])
-        init_params.pop(param)
-        prior_samples.drop([param], axis=1, inplace=True)
-
-    # drop nans (from logging rho_circ)
-    prior_samples.dropna(inplace=True)
-
+def plot_priors(
+    tic_entry: TICEntry, prior_samples: Dict, init_params: Dict
+) -> None:
+    prior_samples, init_params = format_prior_samples_and_initial_params(
+        prior_samples, init_params
+    )
     fig = corner.corner(prior_samples, **CORNER_KWARGS, truths=init_params)
     fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
-    logging.debug(f"Saving {fname}")
+    logger.debug(f"Saving {fname}")
     fig.savefig(fname)
 
 
@@ -95,7 +87,7 @@ def plot_eccentricity_posteriors(
         fname = os.path.join(
             tic_entry.outdir, f"planet_{n}_{ECCENTRICITY_PLOT}"
         )
-        logging.debug(f"Saving {fname}")
+        logger.debug(f"Saving {fname}")
         fig.savefig(fname)
 
 

@@ -1,6 +1,13 @@
 import logging
 import os
-from typing import Optional, List
+from typing import Optional
+
+import logging
+
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -57,7 +64,7 @@ class MatplotlibPlotter(PlotterBackend):
         ax.legend(markerscale=5)
 
         fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
-        logging.debug(f"Saving {fname}")
+        logger.debug(f"Saving {fname}")
         plt.tight_layout()
         fig.savefig(fname)
 
@@ -115,7 +122,7 @@ class MatplotlibPlotter(PlotterBackend):
 
         plt.tight_layout()
         fname = os.path.join(tic_entry.outdir, FOLDED_LIGHTCURVE_PLOT)
-        logging.debug(f"Saving {fname}")
+        logger.debug(f"Saving {fname}")
         fig.savefig(fname)
 
     @staticmethod
@@ -217,5 +224,5 @@ class MatplotlibPlotter(PlotterBackend):
             fname = os.path.join(
                 tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i + 1}.")
             )
-            logging.debug(f"Saving {fname}")
+            logger.debug(f"Saving {fname}")
             plt.savefig(fname)

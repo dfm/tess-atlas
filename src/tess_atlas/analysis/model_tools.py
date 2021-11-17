@@ -13,10 +13,23 @@ from tqdm.auto import tqdm
 
 from theano.tensor.var import TensorVariable
 
+import logging
+
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+
 
 def sample_prior(model: Model, size: Optional[int] = 10000):
     varnames = get_untransformed_varnames(model)
-    samples = draw_values([model[v] for v in varnames], size=size)
+    try:
+        samples = draw_values([model[v] for v in varnames], size=size)
+    except ValueError as e:
+        logger.error(
+            f"Not sampling prior for multiplanet system due to following error:\n{e}"
+        )
+        return {}
+
     prior_samples = {}
     for i, label in enumerate(varnames):
         if label != "u":

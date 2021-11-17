@@ -59,6 +59,8 @@
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 # %matplotlib inline
+# %autoreload 2
+# %matplotlib inline
 
 # + [markdown] tags=["def"]
 # Then we'll set up the plotting styles and do all of the imports:
@@ -374,7 +376,8 @@ plot_folded_lightcurve(tic_entry, lightcurve_models)
 
 # + tags=["exe"]
 prior_samples = sample_prior(planet_transit_model)
-plot_priors(tic_entry, prior_samples, init_params)
+if prior_samples:
+    plot_priors(tic_entry, prior_samples, init_params)
 
 # -
 

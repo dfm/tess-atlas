@@ -58,7 +58,7 @@
 # To get going, we'll need to make out plots show up inline:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-# %matplotlib inline
+# %load_ext autoreload
 # %autoreload 2
 # %matplotlib inline
 

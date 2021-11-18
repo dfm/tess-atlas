@@ -7,7 +7,8 @@ ECCENTRICITY_PLOT = "eccentricity_posteriors.png"
 PRIOR_PLOT = "priors.png"
 
 # PARAM CONSTANTS
-DURATION = "d"
+DEPTH = "depth"
+DURATION = "dur"
 RADIUS_RATIO = "r"
 TIME_START = "t0"
 TIME_END = "tmax"

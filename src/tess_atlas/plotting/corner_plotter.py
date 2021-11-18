@@ -18,7 +18,7 @@ from typing import List, Dict
 
 from tess_atlas.data import TICEntry
 from tess_atlas.analysis import get_untransformed_varnames, sample_prior
-from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT, PRIOR_PLOT
+from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT, PRIOR_PLOT, LATEX
 from .plotting_utils import format_prior_samples_and_initial_params
 
 import logging
@@ -30,7 +30,7 @@ logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 CORNER_KWARGS = dict(
     smooth=0.9,
-    label_kwargs=dict(fontsize=30),
+    label_kwargs=dict(fontsize=20),
     title_kwargs=dict(fontsize=16),
     color="#0072C1",
     truth_color="tab:orange",
@@ -46,12 +46,13 @@ CORNER_KWARGS = dict(
 
 
 def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
-    params = ["p", "r", "b"]
+    params = ["r", "b", "t0", "tmax", "p", "d"]
     fig = corner.corner(
         inference_data,
         var_names=params,
         **CORNER_KWARGS,
         range=get_range(inference_data, params),
+        labels=[LATEX[p] for p in params],
     )
     fname = os.path.join(tic_entry.outdir, POSTERIOR_PLOT)
     logger.debug(f"Saving {fname}")

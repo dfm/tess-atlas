@@ -47,3 +47,4 @@ tests/test_notebooks/
 *.blg
 *-blx.aux
 *-blx.bib
+/tests/test_plotout/

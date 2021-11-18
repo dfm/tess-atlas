@@ -59,6 +59,8 @@
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 # %matplotlib inline
+# %autoreload 2
+# %matplotlib inline
 
 # + [markdown] tags=["def"]
 # Then we'll set up the plotting styles and do all of the imports:
@@ -84,6 +86,7 @@ from tess_atlas.analysis import (
     calculate_eccentricity_weights,
     compute_variable,
     get_untransformed_varnames,
+    sample_prior,
 )
 from tess_atlas.data import TICEntry
 from tess_atlas.data.inference_data_tools import summary
@@ -97,6 +100,7 @@ from tess_atlas.plotting import (
     plot_lightcurve,
     plot_phase,
     plot_posteriors,
+    plot_priors,
 )
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -139,7 +143,6 @@ tic_entry.display()
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_lightcurve(tic_entry)
 
-
 # -
 # ## Fitting stellar parameters
 # Now that we have the data, we can define a Bayesian model to fit it.
@@ -180,6 +183,22 @@ plot_lightcurve(tic_entry)
 # [SHOTterm]: https://celerite2.readthedocs.io/en/latest/api/python/?highlight=SHOTerm#celerite2.terms.SHOTerm
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
+
+
+DURATION = "d"
+RADIUS_RATIO = "r"
+TIME_START = "t0"
+TIME_END = "tmax"
+ORBITAL_PERIOD = "p"
+MEAN_FLUX = "f0"
+LC_JITTER = "jitter"
+GP_RHO = "rho"
+GP_SIGMA = "sigma"
+RHO_CIRC = "rho_circ"  # stellar density at e=0
+LIMB_DARKENING_PARAM = "u"
+IMPACT_PARAM = "b"
+
+
 def build_planet_transit_model(tic_entry):
     t = tic_entry.lightcurve.time
     y = tic_entry.lightcurve.flux
@@ -197,14 +216,18 @@ def build_planet_transit_model(tic_entry):
         ## define planet parameters
 
         # 1) d: transit duration (duration of eclipse)
-        d_priors = pm.Lognormal("d", mu=np.log(0.1), sigma=10.0, shape=n)
+        d_priors = pm.Lognormal(
+            name=DURATION, mu=np.log(0.1), sigma=10.0, shape=n
+        )
 
         # 2) r: radius ratio (planet radius / star radius)
         r_priors = pm.Lognormal(
-            "r", mu=0.5 * np.log(depths * 1e-3), sd=1.0, shape=n
+            name=RADIUS_RATIO, mu=0.5 * np.log(depths * 1e-3), sd=1.0, shape=n
         )
         # 3) b: impact parameter
-        b_priors = xo.distributions.ImpactParameter("b", ror=r_priors, shape=n)
+        b_priors = xo.distributions.ImpactParameter(
+            name=IMPACT_PARAM, ror=r_priors, shape=n
+        )
         planet_priors = [r_priors, d_priors, b_priors]
 
         ## define orbit-timing parameters
@@ -213,7 +236,7 @@ def build_planet_transit_model(tic_entry):
         t0_norm = pm.Bound(
             pm.Normal, lower=t0s - max_duration, upper=t0s + max_duration
         )
-        t0_priors = t0_norm("t0", mu=t0s, sd=1.0, shape=n)
+        t0_priors = t0_norm(TIME_START, mu=t0s, sd=1.0, shape=n)
 
         # 2) period: the planets' orbital period
         p_params, p_priors_list, tmax_priors_list = [], [], []
@@ -221,7 +244,7 @@ def build_planet_transit_model(tic_entry):
             # if only one transit in data we use the period
             if planet.has_data_only_for_single_transit:
                 p_prior = pm.Pareto(
-                    f"p_{planet.index}",
+                    name=f"{ORBITAL_PERIOD}_{planet.index}",
                     m=planet.period_min,
                     alpha=2.0 / 3.0,
                     testval=planet.period,
@@ -236,7 +259,7 @@ def build_planet_transit_model(tic_entry):
                     upper=planet.tmax + max_duration,
                 )
                 tmax_prior = tmax_norm(
-                    f"tmax_{planet.index}",
+                    name=f"{TIME_END}_{planet.index}",
                     mu=planet.tmax,
                     sigma=0.5 * planet.duration,
                     testval=planet.tmax,
@@ -248,13 +271,13 @@ def build_planet_transit_model(tic_entry):
             p_priors_list.append(p_prior)
             tmax_priors_list.append(tmax_prior)
 
-        p_priors = pm.Deterministic("p", tt.stack(p_priors_list))
-        tmax_priors = pm.Deterministic("tmax", tt.stack(tmax_priors_list))
+        p_priors = pm.Deterministic(ORBITAL_PERIOD, tt.stack(p_priors_list))
+        tmax_priors = pm.Deterministic(TIME_END, tt.stack(tmax_priors_list))
 
         ## define stellar parameters
 
         # 1) f0: the mean flux from the star
-        f0_prior = pm.Normal("f0", mu=0.0, sd=10.0)
+        f0_prior = pm.Normal(name=MEAN_FLUX, mu=0.0, sd=10.0)
 
         # 2) u1, u2: limb darkening parameters
         u_prior = xo.distributions.QuadLimbDark("u")
@@ -262,13 +285,13 @@ def build_planet_transit_model(tic_entry):
 
         ## define k(t, t1; parameters)
         jitter_prior = pm.InverseGamma(
-            "jitter", **pmx.estimate_inverse_gamma_parameters(1.0, 5.0)
+            name=LC_JITTER, **pmx.estimate_inverse_gamma_parameters(1.0, 5.0)
         )
         sigma_prior = pm.InverseGamma(
-            "sigma", **pmx.estimate_inverse_gamma_parameters(1.0, 5.0)
+            name=GP_SIGMA, **pmx.estimate_inverse_gamma_parameters(1.0, 5.0)
         )
         rho_prior = pm.InverseGamma(
-            "rho", **pmx.estimate_inverse_gamma_parameters(0.5, 10.0)
+            name=GP_RHO, **pmx.estimate_inverse_gamma_parameters(0.5, 10.0)
         )
         kernel = terms.SHOTerm(sigma=sigma_prior, rho=rho_prior, Q=0.3)
         noise_priors = [jitter_prior, sigma_prior, rho_prior]
@@ -285,14 +308,14 @@ def build_planet_transit_model(tic_entry):
         lightcurve_models = star.get_light_curve(orbit=orbit, r=r_priors, t=t)
         lightcurve = 1e3 * pm.math.sum(lightcurve_models, axis=-1) + f0_prior
         my_planet_transit_model.lightcurve_models = lightcurve_models
-        rho_circ = pm.Deterministic("rho_circ", orbit.rho_star)
+        rho_circ = pm.Deterministic(name=RHO_CIRC, var=orbit.rho_star)
 
         # Finally the GP likelihood
         residual = y - lightcurve
         gp = GaussianProcess(
             kernel, t=t, diag=yerr ** 2 + jitter_prior ** 2, mean=lightcurve
         )
-        gp.marginal("obs", observed=y)
+        gp.marginal(name="obs", observed=y)
 
         # cache params
         my_params = dict(
@@ -325,6 +348,7 @@ planet_transit_model, params = build_planet_transit_model(tic_entry)
 model_varnames = get_untransformed_varnames(planet_transit_model)
 test_model(planet_transit_model)
 
+
 # -
 
 # The test point acts as an example of a point in the parameter space.
@@ -352,24 +376,25 @@ def get_optimized_init_params(
 init_params = get_optimized_init_params(planet_transit_model, **params)
 # -
 
-# Now we can plot our initial model:
+# Now we can plot our initial model and priors:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-
-
 lightcurve_models = compute_variable(
     model=planet_transit_model,
     samples=[[init_params[n] for n in model_varnames]],
     target=planet_transit_model.lightcurve_models,
 )
 
-
 # + tags=["exe"]
 plot_lightcurve(tic_entry, lightcurve_models * 1e3)
 
-
 # + tags=["exe"]
 plot_folded_lightcurve(tic_entry, lightcurve_models)
+
+# + tags=["exe"]
+prior_samples = sample_prior(planet_transit_model)
+if prior_samples:
+    plot_priors(tic_entry, prior_samples, init_params)
 
 
 # -
@@ -383,6 +408,7 @@ def run_inference(model) -> InferenceData:
     np.random.seed(TOI_NUMBER)
     with model:
         sampling_kwargs = dict(tune=2000, draws=2000, chains=2, cores=1)
+        logger.info(f"Run sampler with kwargs: {sampling_kwargs}")
         inference_data = pmx.sample(
             **sampling_kwargs, start=init_params, return_inferencedata=True
         )

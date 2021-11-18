@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List
+from typing import Dict, List
 
 import arviz as az
 import corner
@@ -13,9 +13,14 @@ from corner.arviz_corner import (
     get_coords,
     xarray_var_iter,
 )
+from pymc3.model import Model
 
+from tess_atlas.analysis import get_untransformed_varnames, sample_prior
 from tess_atlas.data import TICEntry
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+from .labels import ECCENTRICITY_PLOT, LATEX, POSTERIOR_PLOT, PRIOR_PLOT
+from .plotting_utils import format_prior_samples_and_initial_params
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -23,7 +28,7 @@ from .labels import ECCENTRICITY_PLOT, POSTERIOR_PLOT
 
 CORNER_KWARGS = dict(
     smooth=0.9,
-    label_kwargs=dict(fontsize=30),
+    label_kwargs=dict(fontsize=20),
     title_kwargs=dict(fontsize=16),
     color="#0072C1",
     truth_color="tab:orange",
@@ -39,14 +44,27 @@ CORNER_KWARGS = dict(
 
 
 def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
-    params = ["p", "r", "b"]
+    params = ["r", "b", "t0", "tmax", "p", "d"]
     fig = corner.corner(
         inference_data,
         var_names=params,
         **CORNER_KWARGS,
         range=get_range(inference_data, params),
+        labels=[LATEX[p] for p in params],
     )
     fname = os.path.join(tic_entry.outdir, POSTERIOR_PLOT)
+    logger.debug(f"Saving {fname}")
+    fig.savefig(fname)
+
+
+def plot_priors(
+    tic_entry: TICEntry, prior_samples: Dict, init_params: Dict
+) -> None:
+    prior_samples, init_params = format_prior_samples_and_initial_params(
+        prior_samples, init_params
+    )
+    fig = corner.corner(prior_samples, **CORNER_KWARGS, truths=init_params)
+    fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
     logger.debug(f"Saving {fname}")
     fig.savefig(fname)
 

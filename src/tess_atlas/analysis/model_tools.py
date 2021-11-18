@@ -1,9 +1,11 @@
+import logging
 from typing import List, Optional, Tuple
 
 import numpy as np
 import theano
 from arviz import InferenceData
 from pymc3 import Model
+from pymc3.distributions.distribution import draw_values
 from pymc3.util import (
     get_default_varnames,
     get_untransformed_name,
@@ -11,6 +13,31 @@ from pymc3.util import (
 )
 from theano.tensor.var import TensorVariable
 from tqdm.auto import tqdm
+
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+
+
+def sample_prior(model: Model, size: Optional[int] = 10000):
+    varnames = get_untransformed_varnames(model)
+    try:
+        samples = draw_values([model[v] for v in varnames], size=size)
+    except ValueError as e:
+        logger.error(
+            f"Not sampling prior for multiplanet system due to following error:\n{e}"
+        )
+        return {}
+
+    prior_samples = {}
+    for i, label in enumerate(varnames):
+        if label != "u":
+            prior_samples[label] = np.hstack(samples[i])
+        else:
+            u_vals = np.hstack(samples[i])
+            prior_samples["u_1"] = u_vals[::2]
+            prior_samples["u_2"] = u_vals[1::2]
+    return prior_samples
 
 
 def get_untransformed_varnames(model: Model) -> List[str]:

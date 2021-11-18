@@ -1,8 +1,9 @@
 """MWE to download data needed for TESS atlas jobs"""
-import pandas as pd
 import ssl
+
 import certifi
 import numpy as np
+import pandas as pd
 
 EXOFOP = "https://exofop.ipac.caltech.edu/tess/"
 TIC_DATASOURCE = EXOFOP + "download_toi.php?sort=toi&output=csv"
@@ -17,9 +18,9 @@ def get_data_table():
 
 def get_stellar_data():
     """Gets stellar information for TIC"""
-    from astroquery.mast import (
+    from astroquery.mast import (  # loading here so the script doesnt when testing base python (w/o astroquery installed)
         Catalogs,
-    )  # loading here so the script doesnt when testing base python (w/o astroquery installed)
+    )
 
     print("Starting astroquery")
     star = Catalogs.query_object(

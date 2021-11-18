@@ -1,5 +1,12 @@
 import logging
 import os
+from typing import Optional
+
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+
+
 from typing import List, Optional
 
 import matplotlib.pyplot as plt
@@ -7,8 +14,8 @@ import numpy as np
 
 from tess_atlas.data import TICEntry
 from tess_atlas.data.inference_data_tools import (
-    get_posterior_samples,
     convert_to_samples_dict,
+    get_posterior_samples,
 )
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 

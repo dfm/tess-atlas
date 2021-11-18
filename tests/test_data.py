@@ -7,7 +7,6 @@ import pandas as pd
 import tess_atlas.data as tess_data
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME, setup_logger
 
-
 CLEAN_AFTER_TEST = True
 
 

@@ -2,9 +2,10 @@ import os
 import shutil
 import unittest
 
-from tess_atlas.data.tic_entry import TICEntry
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+from tess_atlas.data.tic_entry import TICEntry
 
 DATA_DIR = "test_data/toi_103_files"
 

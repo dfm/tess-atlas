@@ -1,32 +1,30 @@
 import logging
 import os
+from typing import Dict, List
 
+import arviz as az
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import arviz as az
-from pymc3.model import Model
 from corner.arviz_corner import (
-    convert_to_dataset,
     _var_names,
+    convert_to_dataset,
     get_coords,
     xarray_var_iter,
 )
+from pymc3.model import Model
 
-from typing import List, Dict
-
-from tess_atlas.data import TICEntry
 from tess_atlas.analysis import get_untransformed_varnames, sample_prior
-from .labels import POSTERIOR_PLOT, ECCENTRICITY_PLOT, PRIOR_PLOT, LATEX
-from .plotting_utils import format_prior_samples_and_initial_params
-
-import logging
-
+from tess_atlas.data import TICEntry
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+from .labels import ECCENTRICITY_PLOT, LATEX, POSTERIOR_PLOT, PRIOR_PLOT
+from .plotting_utils import format_prior_samples_and_initial_params
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
+from .labels import ECCENTRICITY_PLOT, POSTERIOR_PLOT
 
 CORNER_KWARGS = dict(
     smooth=0.9,
@@ -105,7 +103,7 @@ def get_range(data, params: List[str]) -> List[List[int]]:
 def convert_to_numpy_list(
     inference_data: az.InferenceData, params: List[str]
 ) -> np.ndarray:
-    """ Converts from az.InferenceData --> 2D np.ndarray
+    """Converts from az.InferenceData --> 2D np.ndarray
 
     List[posterior_param_list_1, posterior_param_list_2...]
     each item in list is a list for the specific param

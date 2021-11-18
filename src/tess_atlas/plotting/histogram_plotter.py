@@ -1,23 +1,24 @@
-import matplotlib.pyplot as plt
-from typing import Optional, List, Dict
-import numpy as np
-from matplotlib.ticker import MaxNLocator, ScalarFormatter
-from tess_atlas.data import TICEntry
-import pandas as pd
-import os
 import logging
+import os
+from typing import Dict, List, Optional
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from matplotlib import ticker
+from matplotlib.ticker import MaxNLocator, ScalarFormatter
 
-
+from tess_atlas.data import TICEntry
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-from .plotting_utils import format_prior_samples_and_initial_params
+
 from .labels import (
-    POSTERIOR_PLOT,
     ECCENTRICITY_PLOT,
-    PRIOR_PLOT,
-    PARAMS_CATEGORIES,
     LATEX,
+    PARAMS_CATEGORIES,
+    POSTERIOR_PLOT,
+    PRIOR_PLOT,
 )
+from .plotting_utils import format_prior_samples_and_initial_params
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -134,7 +135,7 @@ def update_label(old_label, offset_text):
 
 
 def format_label_string_with_offset(ax, axis="both"):
-    """ Format the label string with the exponent from the ScalarFormatter """
+    """Format the label string with the exponent from the ScalarFormatter"""
     ax.ticklabel_format(axis=axis, style="sci", scilimits=(-1e4, 1e4))
 
     axes_instances = []

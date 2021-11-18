@@ -5,13 +5,13 @@ import time
 from typing import Dict
 
 import numpy as np
-from IPython.display import HTML
-from IPython.display import display
-from astroquery.exceptions import ResolverError, NoResultsWarning
+from astroquery.exceptions import NoResultsWarning, ResolverError
 from astroquery.mast import Catalogs
+from IPython.display import HTML, display
 from requests.models import HTTPError
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
 from .data_object import DataObject
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)

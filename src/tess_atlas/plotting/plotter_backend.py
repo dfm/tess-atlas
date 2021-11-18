@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Optional, List
+from typing import List, Optional
+
 from tess_atlas.data import TICEntry
 
 

@@ -2,33 +2,36 @@ import logging
 import os
 from typing import Optional
 
-import logging
-
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
+
+from typing import List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from tess_atlas.data import TICEntry
 from tess_atlas.data.inference_data_tools import (
-    get_posterior_samples,
     convert_to_samples_dict,
+    get_posterior_samples,
 )
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+from ..analysis import compute_variable, get_untransformed_varnames
 from .labels import (
-    LIGHTCURVE_PLOT,
-    TIME_LABEL,
     FLUX_LABEL,
     FOLDED_LIGHTCURVE_PLOT,
-    TIME_SINCE_TRANSIT_LABEL,
+    LIGHTCURVE_PLOT,
     PHASE_PLOT,
+    TIME_LABEL,
+    TIME_SINCE_TRANSIT_LABEL,
 )
 from .plotter_backend import PlotterBackend
 from .plotting_utils import get_colors
 
-from ..analysis import compute_variable, get_untransformed_varnames
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
 class MatplotlibPlotter(PlotterBackend):

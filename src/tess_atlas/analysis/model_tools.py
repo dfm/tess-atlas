@@ -1,19 +1,18 @@
-from typing import Optional, List, Tuple
+import logging
+from typing import List, Optional, Tuple
+
 import numpy as np
 import theano
+from arviz import InferenceData
+from pymc3 import Model
+from pymc3.distributions.distribution import draw_values
 from pymc3.util import (
     get_default_varnames,
     get_untransformed_name,
     is_transformed_name,
 )
-from pymc3 import Model
-from pymc3.distributions.distribution import draw_values
-from arviz import InferenceData
-from tqdm.auto import tqdm
-
 from theano.tensor.var import TensorVariable
-
-import logging
+from tqdm.auto import tqdm
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 

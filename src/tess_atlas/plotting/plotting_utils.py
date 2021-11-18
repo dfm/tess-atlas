@@ -1,8 +1,8 @@
-from typing import List, Optional, Dict, Tuple
-import seaborn as sns
-import numpy as np
+from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import pandas as pd
+import seaborn as sns
 
 
 def get_colors(

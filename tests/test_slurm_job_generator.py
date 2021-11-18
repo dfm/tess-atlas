@@ -5,7 +5,6 @@ import pandas as pd
 
 from tess_atlas.batch_job_generator.slurm_job_generator import setup_jobs
 
-
 CLEAN_AFTER = False
 
 

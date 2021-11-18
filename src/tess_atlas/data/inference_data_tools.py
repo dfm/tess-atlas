@@ -1,11 +1,10 @@
-import arviz as az
-
 import logging
 import os
-import pandas as pd
-import numpy as np
-
 from typing import List, Optional
+
+import arviz as az
+import numpy as np
+import pandas as pd
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 

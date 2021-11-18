@@ -1,13 +1,12 @@
-import pkg_resources
-import jupytext
 import os
 import re
-
 from typing import Optional
 
-from ..tess_atlas_version import __version__
-from ..data.tic_entry import TICEntry
+import jupytext
+import pkg_resources
 
+from ..data.tic_entry import TICEntry
+from ..tess_atlas_version import __version__
 
 TOI_TEMPLATE_FNAME = "notebook_templates/toi_template.py"
 

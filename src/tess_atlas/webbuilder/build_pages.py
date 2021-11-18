@@ -4,11 +4,11 @@ Make summary plots + page
 Run loader example
 Build jupyter-book
 """
+import argparse
 import os
 import subprocess
 from distutils import log as dist_log
 from distutils.dir_util import copy_tree
-import argparse
 
 from tess_atlas.webbuilder.make_tois_homepage import make_menu_page
 

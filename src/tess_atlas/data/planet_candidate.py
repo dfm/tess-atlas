@@ -36,11 +36,23 @@ class PlanetCandidate(DataObject):
         :param float duration: Planet candidate transit duration, in days.
         """
         self.toi_id = toi_id
-        self.t0 = t0
+        self.__time = time
         self.period = period
+        self.t0 = t0
         self.depth = depth
         self.duration = duration
-        self.__time = time
+
+    @property
+    def period(self):
+        return self.__period
+
+    @period.setter
+    def period(self, p):
+        if (p <= 0.0) or np.isnan(p):
+            self.__is_single_transit_system = True
+            self.__period = self.__time.max() - self.__time.min()
+        else:
+            self.__period = p
 
     @property
     def index(self):
@@ -49,6 +61,8 @@ class PlanetCandidate(DataObject):
     @property
     def num_periods(self):
         """number of periods between t0 and tmax"""
+        if self.has_data_only_for_single_transit:
+            return 0
         return (np.floor(max(self.__time) - self.t0) / self.period).astype(int)
 
     @property
@@ -76,7 +90,7 @@ class PlanetCandidate(DataObject):
 
     @property
     def has_data_only_for_single_transit(self):
-        return (self.period <= 0.0) or np.isnan(self.period)
+        return self.__is_single_transit_system
 
     @classmethod
     def from_database(cls, toi_data: Dict, lightcurve: LightCurveData):

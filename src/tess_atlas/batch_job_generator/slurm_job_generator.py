@@ -103,9 +103,9 @@ def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
         toi_numbers,
         module_loads,
         extra_jobargs="",
-        time="300:00",
+        time="120:00",
         jobname="analysis",
-        mem="4GB",
+        mem="1.5GB",
     )
 
     submit_file = create_main_submitter(outdir, generation_fn, analysis_fn)

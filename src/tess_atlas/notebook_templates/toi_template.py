@@ -217,6 +217,9 @@ def build_planet_transit_model(tic_entry):
     min_durations = np.array(
         [planet.duration_min for planet in tic_entry.candidates]
     )
+    test_duration = min(
+        max(durations, 2 * min_durations), 0.99 * max_durations
+    )
 
     with pm.Model() as my_planet_transit_model:
         ## define planet parameters
@@ -229,7 +232,7 @@ def build_planet_transit_model(tic_entry):
             mu=np.log(durations),
             sigma=np.log(1.2),
             shape=n,
-            testval=durations,
+            testval=test_duration,
         )
 
         # 2) r: radius ratio (planet radius / star radius)
@@ -346,7 +349,8 @@ def test_model(model):
     with model:
         test_prob = model.check_test_point()
         test_prob.name = "log P(test-point)"
-        assert not test_prob.isnull().values.any(), test_prob
+        if test_prob.isnull().values.any():
+            raise ValueError(f"The model(testval) has a nan:\n{test_prob}")
         test_pt = pd.Series(
             {
                 k: str(round(np.array(v).flatten()[0], 2))

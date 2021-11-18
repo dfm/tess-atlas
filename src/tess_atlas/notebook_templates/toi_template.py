@@ -58,7 +58,7 @@
 # To get going, we'll need to make out plots show up inline:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-# %matplotlib inline
+# %load_ext autoreload
 # %autoreload 2
 # %matplotlib inline
 
@@ -185,7 +185,8 @@ plot_lightcurve(tic_entry)
 # + pycharm={"name": "#%%\n"} tags=["def"]
 
 
-DURATION = "d"
+DEPTH = "depth"
+DURATION = "dur"
 RADIUS_RATIO = "r"
 TIME_START = "t0"
 TIME_END = "tmax"
@@ -210,14 +211,25 @@ def build_planet_transit_model(tic_entry):
     periods = np.array([planet.period for planet in tic_entry.candidates])
     tmaxs = np.array([planet.tmax for planet in tic_entry.candidates])
     durations = np.array([planet.duration for planet in tic_entry.candidates])
-    max_duration, min_duration = durations.max(), durations.min()
+    max_durations = np.array(
+        [planet.duration_max for planet in tic_entry.candidates]
+    )
+    min_durations = np.array(
+        [planet.duration_min for planet in tic_entry.candidates]
+    )
 
     with pm.Model() as my_planet_transit_model:
         ## define planet parameters
 
         # 1) d: transit duration (duration of eclipse)
-        d_priors = pm.Lognormal(
-            name=DURATION, mu=np.log(0.1), sigma=10.0, shape=n
+        d_priors = pm.Bound(
+            pm.Lognormal, lower=min_durations, upper=max_durations
+        )(
+            name=DURATION,
+            mu=np.log(durations),
+            sigma=np.log(1.2),
+            shape=n,
+            testval=durations,
         )
 
         # 2) r: radius ratio (planet radius / star radius)
@@ -234,9 +246,11 @@ def build_planet_transit_model(tic_entry):
 
         # 1) t0: the time of the first transit in data (a reference time)
         t0_norm = pm.Bound(
-            pm.Normal, lower=t0s - max_duration, upper=t0s + max_duration
+            pm.Normal, lower=t0s - max_durations, upper=t0s + max_durations
         )
-        t0_priors = t0_norm(TIME_START, mu=t0s, sd=1.0, shape=n)
+        t0_priors = t0_norm(
+            TIME_START, mu=t0s, sigma=0.5 * durations, shape=n, testval=t0s
+        )
 
         # 2) period: the planets' orbital period
         p_params, p_priors_list, tmax_priors_list = [], [], []
@@ -247,7 +261,7 @@ def build_planet_transit_model(tic_entry):
                     name=f"{ORBITAL_PERIOD}_{planet.index}",
                     m=planet.period_min,
                     alpha=2.0 / 3.0,
-                    testval=planet.period,
+                    testval=planet.period_min,
                 )
                 p_param = p_prior
                 tmax_prior = planet.t0
@@ -255,8 +269,8 @@ def build_planet_transit_model(tic_entry):
             else:
                 tmax_norm = pm.Bound(
                     pm.Normal,
-                    lower=planet.tmax - max_duration,
-                    upper=planet.tmax + max_duration,
+                    lower=planet.tmax - planet.duration_max,
+                    upper=planet.tmax + planet.duration_max,
                 )
                 tmax_prior = tmax_norm(
                     name=f"{TIME_END}_{planet.index}",

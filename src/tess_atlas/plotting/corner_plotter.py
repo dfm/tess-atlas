@@ -44,7 +44,7 @@ CORNER_KWARGS = dict(
 
 
 def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
-    params = ["r", "b", "t0", "tmax", "p", "d"]
+    params = ["r", "b", "t0", "tmax", "p", "dur"]
     fig = corner.corner(
         inference_data,
         var_names=params,

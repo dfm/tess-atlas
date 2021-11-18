@@ -37,6 +37,7 @@ class PlanetCandidate(DataObject):
         """
         self.toi_id = toi_id
         self.__time = time
+        self.has_data_only_for_single_transit = False
         self.period = period
         self.t0 = t0
         self.depth = depth
@@ -49,7 +50,7 @@ class PlanetCandidate(DataObject):
     @period.setter
     def period(self, p):
         if (p <= 0.0) or np.isnan(p):
-            self.__is_single_transit_system = True
+            self.has_data_only_for_single_transit = True
             self.__period = self.__time.max() - self.__time.min()
         else:
             self.__period = p
@@ -87,10 +88,6 @@ class PlanetCandidate(DataObject):
     @property
     def duration_min(self):
         return min(self.duration, 2 * np.min(np.diff(self.__time)))
-
-    @property
-    def has_data_only_for_single_transit(self):
-        return self.__is_single_transit_system
 
     @classmethod
     def from_database(cls, toi_data: Dict, lightcurve: LightCurveData):

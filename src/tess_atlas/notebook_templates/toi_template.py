@@ -249,7 +249,7 @@ def build_planet_transit_model(tic_entry):
             pm.Normal, lower=t0s - max_durations, upper=t0s + max_durations
         )
         t0_priors = t0_norm(
-            TIME_START, mu=t0s, sigma=0.5 * durations, shape=n, test_val=t0s
+            TIME_START, mu=t0s, sigma=0.5 * durations, shape=n, testval=t0s
         )
 
         # 2) period: the planets' orbital period

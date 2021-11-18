@@ -261,7 +261,7 @@ def build_planet_transit_model(tic_entry):
                     name=f"{ORBITAL_PERIOD}_{planet.index}",
                     m=planet.period_min,
                     alpha=2.0 / 3.0,
-                    testval=planet.period,
+                    testval=planet.period_min,
                 )
                 p_param = p_prior
                 tmax_prior = planet.t0

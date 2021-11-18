@@ -269,8 +269,8 @@ def build_planet_transit_model(tic_entry):
             else:
                 tmax_norm = pm.Bound(
                     pm.Normal,
-                    lower=planet.tmax - planet.max_duration,
-                    upper=planet.tmax + planet.max_duration,
+                    lower=planet.tmax - planet.duration_max,
+                    upper=planet.tmax + planet.duration_max,
                 )
                 tmax_prior = tmax_norm(
                     name=f"{TIME_END}_{planet.index}",

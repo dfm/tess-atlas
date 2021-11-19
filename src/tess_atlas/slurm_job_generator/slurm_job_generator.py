@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 from typing import List
+import sys
 
 import jinja2
 import pandas as pd
@@ -66,7 +67,7 @@ def get_toi_numbers(toi_csv: str):
     return list(df.toi_numbers.values)
 
 
-def get_cli_args():
+def get_cli_args(cli_data):
     parser = argparse.ArgumentParser(
         description="Create slurm job for analysing TOIs"
     )
@@ -93,7 +94,7 @@ def get_cli_args():
         help="The TOI number to be analysed (e.g. 103). Cannot be passed with toi-csv",
         default=None,
     )
-    args = parser.parse_args()
+    args = parser.parse_args(cli_data)
 
     if args.toi_csv and args.toi_number is None:
         toi_numbers = get_toi_numbers(args.toi_csv)
@@ -141,7 +142,7 @@ def setup_jobs(
 
 
 def main():
-    setup_jobs(*get_cli_args())
+    setup_jobs(*get_cli_args(sys.argv[1:]))
 
 
 if __name__ == "__main__":

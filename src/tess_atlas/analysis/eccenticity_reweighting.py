@@ -11,6 +11,8 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
+N = 500
+
 
 def calculate_eccentricity_weights(
     tic_entry: TICEntry, inference_data: InferenceData
@@ -19,12 +21,12 @@ def calculate_eccentricity_weights(
     post = inference_data.posterior
     rho_circ = post.rho_circ.values.flatten()
     period = post.p.values.flatten()
-    rho_circ = np.repeat(rho_circ, 500, axis=0)
-    period = np.repeat(period, 500, axis=0)
+    rho_circ = np.random.choice(rho_circ, N)
+    period = np.random.choice(period, N)
 
     # Sample eccentricity and omega uniformly
-    ecc = np.random.uniform(0, 1, len(rho_circ))
-    omega = np.random.uniform(-np.pi, np.pi, len(rho_circ))
+    ecc = np.random.uniform(0, 1, N)
+    omega = np.random.uniform(-np.pi, np.pi, N)
 
     # Compute the "g" parameter from Dawson & Johnson and what true
     # density that implies

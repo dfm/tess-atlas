@@ -32,7 +32,7 @@ class JobgenTest(unittest.TestCase):
             shutil.rmtree(self.outdir)
 
     def test_slurmfile(self):
-        setup_jobs(self.toi_fn, self.outdir, self.module_loads)
+        setup_jobs(self.toi_fn, self.outdir, self.module_loads, False)
 
     def test_parser(self):
         get_cli_args(["--toi_number", "1"])

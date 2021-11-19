@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 from typing import List
+import sys
 
 import jinja2
 import pandas as pd
@@ -23,6 +24,7 @@ def make_slurm_file(
     module_loads: str,
     jobname: str,
     extra_jobargs: str,
+    cpu_per_task: int,
     time: str,
     mem: str,
 ):
@@ -36,6 +38,7 @@ def make_slurm_file(
         log_file=os.path.join(outdir, f"toi_{jobname}_slurm_jobs.log"),
         module_loads=module_loads,
         total_num=str(len(toi_numbers) - 1),
+        cpu_per_task=cpu_per_task,
         load_env=f"source {path_to_env_activate}",
         toi_numbers=" ".join([str(toi) for toi in toi_numbers]),
         extra_jobargs=extra_jobargs,
@@ -66,12 +69,13 @@ def get_toi_numbers(toi_csv: str):
     return list(df.toi_numbers.values)
 
 
-def get_cli_args():
+def get_cli_args(cli_data):
     parser = argparse.ArgumentParser(
         description="Create slurm job for analysing TOIs"
     )
     parser.add_argument(
         "--toi_csv",
+        default=None,
         help="CSV with the toi numbers to analyse (csv needs a column with `toi_numbers`)",
     )
     parser.add_argument(
@@ -81,19 +85,43 @@ def get_cli_args():
         "--module_loads",
         help="String containing all module loads in one line (each module separated by a space)",
     )
-    args = parser.parse_args()
-    return args.toi_csv, args.outdir, args.module_loads
+    parser.add_argument(
+        "--submit",
+        action="store_true",  # False by default
+        help="Submit once files created",
+    )
+    parser.add_argument(
+        "--toi_number",
+        type=int,
+        help="The TOI number to be analysed (e.g. 103). Cannot be passed with toi-csv",
+        default=None,
+    )
+    args = parser.parse_args(cli_data)
+
+    if args.toi_csv and args.toi_number is None:
+        toi_numbers = get_toi_numbers(args.toi_csv)
+    elif args.toi_csv is None and args.toi_number:
+        toi_numbers = [args.toi_number]
+    else:
+        raise ValueError(
+            f"You have provided TOI CSC: {args.toi_csv}, TOI NUMBER: {args.toi_number}."
+            f"You need to provide one of the two (not both)."
+        )
+
+    return toi_numbers, args.outdir, args.module_loads, args.submit
 
 
-def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
+def setup_jobs(
+    toi_numbers: List[int], outdir: str, module_loads: str, submit: bool
+) -> None:
     os.makedirs(outdir, exist_ok=True)
-    toi_numbers = get_toi_numbers(toi_csv)
 
     generation_fn = make_slurm_file(
         outdir,
         toi_numbers,
         module_loads,
         extra_jobargs="--setup",
+        cpu_per_task=1,
         time="20:00",
         jobname="generation",
         mem="500MB",
@@ -103,19 +131,22 @@ def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
         toi_numbers,
         module_loads,
         extra_jobargs="",
+        cpu_per_task=2,
         time="120:00",
         jobname="analysis",
-        mem="1.5GB",
+        mem="1500MB",
     )
 
     submit_file = create_main_submitter(outdir, generation_fn, analysis_fn)
 
-    print(f"To run job:\n>>> bash {submit_file}")
+    if submit:
+        os.system(f"bash {submit_file}")
+    else:
+        print(f"To run job:\n>>> bash {submit_file}")
 
 
 def main():
-    toi_csv, outdir, module_loads = get_cli_args()
-    setup_jobs(toi_csv, outdir, module_loads)
+    setup_jobs(*get_cli_args(sys.argv[1:]))
 
 
 if __name__ == "__main__":

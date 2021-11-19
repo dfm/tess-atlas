@@ -3,7 +3,10 @@ import unittest
 
 import pandas as pd
 
-from tess_atlas.batch_job_generator.slurm_job_generator import setup_jobs
+from tess_atlas.slurm_job_generator.slurm_job_generator import (
+    setup_jobs,
+    get_cli_args,
+)
 
 CLEAN_AFTER = False
 
@@ -29,7 +32,10 @@ class JobgenTest(unittest.TestCase):
             shutil.rmtree(self.outdir)
 
     def test_slurmfile(self):
-        setup_jobs(self.toi_fn, self.outdir, self.module_loads)
+        setup_jobs(self.toi_fn, self.outdir, self.module_loads, False)
+
+    def test_parser(self):
+        get_cli_args(["--toi_number", "1"])
 
 
 if __name__ == "__main__":

@@ -46,6 +46,7 @@ EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [
     "flake8",
     "black",
     "isort",
+    "jupyter_contrib_nbextensions",
 ]
 
 # END PROJECT SPECIFIC
@@ -100,7 +101,7 @@ if __name__ == "__main__":
                 "run_tois=tess_atlas.notebook_preprocessors.run_tois:main",
                 "runs_stats_plotter=tess_atlas.analysis.stats_plotter:main",
                 "make_webpages=tess_atlas.webbuilder.build_pages:main",
-                "make_slurm_job=tess_atlas.batch_job_generator.slurm_job_generator:main",
+                "make_slurm_job=tess_atlas.slurm_job_generator.slurm_job_generator:main",
             ]
         },
     )

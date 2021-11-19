@@ -72,6 +72,7 @@ def get_cli_args():
     )
     parser.add_argument(
         "--toi_csv",
+        default=None,
         help="CSV with the toi numbers to analyse (csv needs a column with `toi_numbers`)",
     )
     parser.add_argument(
@@ -81,13 +82,36 @@ def get_cli_args():
         "--module_loads",
         help="String containing all module loads in one line (each module separated by a space)",
     )
+    parser.add_argument(
+        "--submit",
+        action="store_true",  # False by default
+        help="Submit once files created",
+    )
+    parser.add_argument(
+        "--toi_number",
+        type=int,
+        help="The TOI number to be analysed (e.g. 103). Cannot be passed with toi-csv",
+        default=None,
+    )
     args = parser.parse_args()
-    return args.toi_csv, args.outdir, args.module_loads
+
+    if args.toi_csv and args.toi_number is None:
+        toi_numbers = get_toi_numbers(args.toi_csv)
+    elif args.toi_csv is None and args.toi_number:
+        toi_numbers = [args.toi_number]
+    else:
+        raise ValueError(
+            f"You have provided TOI CSC: {args.toi_csv}, TOI NUMBER: {args.toi_number}."
+            f"You need to provide one of the two (not both)."
+        )
+
+    return toi_numbers, args.outdir, args.module_loads.args.submit
 
 
-def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
+def setup_jobs(
+    toi_numbers: List[int], outdir: str, module_loads: str, submit: bool
+) -> None:
     os.makedirs(outdir, exist_ok=True)
-    toi_numbers = get_toi_numbers(toi_csv)
 
     generation_fn = make_slurm_file(
         outdir,
@@ -110,12 +134,14 @@ def setup_jobs(toi_csv: str, outdir: str, module_loads: str) -> None:
 
     submit_file = create_main_submitter(outdir, generation_fn, analysis_fn)
 
-    print(f"To run job:\n>>> bash {submit_file}")
+    if submit:
+        os.system(f"bash {submit_file}")
+    else:
+        print(f"To run job:\n>>> bash {submit_file}")
 
 
 def main():
-    toi_csv, outdir, module_loads = get_cli_args()
-    setup_jobs(toi_csv, outdir, module_loads)
+    setup_jobs(*get_cli_args())
 
 
 if __name__ == "__main__":

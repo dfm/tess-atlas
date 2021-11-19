@@ -425,7 +425,7 @@ if prior_samples:
 def run_inference(model) -> InferenceData:
     np.random.seed(TOI_NUMBER)
     with model:
-        sampling_kwargs = dict(tune=2000, draws=2000, chains=2, cores=1)
+        sampling_kwargs = dict(tune=2000, draws=2000, chains=2, cores=2)
         logger.info(f"Run sampler with kwargs: {sampling_kwargs}")
         inference_data = pmx.sample(
             **sampling_kwargs, start=init_params, return_inferencedata=True

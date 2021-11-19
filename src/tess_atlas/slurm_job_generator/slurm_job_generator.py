@@ -106,7 +106,7 @@ def get_cli_args(cli_data):
             f"You need to provide one of the two (not both)."
         )
 
-    return toi_numbers, args.outdir, args.module_loads.args.submit
+    return toi_numbers, args.outdir, args.module_loads, args.submit
 
 
 def setup_jobs(

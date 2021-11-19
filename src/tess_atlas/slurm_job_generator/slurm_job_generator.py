@@ -130,7 +130,7 @@ def setup_jobs(
         extra_jobargs="",
         time="120:00",
         jobname="analysis",
-        mem="1.5GB",
+        mem="1500MB",
     )
 
     submit_file = create_main_submitter(outdir, generation_fn, analysis_fn)

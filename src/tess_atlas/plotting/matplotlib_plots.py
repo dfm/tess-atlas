@@ -30,6 +30,7 @@ from .labels import (
 )
 from .plotter_backend import PlotterBackend
 from .plotting_utils import get_colors
+from .extra_plotting.ci import plot_ci, plot_xy_binned
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -129,16 +130,23 @@ class MatplotlibPlotter(PlotterBackend):
         fig.savefig(fname)
 
     @staticmethod
-    def plot_phase(tic_entry, inference_data, model):
+    def plot_phase(
+        tic_entry,
+        inference_data,
+        model,
+        plot_data_ci: Optional[bool] = False,
+        plot_binned: Optional[bool] = False,
+    ):
         """Adapted from exoplanet tutorials
         https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
         """
-        posterior = inference_data.posterior
         colors = get_colors(tic_entry.planet_count)
 
         t = tic_entry.lightcurve.time
         y = tic_entry.lightcurve.flux
         yerr = tic_entry.lightcurve.flux_err
+
+        plt_min, plt_max = -0.3, 0.3
 
         for i in range(tic_entry.planet_count):
             plt.figure(figsize=(7, 5))
@@ -170,25 +178,47 @@ class MatplotlibPlotter(PlotterBackend):
                     ith_flux -= np.median(lcs[..., j], axis=(0, 1))
             # TODO: check if this works for multi-planet systems
 
-            # Plot the folded data
             x_fold = (t - t0 + 0.5 * p) % p - 0.5 * p
-            plt.errorbar(
-                x_fold,
-                ith_flux,
-                yerr=yerr,
-                fmt=".k",
-                label="data",
-                zorder=-1000,
-            )
+            idx = np.where((plt_min <= x_fold) & (x_fold <= plt_max))
+
+            # Plot the folded data
+            if not plot_data_ci:
+                plt.errorbar(
+                    x_fold,
+                    ith_flux,
+                    yerr=yerr,
+                    fmt=".k",
+                    label="data",
+                    zorder=-1000,
+                )
+            else:
+                plot_ci(
+                    x_fold[idx],
+                    ith_flux[idx],
+                    plt.gca(),
+                    label="data",
+                    zorder=-1000,
+                    alpha=0.4,
+                    bins=35,
+                )
+
+            if plot_binned:
+                plot_xy_binned(
+                    x_fold[idx],
+                    ith_flux[idx],
+                    plt.gca(),
+                    bins=500,
+                    color="gray",
+                )
 
             # Plot the folded model
             inds = np.argsort(x_fold)
-            inds = inds[np.abs(x_fold)[inds] < 0.3]
+            inds = inds[np.abs(x_fold)[inds] < plt_max]
             scaled_lcs = lcs[..., inds, i] * 1e3
 
             pred = scaled_lcs.copy()
             for pred_num, f0 in enumerate(f0_array):
-                pred[pred_num, :] += f0
+                pred[pred_num, :] -= f0
 
             quants = np.percentile(pred, [16, 50, 84], axis=0)
             plt.plot(
@@ -222,7 +252,7 @@ class MatplotlibPlotter(PlotterBackend):
             plt.xlabel(TIME_SINCE_TRANSIT_LABEL)
             plt.ylabel(FLUX_LABEL)
             plt.title(f"Planet {i + 1}")
-            plt.xlim(-0.3, 0.3)
+            plt.xlim(plt_min, plt_max)
             plt.tight_layout()
             fname = os.path.join(
                 tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i + 1}.")

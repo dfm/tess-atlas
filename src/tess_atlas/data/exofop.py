@@ -54,4 +54,4 @@ def get_tic_url(tic_id):
 
 def get_toi_list():
     database = get_tic_database()
-    return list(set(database["TOI"].values))
+    return list(set(database["TOI"].values.astype(int)))

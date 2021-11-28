@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import pandas as pd
 from arviz import InferenceData

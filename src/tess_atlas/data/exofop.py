@@ -1,22 +1,10 @@
 import logging
 import os
-from typing import Dict, List, Optional
+from typing import List
 
 import pandas as pd
-from arviz import InferenceData
-from IPython.display import HTML, display
-
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
-from .data_object import DataObject
-from .inference_data_tools import (
-    get_idata_fname,
-    load_inference_data,
-    save_inference_data,
-)
-from .lightcurve_data import LightCurveData
-from .planet_candidate import PlanetCandidate
-from .stellar_data import StellarData
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

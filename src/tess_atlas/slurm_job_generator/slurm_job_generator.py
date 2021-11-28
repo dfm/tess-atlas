@@ -2,10 +2,12 @@ import argparse
 import os
 import shutil
 import sys
-from typing import List
+from typing import List, Optional
 
 import jinja2
 import pandas as pd
+
+from ..data.exofop import get_toi_list
 
 DIR = os.path.dirname(__file__)
 TEMPLATE_FILE = "slurm_template.sh"
@@ -67,6 +69,14 @@ def create_main_submitter(outdir, generation_fn, analysis_fn):
 def get_toi_numbers(toi_csv: str):
     df = pd.read_csv(toi_csv)
     return list(df.toi_numbers.values)
+
+
+def make_toi_csv(fname: str, toi_numbers: Optional[List[int]] = []):
+    if len(toi_numbers) == 0:
+        toi_numbers = get_toi_list()
+    toi_numbers = list(set([int(i) for i in toi_numbers]))
+    data = pd.DataFrame(dict(toi_numbers=toi_numbers))
+    data.to_csv(fname)
 
 
 def get_cli_args(cli_data):

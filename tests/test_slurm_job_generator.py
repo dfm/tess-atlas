@@ -4,8 +4,8 @@ import unittest
 import pandas as pd
 
 from tess_atlas.slurm_job_generator.slurm_job_generator import (
-    setup_jobs,
     get_cli_args,
+    setup_jobs,
 )
 
 CLEAN_AFTER = False

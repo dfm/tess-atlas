@@ -1,8 +1,8 @@
 import argparse
 import os
 import shutil
-from typing import List
 import sys
+from typing import List
 
 import jinja2
 import pandas as pd

@@ -20,6 +20,7 @@ from tess_atlas.data.inference_data_tools import (
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 from ..analysis import compute_variable, get_untransformed_varnames
+from .extra_plotting.ci import plot_ci, plot_xy_binned
 from .labels import (
     FLUX_LABEL,
     FOLDED_LIGHTCURVE_PLOT,
@@ -30,7 +31,6 @@ from .labels import (
 )
 from .plotter_backend import PlotterBackend
 from .plotting_utils import get_colors
-from .extra_plotting.ci import plot_ci, plot_xy_binned
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

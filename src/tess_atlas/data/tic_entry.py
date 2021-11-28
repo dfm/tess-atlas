@@ -9,6 +9,7 @@ from IPython.display import HTML, display
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 from .data_object import DataObject
+from .exofop import get_tic_data_from_database, get_tic_url
 from .inference_data_tools import (
     get_idata_fname,
     load_inference_data,
@@ -17,7 +18,6 @@ from .inference_data_tools import (
 from .lightcurve_data import LightCurveData
 from .planet_candidate import PlanetCandidate
 from .stellar_data import StellarData
-from .exofop import get_tic_url, get_tic_data_from_database
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

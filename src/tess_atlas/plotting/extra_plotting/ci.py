@@ -1,6 +1,6 @@
+import numpy as np
 import pandas as pd
 from seaborn import light_palette
-import numpy as np
 
 
 def plot_ci(x, y, ax, label="", alpha=0.9, zorder=-10, color="gray", bins=200):

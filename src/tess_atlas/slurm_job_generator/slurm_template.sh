@@ -7,7 +7,7 @@
 #SBATCH --time={{time}}
 #SBATCH --mem={{mem}}
 #SBATCH --cpus-per-task={{cpu_per_task}}
-#SBATCH --array=0-{{total_num}}
+#SBATCH --array=0-{{array_end}}
 
 module load {{module_loads}}
 {{load_env}}

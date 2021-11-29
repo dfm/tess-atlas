@@ -35,6 +35,7 @@ def make_slurm_file(
     toi_numbers: List[int],
     module_loads: str,
     jobname: str,
+    jobid: int,
     extra_jobargs: str,
     cpu_per_task: int,
     time: str,
@@ -57,7 +58,7 @@ def make_slurm_file(
         extra_jobargs=extra_jobargs,
         mem=mem,
     )
-    jobfile_name = os.path.join(submit_dir, f"slurm_{jobname}_job.sh")
+    jobfile_name = os.path.join(submit_dir, f"slurm_{jobname}_{jobid}_job.sh")
     with open(jobfile_name, "w") as f:
         f.write(file_contents)
     return os.path.abspath(jobfile_name)
@@ -69,11 +70,11 @@ def mkdir(base, dirname):
     return new_dir
 
 
-def create_main_submitter(generation_fn, analysis_fn, submit_dir):
+def create_main_submitter(generation_fns, analysis_fns, submit_dir):
     template = load_template(SUBMIT_TEMPLATE)
     file_contents = template.render(
-        GENERATION_FN=to_str_list(generation_fn),
-        ANALYSIS_FN=to_str_list(analysis_fn),
+        generation_fns=to_str_list(generation_fns),
+        analysis_fns=to_str_list(analysis_fns),
     )
     subfn = os.path.join(submit_dir, "submit.sh")
     with open(subfn, "w") as f:
@@ -101,9 +102,10 @@ def setup_jobs(
                 extra_jobargs="--setup",
                 cpu_per_task=1,
                 time="20:00",
-                jobname=f"gen{i}",
+                jobname=f"gen",
                 mem="1000MB",
                 submit_dir=submit_dir,
+                jobid=i,
             )
         )
         analysis_fns.append(
@@ -114,9 +116,10 @@ def setup_jobs(
                 extra_jobargs="",
                 cpu_per_task=2,
                 time="120:00",
-                jobname=f"pe{i}",
+                jobname=f"pe",
                 mem="1500MB",
                 submit_dir=submit_dir,
+                jobid=i,
             )
         )
 

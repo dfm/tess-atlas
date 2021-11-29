@@ -23,20 +23,19 @@ def sample_prior(model: Model, size: Optional[int] = 10000):
     varnames = get_untransformed_varnames(model)
     try:
         samples = draw_values([model[v] for v in varnames], size=size)
-    except ValueError as e:
-        logger.error(
-            f"Not sampling prior for multiplanet system due to following error:\n{e}"
-        )
+        prior_samples = {}
+        for i, label in enumerate(varnames):
+            if label != "u":
+                prior_samples[label] = np.hstack(samples[i])
+            else:
+                u_vals = np.hstack(samples[i])
+                prior_samples["u_1"] = u_vals[::2]
+                prior_samples["u_2"] = u_vals[1::2]
+
+    except Exception as e:
+        logger.error(f"Not sampling prior due to following error:\n{e}")
         return {}
 
-    prior_samples = {}
-    for i, label in enumerate(varnames):
-        if label != "u":
-            prior_samples[label] = np.hstack(samples[i])
-        else:
-            u_vals = np.hstack(samples[i])
-            prior_samples["u_1"] = u_vals[::2]
-            prior_samples["u_2"] = u_vals[1::2]
     return prior_samples
 
 

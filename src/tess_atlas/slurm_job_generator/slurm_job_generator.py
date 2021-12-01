@@ -49,7 +49,7 @@ def make_slurm_file(
         jobname=f"run_toi_{jobname}",
         time=time,
         outdir=os.path.abspath(outdir),
-        log_file=os.path.join(log_dir, f"{jobname}_%A_%a.log"),
+        log_file=mkdir(log_dir, f"{jobname}_%A_%a.log"),
         module_loads=module_loads,
         array_end=str(len(toi_numbers) - 1),
         cpu_per_task=cpu_per_task,
@@ -64,10 +64,10 @@ def make_slurm_file(
     return os.path.abspath(jobfile_name)
 
 
-def mkdir(base, dirname):
-    new_dir = os.path.join(base, dirname)
-    os.makedirs(new_dir, exist_ok=True)
-    return new_dir
+def mkdir(base, name):
+    newpth = os.path.join(base, name)
+    os.makedirs(os.path.dirname(newpth), exist_ok=True)
+    return newpth
 
 
 def create_main_submitter(generation_fns, analysis_fns, submit_dir):

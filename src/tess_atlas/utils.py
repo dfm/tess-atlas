@@ -69,7 +69,11 @@ def notebook_initalisations():
     plt.rcParams["image.cmap"] = "inferno"
 
     # make sure that THEANO has cache dir for each thread (prevent locking issues)
-    os.environ["THEANO_FLAGS"] = f"compiledir=./theano_cache/{os.getpid()}"
+
+    # ozstar specific scratch space
+    tmp_dir = os.environ.get("JOBFS", default="./")
+    theano_cache = os.path.join(tmp_dir, "theano_cache", str(os.getpid()))
+    os.environ["THEANO_FLAGS"] = f"compiledir={theano_cache}"
 
 
 def get_notebook_logger(outdir=""):

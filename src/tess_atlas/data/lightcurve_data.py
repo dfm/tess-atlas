@@ -8,6 +8,7 @@ import pandas as pd
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 from .data_object import DataObject
+from ..utils import get_cache_dir
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -48,7 +49,8 @@ class LightCurveData(DataObject):
             f"Downloading {len(search)} observations of light curve data "
             f"(TIC {tic})"
         )
-        data = search.download_all(download_dir=outdir)
+        cache_dir = get_cache_dir(default=outdir)
+        data = search.download_all(download_dir=cache_dir)
         if data is None:
             raise ValueError(f"No light curves for TIC {tic}")
         logger.info("Completed light curve data download")

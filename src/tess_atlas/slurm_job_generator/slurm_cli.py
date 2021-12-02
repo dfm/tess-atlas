@@ -40,6 +40,11 @@ def get_cli_args(cli_data):
         help="Submit once files created",
     )
     parser.add_argument(
+        "--clean",
+        action="store_true",  # False by default
+        help="Reanalyse TOIs that have already completed analysis",
+    )
+    parser.add_argument(
         "--toi_number",
         type=int,
         help="The TOI number to be analysed (e.g. 103). Cannot be passed with toi-csv",
@@ -57,4 +62,4 @@ def get_cli_args(cli_data):
             f"You need to provide one of the two (not both)."
         )
 
-    return toi_numbers, args.outdir, args.module_loads, args.submit
+    return toi_numbers, args.outdir, args.module_loads, args.submit, args.clean

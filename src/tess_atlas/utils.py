@@ -58,6 +58,11 @@ def notebook_initalisations():
     warnings.filterwarnings("ignore", category=FutureWarning)
     warnings.filterwarnings("ignore", category=UserWarning)
 
+    set_plotting_style()
+    set_theano_cache()
+
+
+def set_plotting_style():
     plt.style.use("default")
     plt.rcParams["savefig.dpi"] = 100
     plt.rcParams["figure.dpi"] = 100
@@ -68,12 +73,19 @@ def notebook_initalisations():
     plt.rcParams["mathtext.fontset"] = "custom"
     plt.rcParams["image.cmap"] = "inferno"
 
-    # make sure that THEANO has cache dir for each thread (prevent locking issues)
 
-    # ozstar specific scratch space
-    tmp_dir = os.environ.get("JOBFS", default="./")
-    theano_cache = os.path.join(tmp_dir, "theano_cache", str(os.getpid()))
+def set_theano_cache():
+    # make sure that THEANO has cache dir for each thread (prevent locking issues)
+    theano_cache = os.path.join(
+        get_cache_dir(), "theano_cache", str(os.getpid())
+    )
+    os.makedirs(theano_cache, exist_ok=True)
     os.environ["THEANO_FLAGS"] = f"compiledir={theano_cache}"
+
+
+def get_cache_dir(default="./"):
+    # ozstar specific scratch space
+    return os.environ.get("JOBFS", default=default)
 
 
 def get_notebook_logger(outdir=""):

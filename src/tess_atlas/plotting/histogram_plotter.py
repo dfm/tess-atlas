@@ -44,11 +44,16 @@ def plot_priors(
         prior_samples, PARAMS_CATEGORIES["PLANET PARAMS"]
     )
 
-    fig = plot_histograms(samples_table, trues=init_params, latex_label=LATEX)
+    try:
+        fig = plot_histograms(
+            samples_table, trues=init_params, latex_label=LATEX
+        )
 
-    fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
-    logger.debug(f"Saving {fname}")
-    fig.savefig(fname)
+        fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
+        logger.debug(f"Saving {fname}")
+        fig.savefig(fname)
+    except Exception as e:
+        logger.error(f"Cant plot priors: {e}")
 
 
 def get_samples_from_param_regexs(samples, param_regex):

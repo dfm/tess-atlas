@@ -20,21 +20,21 @@ NOTEBOOKS_DIR = "content/toi_notebooks"
 MENU_PAGE = "content/toi_fits.md"
 
 
+def build_webdir_structure(outdir, notebooks_dir, new_notebook_dir):
+    print(f"Website being built at {outdir}")
+    os.makedirs(outdir, exist_ok=True)
+    copy_tree(TEMPLATES_DIR, outdir)  # copy templates to outdir
+    copy_tree(notebooks_dir, new_notebook_dir)  # copy notebooks to new outdir
+
+
 def make_book(outdir: str, notebooks_dir: str, rebuild: bool):
     outdir_present = os.path.isdir(outdir)
     new_notebook_dir = os.path.join(outdir, NOTEBOOKS_DIR)
 
-    if outdir_present:
-        print(f"Outdir ({os.path.abspath(outdir)}) exists")
-        if rebuild:
-            print(f"Website being built at {outdir}")
-            os.makedirs(outdir, exist_ok=True)
-            copy_tree(TEMPLATES_DIR, outdir)  # copy templates to outdir
-            copy_tree(
-                notebooks_dir, new_notebook_dir
-            )  # copy notebooks to new outdir
-        else:
-            print(f"Website being updated at {outdir}")
+    if rebuild or outdir_present is False:
+        build_webdir_structure(outdir, notebooks_dir, new_notebook_dir)
+    else:
+        print(f"Website being updated at {outdir}")
 
     make_menu_page(
         notebook_regex=os.path.join(new_notebook_dir, "toi_*.ipynb"),
@@ -48,6 +48,7 @@ def make_book(outdir: str, notebooks_dir: str, rebuild: bool):
         shell=True,
         check=True,
     )
+    print("Done! ")
 
 
 def get_cli_args():

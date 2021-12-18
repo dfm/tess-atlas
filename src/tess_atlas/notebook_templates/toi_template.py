@@ -200,6 +200,16 @@ LIMB_DARKENING_PARAM = "u"
 IMPACT_PARAM = "b"
 
 
+def get_test_duration(min_durations, max_durations, durations):
+    largest_min_duration = np.amax(
+        np.array([durations, 2 * min_durations]), axis=0
+    )
+    smallest_max_duration = np.amin(
+        np.array([largest_min_duration, 0.99 * max_durations]), axis=0
+    )
+    return smallest_max_duration
+
+
 def build_planet_transit_model(tic_entry):
     t = tic_entry.lightcurve.time
     y = tic_entry.lightcurve.flux
@@ -217,9 +227,7 @@ def build_planet_transit_model(tic_entry):
     min_durations = np.array(
         [planet.duration_min for planet in tic_entry.candidates]
     )
-    test_duration = min(
-        max(durations, 2 * min_durations), 0.99 * max_durations
-    )
+    test_duration = get_test_duration(min_durations, max_durations, durations)
 
     with pm.Model() as my_planet_transit_model:
         ## define planet parameters

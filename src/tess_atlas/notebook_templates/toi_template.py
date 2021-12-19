@@ -438,11 +438,16 @@ def run_inference(model) -> InferenceData:
         inference_data = pmx.sample(
             **sampling_kwargs, start=init_params, return_inferencedata=True
         )
+        logger.info("Sampling completed!")
         return inference_data
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-inference_data = run_inference(planet_transit_model)
+if tic_entry.inference_data is None:
+    inference_data = run_inference(planet_transit_model)
+else:
+    logger.info("Using cached run")
+    inference_data = tic_entry.inference_data
 inference_data
 
 # -

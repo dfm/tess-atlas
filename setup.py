@@ -102,6 +102,7 @@ if __name__ == "__main__":
                 "runs_stats_plotter=tess_atlas.analysis.stats_plotter:main",
                 "make_webpages=tess_atlas.webbuilder.build_pages:main",
                 "make_slurm_job=tess_atlas.slurm_job_generator.slurm_job_generator:main",
+                "download_toi=tess_atlas.api.download_analysed_toi:main",
             ]
         },
     )

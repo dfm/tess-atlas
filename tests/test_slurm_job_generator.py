@@ -8,7 +8,7 @@ from tess_atlas.slurm_job_generator.slurm_job_generator import (
     setup_jobs,
 )
 
-CLEAN_AFTER = False
+CLEAN_AFTER = True
 
 
 class JobgenTest(unittest.TestCase):
@@ -32,7 +32,16 @@ class JobgenTest(unittest.TestCase):
             shutil.rmtree(self.outdir)
 
     def test_slurmfile(self):
-        setup_jobs(self.toi_fn, self.outdir, self.module_loads, False)
+        setup_jobs(self.toi_fn, self.outdir, self.module_loads, False, True)
+
+    def test_single_job_slurmfile(self):
+        setup_jobs(
+            toi_numbers=[101],
+            outdir=self.outdir,
+            module_loads="mod 1",
+            submit=False,
+            clean=True,
+        )
 
     def test_parser(self):
         get_cli_args(["--toi_number", "1"])

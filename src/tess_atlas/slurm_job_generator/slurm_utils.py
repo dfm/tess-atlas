@@ -34,7 +34,8 @@ def to_str_list(li):
 
 def mkdir(base, name):
     newpth = os.path.join(base, name)
-    os.makedirs(os.path.dirname(newpth), exist_ok=True)
+    dirname = base if "." in name else newpth
+    os.makedirs(dirname, exist_ok=True)
     return newpth
 
 

@@ -74,7 +74,9 @@ class MatplotlibPlotter(PlotterBackend):
 
     @staticmethod
     def plot_folded_lightcurve(
-        tic_entry: TICEntry, model_lightcurves: Optional[np.ndarray] = None
+        tic_entry: TICEntry,
+        model_lightcurves: Optional[np.ndarray] = None,
+        save=True,
     ) -> plt.Figure:
         """Subplots of folded lightcurves + transit fits (if provided) for each transit"""
         if model_lightcurves is None:
@@ -125,9 +127,12 @@ class MatplotlibPlotter(PlotterBackend):
             ax.legend(markerscale=5)
 
         plt.tight_layout()
-        fname = os.path.join(tic_entry.outdir, FOLDED_LIGHTCURVE_PLOT)
-        logger.debug(f"Saving {fname}")
-        fig.savefig(fname)
+        if save:
+            fname = os.path.join(tic_entry.outdir, FOLDED_LIGHTCURVE_PLOT)
+            logger.debug(f"Saving {fname}")
+            fig.savefig(fname)
+        else:
+            return fig
 
     @staticmethod
     def plot_phase(
@@ -136,6 +141,7 @@ class MatplotlibPlotter(PlotterBackend):
         model,
         plot_data_ci: Optional[bool] = False,
         plot_binned: Optional[bool] = False,
+        save=True,
     ):
         """Adapted from exoplanet tutorials
         https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
@@ -254,8 +260,11 @@ class MatplotlibPlotter(PlotterBackend):
             plt.title(f"Planet {i + 1}")
             plt.xlim(plt_min, plt_max)
             plt.tight_layout()
-            fname = os.path.join(
-                tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i + 1}.")
-            )
-            logger.debug(f"Saving {fname}")
-            plt.savefig(fname)
+            if save:
+                fname = os.path.join(
+                    tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i + 1}.")
+                )
+                logger.debug(f"Saving {fname}")
+                plt.savefig(fname)
+            else:
+                return fig

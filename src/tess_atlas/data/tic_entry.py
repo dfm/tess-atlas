@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import List, Optional
+import shutil
 
 import pandas as pd
 from arviz import InferenceData
@@ -72,9 +73,13 @@ class TICEntry(DataObject):
         return len(self.candidates)
 
     @classmethod
-    def load(cls, toi: int):
+    def load(cls, toi: int, clean: Optional[bool] = False):
         toi_dir = TOI_DIR.format(toi=toi)
         cache_fn = TICEntry.get_filepath(toi_dir)
+
+        if clean:
+            shutil.rmtree(toi_dir)
+
         if TICEntry.cached_data_present(cache_fn):
             return cls.from_cache(toi, toi_dir)
         else:

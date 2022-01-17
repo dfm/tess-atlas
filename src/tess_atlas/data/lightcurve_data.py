@@ -64,7 +64,7 @@ class LightCurveData(DataObject):
             raise ValueError(f"No light curves for TIC {tic}")
         logger.info("Completed light curve data download")
         data = data.stitch()
-        data = data.remove_nans().remove_outliers(sigma=7)
+        data = data.remove_nans().remove_outliers(sigma=10)
         t = data.time.value
         inds = np.argsort(t)
         return cls(

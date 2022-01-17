@@ -77,7 +77,7 @@ class TICEntry(DataObject):
         toi_dir = TOI_DIR.format(toi=toi)
         cache_fn = TICEntry.get_filepath(toi_dir)
 
-        if clean:
+        if clean and os.path.isdir(toi_dir):
             shutil.rmtree(toi_dir)
 
         if TICEntry.cached_data_present(cache_fn):

@@ -39,7 +39,9 @@ class LightCurveData(DataObject):
         """Uses lightkurve to get TESS data for a TIC from MAST"""
 
         logger.info("Downloading LightCurveData from MAST")
-        search = lk.search_lightcurve(target=f"TIC {tic}", mission="TESS")
+        search = lk.search_lightcurve(
+            target=f"TIC {tic}", mission="TESS", author="SPOC"
+        )
         logger.debug(f"Search  succeeded: {search}")
 
         # Restrict to short cadence no "fast" cadence
@@ -50,7 +52,14 @@ class LightCurveData(DataObject):
             f"(TIC {tic})"
         )
         cache_dir = get_cache_dir(default=outdir)
-        data = search.download_all(download_dir=cache_dir)
+
+        # see lightkurve docs on quality flags:
+        # http://docs.lightkurve.org/reference/api/lightkurve.SearchResult.download_all.html
+        data = search.download_all(
+            download_dir=cache_dir,
+            flux_column="pdcsap_flux",
+            quality_bitmask="hard",
+        )
         if data is None:
             raise ValueError(f"No light curves for TIC {tic}")
         logger.info("Completed light curve data download")

@@ -415,7 +415,7 @@ lightcurve_models = compute_variable(
 plot_lightcurve(tic_entry, lightcurve_models * 1e3)
 
 # + tags=["exe"]
-plot_folded_lightcurve(tic_entry, lightcurve_models)
+plot_folded_lightcurve(tic_entry, lightcurve_models * 1e3)
 
 # + tags=["exe"]
 prior_samples = sample_prior(planet_transit_model)

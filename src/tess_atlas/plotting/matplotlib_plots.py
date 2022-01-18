@@ -38,7 +38,9 @@ logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 class MatplotlibPlotter(PlotterBackend):
     @staticmethod
     def plot_lightcurve(
-        tic_entry: TICEntry, model_lightcurves: Optional[np.ndarray] = None
+        tic_entry: TICEntry,
+        model_lightcurves: Optional[np.ndarray] = None,
+        save: Optional[bool] = True,
     ) -> plt.Figure:
         """Plot lightcurve data + transit fits (if provided) in one plot
 
@@ -68,15 +70,17 @@ class MatplotlibPlotter(PlotterBackend):
         ax.legend(markerscale=5)
 
         fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
-        logger.debug(f"Saving {fname}")
-        plt.tight_layout()
-        fig.savefig(fname)
+        if save:
+            logger.debug(f"Saving {fname}")
+            fig.savefig(fname)
+        else:
+            return fig
 
     @staticmethod
     def plot_folded_lightcurve(
         tic_entry: TICEntry,
         model_lightcurves: Optional[np.ndarray] = None,
-        save=True,
+        save: Optional[bool] = True,
     ) -> plt.Figure:
         """Subplots of folded lightcurves + transit fits (if provided) for each transit"""
         if model_lightcurves is None:
@@ -127,8 +131,8 @@ class MatplotlibPlotter(PlotterBackend):
             ax.legend(markerscale=5)
 
         plt.tight_layout()
+        fname = os.path.join(tic_entry.outdir, FOLDED_LIGHTCURVE_PLOT)
         if save:
-            fname = os.path.join(tic_entry.outdir, FOLDED_LIGHTCURVE_PLOT)
             logger.debug(f"Saving {fname}")
             fig.savefig(fname)
         else:
@@ -141,7 +145,6 @@ class MatplotlibPlotter(PlotterBackend):
         model,
         plot_data_ci: Optional[bool] = False,
         plot_binned: Optional[bool] = False,
-        save=True,
     ):
         """Adapted from exoplanet tutorials
         https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
@@ -162,18 +165,25 @@ class MatplotlibPlotter(PlotterBackend):
                 inference_data=inference_data, varnames=varnames, size=1000
             )
 
-            lcs = compute_variable(
-                model=model, samples=samples, target=model.lightcurve_models
-            )
-
-            samples_dict = convert_to_samples_dict(varnames, samples)
-
             # Get the posterior median orbital parameters
+            samples_dict = convert_to_samples_dict(varnames, samples)
             p = np.median(samples_dict["p"])
             p_mean = np.mean(samples_dict["p"])
             p_std = np.std(samples_dict["p"])
             t0 = np.median(samples_dict["t0"])
-            f0_array = samples_dict["f0"]
+            f0 = np.median(samples_dict["f0"])
+
+            # compute model params
+            lcs, gp_mus = compute_variable(
+                model=model,
+                samples=samples,
+                target=[model.lightcurve_models, model.gp_mu],
+            )
+            lcs = lcs * 1e3  # scale the lcs
+            gp_model = np.median(gp_mus, axis=0) + f0
+
+            # get rid of noise in data
+            y = y - gp_model
 
             # Compute the median of posterior estimate of the contribution from
             # the other planets and remove this from the data
@@ -217,15 +227,10 @@ class MatplotlibPlotter(PlotterBackend):
                     color="gray",
                 )
 
-            # Plot the folded model
+            # Plot the folded lightcurve model
             inds = np.argsort(x_fold)
             inds = inds[np.abs(x_fold)[inds] < plt_max]
-            scaled_lcs = lcs[..., inds, i] * 1e3
-
-            pred = scaled_lcs.copy()
-            for pred_num, f0 in enumerate(f0_array):
-                pred[pred_num, :] -= f0
-
+            pred = lcs[..., inds, i]
             quants = np.percentile(pred, [16, 50, 84], axis=0)
             plt.plot(
                 x_fold[inds], quants[1, :], color=colors[i], label="model"
@@ -239,9 +244,9 @@ class MatplotlibPlotter(PlotterBackend):
                 zorder=1000,
             )
             art.set_edgecolor("none")
+            ylim = np.abs(np.min(pred))
 
             # Annotate the plot with the planet's period
-
             txt = f"period = {p_mean:.4f} +/- {p_std:.4f} d"
             plt.annotate(
                 txt,
@@ -259,12 +264,11 @@ class MatplotlibPlotter(PlotterBackend):
             plt.ylabel(FLUX_LABEL)
             plt.title(f"Planet {i + 1}")
             plt.xlim(plt_min, plt_max)
+            plt.ylim(-ylim, ylim)
             plt.tight_layout()
-            if save:
-                fname = os.path.join(
-                    tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i + 1}.")
-                )
-                logger.debug(f"Saving {fname}")
-                plt.savefig(fname)
-            else:
-                return fig
+
+            fname = os.path.join(
+                tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i + 1}.")
+            )
+            logger.debug(f"Saving {fname}")
+            plt.savefig(fname)

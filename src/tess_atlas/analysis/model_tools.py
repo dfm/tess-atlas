@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import theano
@@ -57,8 +57,10 @@ def get_untransformed_varnames(model: Model) -> List[str]:
 
 
 def compute_variable(
-    model: Model, samples: List[List[float]], target: TensorVariable
-) -> np.ndarray:
+    model: Model,
+    samples: List[List[float]],
+    target: Union[TensorVariable, List[TensorVariable]],
+) -> Union[np.ndarray, Tuple[np.ndarray]]:
     """Computes value for a model variable.
 
     :param Model model: The pymc3 model object
@@ -66,7 +68,7 @@ def compute_variable(
     :param TensorVariable target: The tensor (or list of tensors) that you want to compute for the samples
     :param int size: The number of samples to draw (leave it as None for all, but that's probably not what we want).
 
-    :return: np.ndarray: i rows of predictions, each with j entries
+    :return: np.ndarray: i rows of predictions, each with j entries.
     """
     varnames = get_untransformed_varnames(model)
 
@@ -80,4 +82,8 @@ def compute_variable(
     results = [
         func(*s) for s in tqdm(samples, desc="Computing model variable")
     ]
-    return np.array(results)
+
+    if isinstance(target, TensorVariable):
+        return np.array(results)
+    else:
+        return (np.array(i) for i in list(zip(*results)))

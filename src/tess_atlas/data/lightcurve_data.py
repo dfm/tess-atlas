@@ -58,7 +58,7 @@ class LightCurveData(DataObject):
         data = search.download_all(
             download_dir=cache_dir,
             flux_column="pdcsap_flux",
-            quality_bitmask="hard",
+            quality_bitmask="hardest",
         )
         if data is None:
             raise ValueError(f"No light curves for TIC {tic}")

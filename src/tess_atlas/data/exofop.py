@@ -9,7 +9,7 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 EXOFOP = "https://exofop.ipac.caltech.edu/tess/"
-TIC_DATASOURCE = EXOFOP + "download_toi.php?sort=toi&output=csv&source=spoc"
+TIC_DATASOURCE = EXOFOP + "download_toi.php?sort=toi&output=csv"
 TIC_SEARCH = EXOFOP + "target.php?id={tic_id}"
 
 DIR = os.path.dirname(__file__)

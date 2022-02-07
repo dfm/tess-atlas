@@ -341,6 +341,9 @@ def build_planet_transit_model(tic_entry):
             kernel, t=t, diag=yerr ** 2 + jitter_prior ** 2, mean=lightcurve
         )
         gp.marginal(name="obs", observed=y)
+        my_planet_transit_model.gp_mu = gp.predict(
+            residual, t=t, return_var=False
+        )
 
         # cache params
         my_params = dict(

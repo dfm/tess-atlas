@@ -48,7 +48,7 @@ LATEX = {
     f"log_{GP_RHO}": r"$\log \rm{GP} \rho$",
     f"log_{RHO_CIRC}": r"$\log \rho_{\rm circ}$",
     "eccentricity": r"$e$",
-    "omega": r"$\omega",
+    "omega": r"$\omega$",
 }
 
 PARAMS_CATEGORIES = {

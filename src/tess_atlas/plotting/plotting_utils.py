@@ -3,6 +3,9 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import arviz as az
+import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 
 
 def get_colors(
@@ -47,3 +50,108 @@ def format_prior_samples_and_initial_params(
     prior_samples.dropna(inplace=True)
 
     return prior_samples, init_params
+
+
+def format_label_string_with_offset(ax, axis="both"):
+    """Format the label string with the exponent from the ScalarFormatter"""
+    ax.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+    ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+    ax.ticklabel_format(axis=axis, style="sci", scilimits=(-1e4, 1e4))
+
+    axes_instances = []
+    if axis in ["x", "both"]:
+        axes_instances.append(ax.xaxis)
+    if axis in ["y", "both"]:
+        axes_instances.append(ax.yaxis)
+
+    for ax in axes_instances:
+        ax.major.formatter._useMathText = False
+        ax.major.formatter._useOffset = True
+
+        plt.draw()  # Update the text
+        offset_text = ax.get_offset_text().get_text()
+
+        label = ax.get_label().get_text()
+        ax.offsetText.set_visible(False)
+        ax.set_label_text(update_label(label, offset_text))
+
+
+def update_label(old_label, offset_text):
+    if offset_text == "":
+        return old_label
+
+    try:
+        units = old_label[old_label.index("[") + 1 : old_label.rindex("]")]
+    except ValueError:
+        units = ""
+    label = old_label.replace("[{}]".format(units), "")
+
+    if "+" in offset_text:
+        offset_text = "+" + str(int(float(offset_text.replace("+", ""))))
+
+    return "{} [{} {}]".format(label, offset_text, units)
+
+
+def get_one_dimensional_median_and_error_bar(
+    data_array, fmt=".2f", quantiles=(0.16, 0.84)
+) -> str:
+    """ Calculate the median and error bar for a given key
+
+    Parameters
+    ==========
+    data_array: np.1d array
+        The parameter array for which to calculate the median and error bar
+    fmt: str, ('.2f')
+        A format string
+    quantiles: list, tuple
+        A length-2 tuple of the lower and upper-quantiles to calculate
+        the errors bars for.
+
+    Returns
+    =======
+    str
+        A latex str with {median}_{lower quant}^{upper quant}
+
+    """
+
+    if len(quantiles) != 2:
+        raise ValueError("quantiles must be of length 2")
+
+    quants_to_compute = np.array([quantiles[0], 0.5, quantiles[1]])
+    quants = np.percentile(data_array, quants_to_compute * 100)
+    median = quants[1]
+    plus = quants[2] - median
+    minus = median - quants[0]
+
+    fmt = "{{0:{0}}}".format(fmt).format
+    tmplate = r"${{{0}}}_{{-{1}}}^{{+{2}}}$"
+    return tmplate.format(fmt(median), fmt(minus), fmt(plus))
+
+
+def get_range(data, params: List[str]) -> List[List[int]]:
+    """Gets bouds of dataset"""
+    if isinstance(data, pd.DataFrame):
+        return [[data[p].min(), data[p].max()] for p in params]
+    elif isinstance(data, az.InferenceData):
+        data_array = convert_to_numpy_list(data, params)
+        return [[min(d), max(d)] for d in data_array]
+    else:
+        raise TypeError("Unexpected type provided to get_range")
+
+
+def convert_to_numpy_list(
+    inference_data: az.InferenceData, params: List[str]
+) -> np.ndarray:
+    """Converts from az.InferenceData --> 2D np.ndarray
+
+    List[posterior_param_list_1, posterior_param_list_2...]
+    each item in list is a list for the specific param
+    """
+    dataset = convert_to_dataset(inference_data, group="posterior")
+    var_names = _var_names(params, dataset)
+    plotters = list(
+        xarray_var_iter(
+            get_coords(dataset, {}), var_names=var_names, combined=True
+        )
+    )
+    return np.stack([x[-1].flatten() for x in plotters], axis=0)

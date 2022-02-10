@@ -18,7 +18,10 @@ from .labels import (
     POSTERIOR_PLOT,
     PRIOR_PLOT,
 )
-from .plotting_utils import format_prior_samples_and_initial_params
+from .plotting_utils import (
+    format_prior_samples_and_initial_params,
+    format_label_string_with_offset,
+)
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -121,44 +124,6 @@ def __add_ax(ax):
     ax.xaxis.set_major_locator(MaxNLocator(3))
     ax.tick_params(direction="in")
     ax.set_frame_on(True)
-
-
-def update_label(old_label, offset_text):
-    if offset_text == "":
-        return old_label
-
-    try:
-        units = old_label[old_label.index("[") + 1 : old_label.rindex("]")]
-    except ValueError:
-        units = ""
-    label = old_label.replace("[{}]".format(units), "")
-
-    if "+" in offset_text:
-        offset_text = "+" + str(int(float(offset_text.replace("+", ""))))
-
-    return "{} [{} {}]".format(label, offset_text, units)
-
-
-def format_label_string_with_offset(ax, axis="both"):
-    """Format the label string with the exponent from the ScalarFormatter"""
-    ax.ticklabel_format(axis=axis, style="sci", scilimits=(-1e4, 1e4))
-
-    axes_instances = []
-    if axis in ["x", "both"]:
-        axes_instances.append(ax.xaxis)
-    if axis in ["y", "both"]:
-        axes_instances.append(ax.yaxis)
-
-    for ax in axes_instances:
-        ax.major.formatter._useMathText = False
-        ax.major.formatter._useOffset = True
-
-        plt.draw()  # Update the text
-        offset_text = ax.get_offset_text().get_text()
-
-        label = ax.get_label().get_text()
-        ax.offsetText.set_visible(False)
-        ax.set_label_text(update_label(label, offset_text))
 
 
 def __get_longest_row_length(

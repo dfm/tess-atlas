@@ -16,6 +16,7 @@ from tess_atlas.data import TICEntry
 from tess_atlas.data.inference_data_tools import (
     convert_to_samples_dict,
     get_posterior_samples,
+    get_samples_dataframe,
 )
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
@@ -144,43 +145,43 @@ class MatplotlibPlotter(PlotterBackend):
         inference_data,
         model,
         plot_data_ci: Optional[bool] = False,
-        plot_binned: Optional[bool] = False,
+        plot_raw: Optional[bool] = False,
     ):
         """Adapted from exoplanet tutorials
         https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
         """
-        colors = get_colors(tic_entry.planet_count)
 
+        # set some plotting constants
+        plt_min, plt_max = -0.3, 0.3
+        colors = get_colors(tic_entry.planet_count)
         t = tic_entry.lightcurve.time
         y = tic_entry.lightcurve.flux
         yerr = tic_entry.lightcurve.flux_err
 
-        plt_min, plt_max = -0.3, 0.3
+        # get posterior df
+        posterior = get_samples_dataframe(inference_data)
+        f0 = np.median(posterior[f"f0"])
+
+        # compute model vars
+        varnames = get_untransformed_varnames(model)
+        samples = get_posterior_samples(
+            inference_data=inference_data, varnames=varnames, size=100
+        )
+        lcs, gp_mus = compute_variable(
+            model=model,
+            samples=samples,
+            target=[model.lightcurve_models, model.gp_mu],
+        )
+        lcs = lcs * 1e3  # scale the lcs
+        gp_model = np.median(gp_mus, axis=0) + f0
 
         for i in range(tic_entry.planet_count):
             plt.figure(figsize=(7, 5))
 
-            varnames = get_untransformed_varnames(model)
-            samples = get_posterior_samples(
-                inference_data=inference_data, varnames=varnames, size=1000
-            )
-
             # Get the posterior median orbital parameters
-            samples_dict = convert_to_samples_dict(varnames, samples)
-            p = np.median(samples_dict["p"])
-            p_mean = np.mean(samples_dict["p"])
-            p_std = np.std(samples_dict["p"])
-            t0 = np.median(samples_dict["t0"])
-            f0 = np.median(samples_dict["f0"])
-
-            # compute model params
-            lcs, gp_mus = compute_variable(
-                model=model,
-                samples=samples,
-                target=[model.lightcurve_models, model.gp_mu],
-            )
-            lcs = lcs * 1e3  # scale the lcs
-            gp_model = np.median(gp_mus, axis=0) + f0
+            pvals = posterior[f"p[{i}]"]
+            p, p_mean, p_std = pvals.median(), pvals.mean(), pvals.std()
+            t0 = np.median(posterior[f"t0[{i}]"])
 
             # get rid of noise in data
             y = y - gp_model
@@ -192,22 +193,21 @@ class MatplotlibPlotter(PlotterBackend):
             for j in range(tic_entry.planet_count):
                 if j != i:
                     ith_flux -= np.median(lcs[..., j], axis=(0, 1))
-            # TODO: check if this works for multi-planet systems
 
             x_fold = (t - t0 + 0.5 * p) % p - 0.5 * p
             idx = np.where((plt_min <= x_fold) & (x_fold <= plt_max))
 
             # Plot the folded data
-            if not plot_data_ci:
+            if plot_raw:
                 plt.errorbar(
-                    x_fold,
-                    ith_flux,
-                    yerr=yerr,
+                    x_fold[idx],
+                    ith_flux[idx],
+                    yerr=yerr[idx],
                     fmt=".k",
                     label="data",
                     zorder=-1000,
                 )
-            else:
+            elif plot_data_ci:
                 plot_ci(
                     x_fold[idx],
                     ith_flux[idx],
@@ -217,14 +217,13 @@ class MatplotlibPlotter(PlotterBackend):
                     alpha=0.4,
                     bins=35,
                 )
-
-            if plot_binned:
+            else:  # default
                 plot_xy_binned(
-                    x_fold[idx],
-                    ith_flux[idx],
-                    plt.gca(),
+                    x=x_fold[idx],
+                    y=ith_flux[idx],
+                    yerr=yerr[idx],
+                    ax=plt.gca(),
                     bins=500,
-                    color="gray",
                 )
 
             # Plot the folded lightcurve model
@@ -244,7 +243,8 @@ class MatplotlibPlotter(PlotterBackend):
                 zorder=1000,
             )
             art.set_edgecolor("none")
-            ylim = np.abs(np.min(pred))
+
+            ylim = np.abs(np.min(pred)) * 1.2
 
             # Annotate the plot with the planet's period
             txt = f"period = {p_mean:.4f} +/- {p_std:.4f} d"

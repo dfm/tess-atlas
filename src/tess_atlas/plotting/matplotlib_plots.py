@@ -165,7 +165,7 @@ class MatplotlibPlotter(PlotterBackend):
         # compute model vars
         varnames = get_untransformed_varnames(model)
         samples = get_posterior_samples(
-            inference_data=inference_data, varnames=varnames, size=100
+            inference_data=inference_data, varnames=varnames, size=1000
         )
         lcs, gp_mus = compute_variable(
             model=model,

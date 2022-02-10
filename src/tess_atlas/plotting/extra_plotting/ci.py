@@ -87,5 +87,5 @@ def plot_xy_binned(x, y, yerr, ax, bins):
     denom[num == 0] = 1.0
     new_x = 0.5 * (bins[1:] + bins[:-1])
     new_y = num / denom
-    new_yerr = np.sqrt(err) / denom
+    new_yerr = err / denom
     ax.errorbar(new_x, new_y, new_yerr, fmt=".k", label="data", zorder=-1000)

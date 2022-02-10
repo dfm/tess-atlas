@@ -50,13 +50,15 @@ def summary(inference_data) -> pd.DataFrame:
 
 
 def get_samples_dataframe(inference_data) -> pd.DataFrame:
-    df = inference_data.to_dataframe(groups=["posterior"])
-    samples = df.filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
-    # samples cols are like: [('r[0]', 0), ('b[0]', 0), ('p[0]', 0), ...
+    samples = inference_data.to_dataframe(groups=["posterior"])
+    # converting column labels to only include posterior label (removing group)
     new_cols = []
-    for (posterior_label, group) in list(samples.columns):
-        # converting column labels to only include posterior label
-        new_cols.append(posterior_label)
+    for col in list(samples.columns):
+        if isinstance(col, tuple):
+            posterior_label, group = col
+            new_cols.append(posterior_label)
+        else:
+            new_cols.append(col)
     samples.columns = new_cols
     return samples
 

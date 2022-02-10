@@ -24,9 +24,7 @@ tests/test_notebooks/
 /src/tess_atlas/notebook_templates/toi_template.ipynb
 
 /tests/test_jobgen/
-
-
-
+case_studies
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

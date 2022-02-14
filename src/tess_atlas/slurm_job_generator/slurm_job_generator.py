@@ -51,7 +51,7 @@ def setup_jobs(
                 module_loads=module_loads,
                 extra_jobargs="",
                 cpu_per_task=2,
-                time="120:00",
+                time="300:00",
                 jobname=f"pe",
                 mem="1500MB",
                 submit_dir=submit_dir,

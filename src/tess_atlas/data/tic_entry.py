@@ -81,9 +81,14 @@ class TICEntry(DataObject):
             shutil.rmtree(toi_dir)
 
         if TICEntry.cached_data_present(cache_fn):
-            return cls.from_cache(toi, toi_dir)
-        else:
-            return cls.from_database(toi)
+            try:
+                return cls.from_cache(toi, toi_dir)
+            except Exception as e:
+                logger.info(
+                    "Error loading fom cache: ''{e}''. Downloading data."
+                )
+
+        return cls.from_database(toi)
 
     @classmethod
     def from_database(cls, toi: int):

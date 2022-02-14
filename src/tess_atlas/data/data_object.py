@@ -1,5 +1,10 @@
 import os
 from abc import ABC
+import logging
+
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
 class DataObject(ABC):
@@ -7,7 +12,12 @@ class DataObject(ABC):
     def load(cls, **kwargs):
         outdir = kwargs["outdir"]
         if cls.cached_data_present(cls.get_filepath(outdir)):
-            return cls.from_cache(**kwargs)
+            try:
+                return cls.from_cache(**kwargs)
+            except Exception as e:
+                logger.info(
+                    "Error loading fom cache: ''{e}''. Downloading data."
+                )
         return cls.from_database(**kwargs)
 
     @classmethod

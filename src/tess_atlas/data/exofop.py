@@ -23,7 +23,13 @@ def get_tic_database():
     else:
         # go online to grab database and cache
         db = pd.read_csv(TIC_DATASOURCE)
-        db.to_csv(cached_file)
+        db.to_csv(cached_file, index=False)
+    db[["TOI int", "planet count"]] = (
+        db["TOI"].astype(str).str.split(".", 1, expand=True)
+    )
+    db = db.astype({"TOI int": "int", "planet count": "int"})
+    db["Multiplanet System"] = db["TOI int"].duplicated(keep=False)
+    db["Single Transit"] = db["Period (days)"] <= 0
     return db
 
 

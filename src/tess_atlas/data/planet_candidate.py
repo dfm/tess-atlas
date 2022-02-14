@@ -23,6 +23,7 @@ class PlanetCandidate(DataObject):
         t0: float,
         depth: float,
         duration: float,
+        snr: float,
     ):
         """
         :param float toi_id: The toi number X.Y where the Y represents the
@@ -34,6 +35,7 @@ class PlanetCandidate(DataObject):
         :param float depth: Planet candidate transit depth, in parts per
             million
         :param float duration: Planet candidate transit duration, in days.
+        :param float snr: Planet SNR.
         """
         self.toi_id = toi_id
         self.__time = time
@@ -42,6 +44,7 @@ class PlanetCandidate(DataObject):
         self.t0 = t0
         self.depth = depth
         self.duration = duration
+        self.snr = snr
 
     @property
     def period(self):
@@ -99,6 +102,7 @@ class PlanetCandidate(DataObject):
             * 1e-3,  # convert to parts per thousand
             duration=toi_data["Duration (hours)"] / 24.0,  # convert to days,
             time=lightcurve.time,
+            snr=toi_data["SNR"],
         )
         return cls(**unpack_data)
 
@@ -121,5 +125,6 @@ class PlanetCandidate(DataObject):
             "Epoch (TBJD)": self.t0,
             "Depth (ppt)": self.depth,
             "Duration (days)": self.duration,
+            "SNR": self.snr,
             "Single Transit": self.has_data_only_for_single_transit,
         }

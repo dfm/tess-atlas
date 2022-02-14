@@ -39,6 +39,21 @@ def get_tic_id_for_toi(toi_number: int) -> int:
     return int(toi["TIC ID"])
 
 
+def get_toi_numbers_for_different_categories():
+    tic_db = get_tic_database()
+    multi = tic_db[tic_db["Multiplanet System"]]
+    sing = tic_db[tic_db["Single Transit"]]
+    basic = tic_db[
+        (~tic_db["Single Transit"]) & (~tic_db["Multiplanet System"])
+    ]
+    dfs = [multi, sing, basic]
+    toi_dfs = {}
+    for df, name in zip(dfs, ["multi", "single", "basic"]):
+        toi_ids = list(set(df["TOI"].astype(int)))
+        toi_dfs[name] = pd.DataFrame(dict(toi_numbers=toi_ids))
+    return toi_dfs
+
+
 def get_tic_data_from_database(toi_numbers: List[int]) -> pd.DataFrame:
     """Get rows of about a TIC  from ExoFOP associated with a TOI target.
     :param int toi_numbers: The list TOI number for which the TIC data is required

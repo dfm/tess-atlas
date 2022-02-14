@@ -3,7 +3,7 @@ import numpy as np
 import arviz as az
 import os
 
-from . import plot_phase
+from .matplotlib_plots import MatplotlibPlotter
 from .plotting_utils import (
     get_longest_unbroken_section_of_data,
     get_colors,
@@ -92,7 +92,7 @@ def trace_plot(tic_entry):
 def plot_diagnostics(tic_entry, model):
     plot_lightcurve_gp_and_residuals(tic_entry, model)
     trace_plot(tic_entry.inference_data)
-    plot_phase(
+    MatplotlibPlotter.plot_phase(
         tic_entry,
         tic_entry.inference_data,
         model,

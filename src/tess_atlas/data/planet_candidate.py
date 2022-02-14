@@ -102,7 +102,7 @@ class PlanetCandidate(DataObject):
             * 1e-3,  # convert to parts per thousand
             duration=toi_data["Duration (hours)"] / 24.0,  # convert to days,
             time=lightcurve.time,
-            snr=toi_data["SNR"],
+            snr=toi_data["Planet SNR"],
         )
         return cls(**unpack_data)
 
@@ -125,6 +125,6 @@ class PlanetCandidate(DataObject):
             "Epoch (TBJD)": self.t0,
             "Depth (ppt)": self.depth,
             "Duration (days)": self.duration,
-            "SNR": self.snr,
+            "Planet SNR": self.snr,
             "Single Transit": self.has_data_only_for_single_transit,
         }

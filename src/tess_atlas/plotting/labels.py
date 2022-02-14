@@ -5,6 +5,9 @@ FOLDED_LIGHTCURVE_PLOT = "folded_flux_vs_time.png"
 POSTERIOR_PLOT = "posteriors.png"
 ECCENTRICITY_PLOT = "eccentricity_posteriors.png"
 PRIOR_PLOT = "priors.png"
+DIAGNOSTIC_LIGHTCURVE_PLOT = "diagnostic_flux_vs_time.png"
+DIAGNOSTIC_TRACE_PLOT = "diagnostic_trace_plot.png"
+
 
 # PARAM CONSTANTS
 DEPTH = "depth"

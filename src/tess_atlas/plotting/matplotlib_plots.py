@@ -1,26 +1,20 @@
 import logging
 import os
-from typing import Optional
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
-from typing import List, Optional
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from tess_atlas.data import TICEntry
-from tess_atlas.data.inference_data_tools import (
-    convert_to_samples_dict,
-    get_posterior_samples,
-    get_samples_dataframe,
-)
+from tess_atlas.data.inference_data_tools import get_samples_dataframe
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
-from ..analysis import compute_variable, get_untransformed_varnames
 from .extra_plotting.ci import plot_ci, plot_xy_binned
 from .labels import (
     FLUX_LABEL,
@@ -31,7 +25,7 @@ from .labels import (
     TIME_SINCE_TRANSIT_LABEL,
 )
 from .plotter_backend import PlotterBackend
-from .plotting_utils import get_colors
+from .plotting_utils import get_colors, get_lc_and_gp_from_inference_object
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -144,8 +138,11 @@ class MatplotlibPlotter(PlotterBackend):
         tic_entry,
         inference_data,
         model,
+        data_bins: Optional[int] = 300,
         plot_data_ci: Optional[bool] = False,
         plot_raw: Optional[bool] = False,
+        zoom_y_axis: Optional[bool] = False,
+        plot_label: Optional[str] = "",
     ):
         """Adapted from exoplanet tutorials
         https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
@@ -163,17 +160,9 @@ class MatplotlibPlotter(PlotterBackend):
         f0 = np.median(posterior[f"f0"])
 
         # compute model vars
-        varnames = get_untransformed_varnames(model)
-        samples = get_posterior_samples(
-            inference_data=inference_data, varnames=varnames, size=1000
+        lcs, gp_model = get_lc_and_gp_from_inference_object(
+            model, inference_data
         )
-        lcs, gp_mus = compute_variable(
-            model=model,
-            samples=samples,
-            target=[model.lightcurve_models, model.gp_mu],
-        )
-        lcs = lcs * 1e3  # scale the lcs
-        gp_model = np.median(gp_mus, axis=0) + f0
 
         for i in range(tic_entry.planet_count):
             plt.figure(figsize=(7, 5))
@@ -223,7 +212,7 @@ class MatplotlibPlotter(PlotterBackend):
                     y=ith_flux[idx],
                     yerr=yerr[idx],
                     ax=plt.gca(),
-                    bins=500,
+                    bins=data_bins,
                 )
 
             # Plot the folded lightcurve model
@@ -264,11 +253,13 @@ class MatplotlibPlotter(PlotterBackend):
             plt.ylabel(FLUX_LABEL)
             plt.title(f"Planet {i + 1}")
             plt.xlim(plt_min, plt_max)
-            plt.ylim(-ylim, ylim)
+            if zoom_y_axis:
+                plt.ylim(-ylim, ylim)
             plt.tight_layout()
 
             fname = os.path.join(
-                tic_entry.outdir, PHASE_PLOT.replace(".", f"_{i + 1}.")
+                tic_entry.outdir,
+                plot_label + "_" + PHASE_PLOT.replace(".", f"_{i + 1}."),
             )
             logger.debug(f"Saving {fname}")
             plt.savefig(fname)

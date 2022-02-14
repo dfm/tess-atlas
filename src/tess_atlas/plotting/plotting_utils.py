@@ -1,11 +1,18 @@
 from typing import Dict, List, Optional, Tuple
 
+import arviz as az
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import arviz as az
-import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
+
+from tess_atlas.data.inference_data_tools import (
+    get_posterior_samples,
+    get_samples_dataframe,
+)
+
+from ..analysis import compute_variable, get_untransformed_varnames
 
 
 def get_colors(
@@ -95,7 +102,7 @@ def update_label(old_label, offset_text):
 def get_one_dimensional_median_and_error_bar(
     data_array, fmt=".2f", quantiles=(0.16, 0.84)
 ) -> str:
-    """ Calculate the median and error bar for a given key
+    """Calculate the median and error bar for a given key
 
     Parameters
     ==========
@@ -155,3 +162,29 @@ def convert_to_numpy_list(
         )
     )
     return np.stack([x[-1].flatten() for x in plotters], axis=0)
+
+
+def get_longest_unbroken_section_of_data(t, min_break_len=10):
+    """Gets longest chain of data without a break of longer than min_break_len"""
+    td = np.array([t2 - t1 for t2, t1 in zip(t[1:], t)])
+    t_split = np.split(t, np.where(td >= min_break_len)[0])
+    split_lens = [len(ts) for ts in t_split]
+    longest_t = t_split[split_lens.index(max(split_lens))][1:-1]
+    idx = np.searchsorted(t, longest_t)
+    return idx, longest_t
+
+
+def get_lc_and_gp_from_inference_object(model, inference_data):
+    f0 = np.median(get_samples_dataframe(inference_data)[f"f0"])
+    varnames = get_untransformed_varnames(model)
+    samples = get_posterior_samples(
+        inference_data=inference_data, varnames=varnames, size=1000
+    )
+    lcs, gp_mus = compute_variable(
+        model=model,
+        samples=samples,
+        target=[model.lightcurve_models, model.gp_mu],
+    )
+    lcs = lcs * 1e3  # scale the lcs
+    gp_model = np.median(gp_mus, axis=0) + f0
+    return lcs, gp_model

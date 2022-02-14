@@ -101,6 +101,7 @@ from tess_atlas.plotting import (
     plot_phase,
     plot_posteriors,
     plot_priors,
+    plot_diagnostics,
 )
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -510,7 +511,12 @@ else:
     )
 
 # -
+# Finally, we also store some diagnostic plots (these can be accessed in the output directory for the analysis).
 
+# + pycharm={"name": "#%%\n"} tags=["exe"]
+plot_diagnostics(tic_entry, planet_transit_model)
+
+# -
 # ## Citations
 #
 

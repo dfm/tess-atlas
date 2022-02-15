@@ -27,6 +27,7 @@ from .plotting_utils import (
     get_one_dimensional_median_and_error_bar,
     format_label_string_with_offset,
     get_colors,
+    exception_catcher,
 )
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
@@ -95,6 +96,7 @@ def make_titles(df):
     return titles
 
 
+@exception_catcher
 def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
     """Plots 1 posterior corner plot for each planet"""
     params = ["r", "b", "t0", "tmax", "p", "dur"]
@@ -144,6 +146,7 @@ def plot_priors(
     fig.savefig(fname, bbox_inches="tight")
 
 
+@exception_catcher
 def plot_eccentricity_posteriors(
     tic_entry: TICEntry, ecc_samples: pd.DataFrame
 ) -> None:

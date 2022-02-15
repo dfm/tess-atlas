@@ -199,9 +199,9 @@ def get_lc_and_gp_from_inference_object(model, inference_data):
 def exception_catcher(func):
     def wrapper(*args, **kwargs):
         try:
-            res = func(*args, **kwargs)
+            return func(*args, **kwargs)
         except Exception as e:
             logger.warning(f"Skipping {func}({args}, {kwargs}): {e}")
-        return res
+            pass
 
     return wrapper

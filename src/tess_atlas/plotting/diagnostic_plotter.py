@@ -91,7 +91,7 @@ def trace_plot(tic_entry):
 
 def plot_diagnostics(tic_entry, model):
     plot_lightcurve_gp_and_residuals(tic_entry, model)
-    trace_plot(tic_entry.inference_data)
+    trace_plot(tic_entry)
     MatplotlibPlotter.plot_phase(
         tic_entry,
         tic_entry.inference_data,
@@ -99,3 +99,4 @@ def plot_diagnostics(tic_entry, model):
         plot_data_ci=True,
         plot_label="data_ci",
     )
+    plt.close("all")

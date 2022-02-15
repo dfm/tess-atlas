@@ -257,9 +257,10 @@ class MatplotlibPlotter(PlotterBackend):
                 plt.ylim(-ylim, ylim)
             plt.tight_layout()
 
-            fname = os.path.join(
-                tic_entry.outdir,
-                plot_label + "_" + PHASE_PLOT.replace(".", f"_{i + 1}."),
-            )
+            fname = PHASE_PLOT.replace(".", f"_{i + 1}.")
+            if plot_label:
+                fname = f"{plot_label}_{fname}"
+
+            fname = os.path.join(tic_entry.outdir, fname)
             logger.debug(f"Saving {fname}")
             plt.savefig(fname)

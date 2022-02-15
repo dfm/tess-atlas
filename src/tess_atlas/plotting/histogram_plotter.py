@@ -21,11 +21,13 @@ from .labels import (
 from .plotting_utils import (
     format_prior_samples_and_initial_params,
     format_label_string_with_offset,
+    exception_catcher,
 )
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
+@exception_catcher
 def plot_priors(
     tic_entry: TICEntry, prior_samples: Dict, init_params: Dict
 ) -> None:

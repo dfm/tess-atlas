@@ -115,7 +115,7 @@ def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
         plt.suptitle(f"Planet {n} Posterior")
         fname = os.path.join(tic_entry.outdir, f"planet_{n}_{POSTERIOR_PLOT}")
         logger.debug(f"Saving {fname}")
-        fig.savefig(fname)
+        fig.savefig(fname, bbox_inches="tight")
 
 
 def plot_posteriors_all(tic_entry: TICEntry, inference_data) -> None:
@@ -129,7 +129,7 @@ def plot_posteriors_all(tic_entry: TICEntry, inference_data) -> None:
         tic_entry.outdir, POSTERIOR_PLOT.replace(".png", "_all.png")
     )
     logger.debug(f"Saving {fname}")
-    fig.savefig(fname)
+    fig.savefig(fname, bbox_inches="tight")
 
 
 def plot_priors(
@@ -141,13 +141,13 @@ def plot_priors(
     fig = plot_corner(prior_samples, extras=dict(truths=init_params))
     fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
     logger.debug(f"Saving {fname}")
-    fig.savefig(fname)
+    fig.savefig(fname, bbox_inches="tight")
 
 
 def plot_eccentricity_posteriors(
     tic_entry: TICEntry, ecc_samples: pd.DataFrame
 ) -> None:
-    params = ["e", "omegea"]
+    params = ["e", "omega"]
     colors = get_colors(tic_entry.planet_count)
     for n in range(tic_entry.planet_count):
         planet_params = [f"{p}[{n}]" for p in params]
@@ -162,9 +162,9 @@ def plot_eccentricity_posteriors(
                 color=colors[n],
             ),
         )
-        plt.suptitle(f"Planet {n} Eccentricity")
+        plt.suptitle(f"Planet {n}", x=0.85, y=0.85, va="top", ha="right")
         fname = os.path.join(
             tic_entry.outdir, f"planet_{n}_{ECCENTRICITY_PLOT}"
         )
         logger.debug(f"Saving {fname}")
-        fig.savefig(fname)
+        fig.savefig(fname, bbox_inches="tight")

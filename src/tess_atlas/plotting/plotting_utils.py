@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Tuple
 
+import logging
 import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,6 +14,11 @@ from tess_atlas.data.inference_data_tools import (
 )
 
 from ..analysis import compute_variable, get_untransformed_varnames
+
+
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
 def get_colors(
@@ -188,3 +194,14 @@ def get_lc_and_gp_from_inference_object(model, inference_data):
     lcs = lcs * 1e3  # scale the lcs
     gp_model = np.median(gp_mus, axis=0) + f0
     return lcs, gp_model
+
+
+def exception_catcher(func):
+    def wrapper(*args, **kwargs):
+        try:
+            res = func(*args, **kwargs)
+        except Exception as e:
+            logger.warning(f"Skipping {func}({args}, {kwargs}): {e}")
+        return res
+
+    return wrapper

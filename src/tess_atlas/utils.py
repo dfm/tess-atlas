@@ -101,6 +101,7 @@ def get_notebook_logger(outdir=""):
         "arviz",
         "astropy",
         "lightkurve",
+        "corner",
     ]:
         logger = logging.getLogger(logger_name)
         logger.setLevel(logging.ERROR)

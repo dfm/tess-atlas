@@ -30,12 +30,6 @@ def plot_lightcurve_gp_and_residuals(tic_entry, model, zoom_in=True):
 
     ax = axes[0]
     ax.plot(t[idx], y[idx], "k", label="data")
-    ax.plot(t[idx], gp_model[idx], color="gray", label="gp model")
-    ax.legend(fontsize=10, loc=3)
-    ax.set_ylabel("relative flux")
-
-    ax = axes[1]
-    ax.plot(t[idx], y[idx] - gp_model[idx], "k", label="de-trended data")
     net_lc = np.zeros(len(t))
     for i in range(tic_entry.planet_count):
         lc = np.median(lcs[..., i], axis=0)
@@ -47,6 +41,13 @@ def plot_lightcurve_gp_and_residuals(tic_entry, model, zoom_in=True):
             label=f"Planet {i} (SNR {snr:.2f})",
             color=colors[i],
         )
+
+    ax.legend(fontsize=10, loc=3)
+    ax.set_ylabel("relative flux")
+
+    ax = axes[1]
+    ax.plot(t[idx], y[idx] - net_lc[idx], "k", label="data-lc")
+    ax.plot(t[idx], gp_model[idx], color="gray", label="gp model")
     ax.legend(fontsize=10, loc=3)
     ax.set_ylabel("de-trended flux")
 

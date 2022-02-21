@@ -89,7 +89,11 @@ from tess_atlas.analysis import (
     sample_prior,
 )
 from tess_atlas.data import TICEntry
-from tess_atlas.data.inference_data_tools import summary
+from tess_atlas.data.inference_data_tools import (
+    summary,
+    test_model,
+    get_optimized_init_params,
+)
 from tess_atlas.utils import get_notebook_logger
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -354,24 +358,6 @@ def build_planet_transit_model(tic_entry):
     return my_planet_transit_model, my_params
 
 
-def test_model(model, point=None, show_summary=False):
-    """Test a point in the model and assure no nans"""
-    with model:
-        test_prob = model.check_test_point(point)
-        test_prob.name = "log P(test-point)"
-        if test_prob.isnull().values.any():
-            raise ValueError(f"The model(testval) has a nan:\n{test_prob}")
-        if show_summary:
-            test_pt = pd.Series(
-                {
-                    k: str(round(np.array(v).flatten()[0], 3))
-                    for k, v in model.test_point.items()
-                },
-                name="Test Point",
-            )
-            return pd.concat([test_pt, test_prob], axis=1)
-
-
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 planet_transit_model, params = build_planet_transit_model(tic_entry)
 model_varnames = get_untransformed_varnames(planet_transit_model)
@@ -380,26 +366,7 @@ test_model(planet_transit_model)
 
 # -
 
-# The test point acts as an example of a point in the parameter space.
 # We can now optimize the model sampling parameters before initialising the sampler.
-
-# + tags=["def"]
-def get_optimized_init_params(
-    model, planet_params, noise_params, stellar_params, period_params
-):
-    """Get params with maximimal log prob for sampling starting point"""
-    logger.info("Optimizing sampling starting point")
-    with model:
-        theta = model.test_point
-        kwargs = dict(start=theta, verbose=False, progress=False)
-        theta = pmx.optimize(**kwargs, vars=[noise_params[0]])
-        theta = pmx.optimize(**kwargs, vars=planet_params)
-        theta = pmx.optimize(**kwargs, vars=noise_params)
-        theta = pmx.optimize(**kwargs, vars=stellar_params)
-        theta = pmx.optimize(**kwargs, vars=period_params)
-    logger.info("Optimization complete!")
-    return theta
-
 
 # + tags=["exe"]
 if tic_entry.optimized_params is None:

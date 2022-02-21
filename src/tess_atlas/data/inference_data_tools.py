@@ -5,6 +5,7 @@ from typing import List, Optional
 import arviz as az
 import numpy as np
 import pandas as pd
+import pymc3_ext as pmx
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
@@ -98,3 +99,54 @@ def save_samples(inference_data, outdir):
     fpath = os.path.join(outdir, SAMPLES_FNAME)
     samples = get_samples_dataframe(inference_data)
     samples.to_csv(fpath, index=False)
+
+
+def test_model(model, point=None, show_summary=False):
+    """Test a point in the model and assure no nans"""
+    with model:
+        test_prob = model.check_test_point(point)
+        test_prob.name = "log P(test-point)"
+        if test_prob.isnull().values.any():
+            raise ValueError(f"The model(testval) has a nan:\n{test_prob}")
+        if show_summary:
+            test_pt = pd.Series(
+                {
+                    k: str(round(np.array(v).flatten()[0], 3))
+                    for k, v in model.test_point.items()
+                },
+                name="Test Point",
+            )
+            return pd.concat([test_pt, test_prob], axis=1)
+
+
+def get_optimized_init_params(
+    model,
+    planet_params,
+    noise_params,
+    stellar_params,
+    period_params,
+    theta=None,
+    verbose=False,
+):
+    """Get params with maximimal log prob for sampling starting point"""
+    logger.info("Optimizing sampling starting point")
+    with model:
+        if theta is None:
+            theta = model.test_point
+        init_logp = get_logp(model, theta)
+        kwargs = dict(verbose=verbose, progress=verbose)
+        theta = pmx.optimize(theta, [noise_params[0]], **kwargs)
+        theta = pmx.optimize(theta, planet_params, **kwargs)
+        theta = pmx.optimize(theta, noise_params, **kwargs)
+        theta = pmx.optimize(theta, stellar_params, **kwargs)
+        theta = pmx.optimize(theta, period_params, **kwargs)
+        final_logp = get_logp(model, theta)
+        logger.info(
+            f"Optimization complete! " f"(logp: {init_logp} -> {final_logp}"
+        )
+        return {k: v.tolist() for k, v in theta.items()}
+
+
+def get_logp(model, point):
+    with model:
+        return model.check_test_point(test_point=point)["obs"]

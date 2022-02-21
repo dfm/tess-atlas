@@ -366,7 +366,6 @@ test_model(planet_transit_model)
 
 # -
 
-# The test point acts as an example of a point in the parameter space.
 # We can now optimize the model sampling parameters before initialising the sampler.
 
 # + tags=["exe"]

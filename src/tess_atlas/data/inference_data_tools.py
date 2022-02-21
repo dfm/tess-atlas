@@ -22,9 +22,12 @@ def load_inference_data(outdir: str):
     fname = get_idata_fname(outdir)
     if not os.path.isfile(fname):
         raise FileNotFoundError(f"{fname} not found.")
-    inference_data = az.from_netcdf(fname)
-    logger.info(f"Inference data loaded from {fname}")
-    return inference_data
+    try:
+        inference_data = az.from_netcdf(fname)
+        logger.info(f"Inference data loaded from {fname}")
+        return inference_data
+    except Exception as e:
+        logger.error(f"Cant read inference file: {e}")
 
 
 def save_inference_data(inference_data, outdir: str):

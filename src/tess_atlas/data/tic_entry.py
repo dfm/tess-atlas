@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List, Optional
+from typing import List, Optional, Dict
 import shutil
 
 import pandas as pd
@@ -19,6 +19,7 @@ from .inference_data_tools import (
 from .lightcurve_data import LightCurveData
 from .planet_candidate import PlanetCandidate
 from .stellar_data import StellarData
+from .optimized_params import OptimizedParams
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -40,6 +41,7 @@ class TICEntry(DataObject):
         data_kwargs = dict(tic=self.tic_number, outdir=self.outdir)
         self.lightcurve = LightCurveData.load(**data_kwargs)
         self.stellar_data = StellarData.load(**data_kwargs)
+        self.optimized_params = OptimizedParams.load(**data_kwargs)
         self.inference_data = None
         if os.path.isfile(get_idata_fname(self.outdir)):
             self.inference_data = load_inference_data(self.outdir)
@@ -84,9 +86,7 @@ class TICEntry(DataObject):
             try:
                 return cls.from_cache(toi, toi_dir)
             except Exception as e:
-                logger.info(
-                    "Error loading fom cache: ''{e}''. Downloading data."
-                )
+                logger.info(f"Error loading fom cache: ''{e}''")
 
         return cls.from_database(toi)
 
@@ -130,7 +130,11 @@ class TICEntry(DataObject):
     def get_filepath(outdir, fname="tic_data.csv"):
         return os.path.join(outdir, fname)
 
-    def save_data(self, inference_data: Optional[InferenceData] = None):
+    def save_data(
+        self,
+        inference_data: Optional[InferenceData] = None,
+        optimized_params: Optional[Dict] = None,
+    ):
         fpath = self.get_filepath(self.outdir)
         self.tic_data.to_csv(fpath)
         self.lightcurve.save_data(self.outdir)
@@ -138,4 +142,9 @@ class TICEntry(DataObject):
         if inference_data is not None:
             self.inference_data = inference_data
             save_inference_data(inference_data, self.outdir)
+        if optimized_params is not None:
+            self.optimized_params = OptimizedParams(
+                optimized_params, self.outdir
+            )
+            self.optimized_params.save_data(self.outdir)
         logger.info(f"Saved data in {self.outdir}")

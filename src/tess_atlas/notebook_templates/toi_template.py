@@ -354,21 +354,22 @@ def build_planet_transit_model(tic_entry):
     return my_planet_transit_model, my_params
 
 
-def test_model(model):
+def test_model(model, point=None, show_summary=False):
     """Test a point in the model and assure no nans"""
     with model:
-        test_prob = model.check_test_point()
+        test_prob = model.check_test_point(point)
         test_prob.name = "log P(test-point)"
         if test_prob.isnull().values.any():
             raise ValueError(f"The model(testval) has a nan:\n{test_prob}")
-        test_pt = pd.Series(
-            {
-                k: str(round(np.array(v).flatten()[0], 2))
-                for k, v in model.test_point.items()
-            },
-            name="Test Point",
-        )
-        return pd.concat([test_pt, test_prob], axis=1)
+        if show_summary:
+            test_pt = pd.Series(
+                {
+                    k: str(round(np.array(v).flatten()[0], 3))
+                    for k, v in model.test_point.items()
+                },
+                name="Test Point",
+            )
+            return pd.concat([test_pt, test_prob], axis=1)
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -401,7 +402,12 @@ def get_optimized_init_params(
 
 
 # + tags=["exe"]
-init_params = get_optimized_init_params(planet_transit_model, **params)
+if tic_entry.optimized_params is None:
+    init_params = get_optimized_init_params(planet_transit_model, **params)
+    tic_entry.save_data(optimized_params=init_params)
+else:
+    init_params = tic_entry.optimized_params.to_dict()
+test_model(planet_transit_model, init_params, show_summary=True)
 # -
 
 # Now we can plot our initial model and priors:

@@ -13,6 +13,7 @@ from requests.models import HTTPError
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 from .data_object import DataObject
+from .data_utils import load_json, save_json
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -69,15 +70,12 @@ class StellarData(DataObject):
     @classmethod
     def from_cache(cls, tic: int, outdir: str):
         fpath = StellarData.get_filepath(outdir)
-        with open(fpath, "r") as f:
-            data = json.load(f)
+        data = load_json(fpath)
         logger.info(f"StellarData loaded from {fpath}")
         return cls(**data, outdir=outdir)
 
     def save_data(self, outdir):
-        fpath = self.get_filepath(outdir)
-        with open(fpath, "w") as f:
-            json.dump(self.to_dict(), fp=f, indent=2)
+        save_json(self.get_filepath(outdir), self.to_dict())
 
     def density_data_present(self):
         return no_nans_present([self.density, self.density_error])

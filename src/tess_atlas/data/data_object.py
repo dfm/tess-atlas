@@ -15,9 +15,7 @@ class DataObject(ABC):
             try:
                 return cls.from_cache(**kwargs)
             except Exception as e:
-                logger.info(
-                    "Error loading fom cache: ''{e}''. Downloading data."
-                )
+                logger.info(f"Error loading fom cache: ''{e}''")
         return cls.from_database(**kwargs)
 
     @classmethod

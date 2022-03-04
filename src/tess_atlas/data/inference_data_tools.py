@@ -33,7 +33,9 @@ def load_inference_data(outdir: str):
 
 def save_inference_data(inference_data, outdir: str):
     fname = get_idata_fname(outdir)
-    az.to_netcdf(inference_data, filename=fname)
+    inference_data.to_netcdf(
+        filename=fname, groups=["posterior", "log_likelihood", "sample_stats"]
+    )
     save_samples(inference_data, outdir)
 
 

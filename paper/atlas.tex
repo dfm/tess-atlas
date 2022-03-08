@@ -8,28 +8,79 @@
 
 \begin{document}
 
-\title{The \tess\ Atlas}
+\title{The \tess\ Atlas: an open source catalog of TESS transit fits}
 
-
+% ADS bibliography link
+% https://ui.adsabs.harvard.edu/user/libraries/_DyLS4HbTY-eJIMBiFUdxw
 
 \author{Author list TBD}
 % \input{authors}
 
 
 \begin{abstract}
-
-This is the \tess\ Atlas.
-\tess\ discovered N exoplanet candidates in N years of data.
-We provide revised transit parameters and accompanying posterior distributions for all the \tess\ objects of interest.
-
+\tess\ discovered \red{4,500} exoplanet candidates in \red{3} years of data of which \red{150} are confirmed planets.
+We provide revised transit parameters and accompanying posterior distributions for the \tess\ objects of interest during the first 3 years.
+We present the catalog of parameter estimates and notebooks to reanalyse fav system
+The full catalogue is publicly available at \red{XXX}.
 \end{abstract}
 
-% \keywords{editorials, notices ---
-% miscellaneous --- catalogs --- surveys}
+\keywords{%
+  methods: data analysis ---
+  methods: statistical ---
+  miscellaneous --- catalogs --- surveys
+}
+
 
 \section{Introduction} \label{sec:intro}
 
-In this work we present the uniform modeling of all TESS object of interest (TOIs) utilizing Bayesian framework that provides robust estimates of the uncertainities for all of the planet parameters.
+
+
+In July 2020, NASA’s Transiting Exoplanet Survey Satellite (TESS; Ricker et al. 2015) completed its two-year
+Primary Mission to search for transiting exoplanets around nearby bright stars. TESS’ four cameras observed 96◦×24◦
+sectors of the sky for 27.4 days each, totalling 26 sectors over the Primary Mission. Overall, ∼200,000 pre-selected
+stars received 2-minute cadence observations, which were processed by the TESS Science Processing Operations Center
+(SPOC; Jenkins et al. 2016) pipeline. However, TESS also recorded measurements of its entire field of view in 30-
+minute sampled full-frame images (FFIs), enabling the flux measurements of tens of millions of stars. Between 2- and
+30-minute observations, the TESS Primary Mission resulted in the identification of 2,241 planet candidates (Guerrero
+et al. 2021).
+TESS’ current Extended Mission is capturing millions more stars in FFIs, both increasing the observation baseline
+for stars re-observed from the Primary Mission and increasing the the satellite’s overall coverage of the sky. FFI
+cadence was also reduced from 30 to 10 minutes. Relevant for exoplanet searches, the faster cadence better resolves
+transit shapes and improves the detectability of short-duration signals. Here, we present a magnitude-limited set of
+lightcurves extracted from Extended Mission FFIs each TESS sector by MIT’s Quick-Look Pipeline (QLP; Huang
+et al. 2020). We report on the delivery to the Mikulski Archive for Space Telescopes (MAST) of these High-Level
+Science Products (HLSPs) for 9,115,386 targets observed in the southern ecliptic hemisphere (Sectors 27 – 39). HLSPs
+for the northern hemisphere and ecliptic (Sectors 40 – 55) are upcoming.
+
+
+
+
+
+NASA’s Transiting Exoplanet Survey Satellite \tess instrument is a space-based telescope that employs four cameras to observe $96^{\circ}\times24^{\circ}$ sectors of the sky for 27.4 days each.  
+
+\tess searches for the periodic drops in brightness which occur when planets transit their host star, thusly seeking to identify new extrasolar planets. 
+The primary objective of the \tess is to search for transiting exoplanets around nearby bright stars.
+
+In July 2020, \tess concluded its two-year primary mission 
+
+
+
+A series of previously published \tess catalogue papers presented an increasingly larger number of planet candidate discoveries as additional observations were taken by the spacecraft \cite. 
+These catalogues have been used extensively in the investigation of planetary occurance rates (e.g.,), determination of exoplanet atmospheric properties (e.g., ), and development of planetary confirmation techniques via supplemental analysis and follow-up observations (e.g., ). 
+Furthermore, systems identified as not-planetary in nature have yielded valuable new science on stellar binaries, including eclipsing (e.g., ), self-lensing (eg. ), and tidally interacting systems (e.g., ).
+This paper uses 3 years () of \tess photometry to search for new planet candidates, thus enabling for the first time the detection of Earth-like exoplanets that have periods around one year (given that a minimum of three transits are needed for detection.) 
+
+With this increased sensitivity also comes setbacks — the instrument is sensitive to a significant number of false positives at periods close to one year due to the spacecraft’s heliocentric orbit, combined with a 90 degree boresight rotation every ∼ 90 days and electronic, rolling band systematics present in a few CCD modules.
+Additionally, the number of false positives due to contamination increases with increased sensitivity, as variable stars can induce low-amplitude false positives signatures in sources up to tens of arcseconds away ().
+
+In this work we present new methods to eliminate these false positives and introduce a streamlined planet vetting
+procedure and product set. 
+As a result, we designate an additional \red{XX} planet candidates to bring the cumulative total of \tess planet candidates to \red{XX}.
+
+We also present the uniform modeling of all transiting planet candidates utilizing a Bayesian framework that provides robust estimates of the uncertainities for all of the planet parameters. 
+The posterior distributions allow us to study the planet population in detail and assess the reliability of the most Earth-like candidates.
+
+
 
 Section~\ref{sec:prob-model} describes our transit lightcurve model and the Bayesian framework we use to estimate parameters of exoplanet systems from the observed data.
 
@@ -55,6 +106,85 @@ We use \exoplanet\, \lightkurve
 
 
 In the case when there are multiple transits present in the data, we use a second reference time $tmax$ instead of $P$
+
+
+\section{Parameterization}
+
+There are many options for parameterization of a transit, but we choose to model these transits as circular orbits parameterized by their observables.
+We also track the relevant Jacobians.
+
+The main parameters are:
+\begin{enumerate}
+  \item \emph{two reference transit times}, one near the beginning of the observations, $t_0$, and one near the end, $t_{-1}$, measured in \tess\ BJD,
+  \item \emph{the approximate transit depth}, $\delta$, measured in parts-per-thousand,
+  \item \emph{the impact parameter} of the orbit, $b$, constrained to be $|b| \le 1$, and
+  \item \emph{the transit duration}, $\tau$, measured in hours.
+\end{enumerate}
+
+With more discussion of the details, motivations, and limitations below.
+
+\paragraph{Transit times}
+To speed up the analysis, we assume that the discovery period and phase of the orbit are close enough to the truth that we can fit only the data near the expected transit times.
+One consequence of this assumption is that we are assuming that the \emph{number} of periods that occur in the \tess\ observational baseline is correct.
+Practically, this means that our prior assumption is that the transits must occur within the data cutouts.
+This can be difficult to enforce---especially for low signal-to-noise transits---but a good approximation can be achieved by fitting for two reference transit times, $t_0$ and $t_{-1}$, with a fixed number of periods, $N_P$, between them, instead of a single reference time and the period.
+Then we can compute the implied period as $P = (t_{-1} - t_0) / N_P$.
+Importantly this does not change the prior on $P$ and $t_0$ since the Jacobian is a constant $1/N_P$.
+
+\paragraph{Transit depth}
+It is worth spending a moment on the transit depth parameterization.
+This choice of parameterization leads to efficient computation and convergence, but it comes with non-trival shortcomings.
+Since the physical parameter that is required to compute the light curve model is the radius ratio between the planet and the star $k = R_\mathrm{p} / R_\star$, we need to choose a parameterization that is invertible and that isn't generally possible.
+In some cases, using radius ratio directly as the parameter can work well, but \todo{explain cases where it's not}.
+Instead, we choose to parameterize the approximate transit depth $\delta$ using the small planet approximation.
+This is useful because it is directly invertible (conditioned on the limb darkening parameters and impact parameter), but it restricts us to considering non-grazing transits with impact parameter $|b| \le 1$.
+Accepting this restriction, we can compute the approximate transit depth for a limb darkened light curve by assuming that the intensity of the star is uniform under the disk of the planet.
+For quadratic limb darkening, the intensity profile is
+\begin{equation}
+  I(r) = 1 - u_1\,[1 - \mu(r)] - u_2\,[1 - \mu(r)]^2
+\end{equation}
+where $\mu(r) = \sqrt{1 - r^2}$.
+The ratio of the occulted flux to the total stellar flux when the transit is deepest ($r = b$) is \citep[the same results are discussed by][]{Mandel:2002,Csizmadia:2013}
+\begin{eqnarray}
+  \delta &\approx& \frac{\int_0^k\,2\,\pi\,r\,I(b)\dd r}{\int_0^1\,2\,\pi\,r\,I(r)\dd r} \nonumber\\
+  &=& \frac{k^2\,\left(1 - u_1\,[1 - \mu(b)] - u_2\,[1 - \mu(b)]^2\right)}{1 - u_1/3 - u_2/6}\quad.
+\end{eqnarray}
+Therefore, since $k$ must be positive, we have a one-to-one transformation between $\delta$ and $k$ conditioned on impact parameter $|b| \le 1$ and the limb darkening coefficients.
+It is also important to include the Jacobian factor so that fitting in $\delta$ doesn't introduce a strange prior on $r$.
+In this case, the relevant factor is
+\begin{equation}
+  \left|\frac{\dd k}{\dd \delta}\right| = \left|\frac{1 - u_1/3 - u_2/6}{2\,k\,\left(1 - u_1\,[1 - \mu(b)] - u_2\,[1 - \mu(b)]^2\right)}\right| \quad.
+\end{equation}
+
+\paragraph{Impact parameter}
+Constrained to be non-grazing. -- Discuss the consequences of this.
+
+\paragraph{Transit duration}
+The physical parameter required for computing the transit model is the semi-major axis, $a$, in units of the stellar radius, but the transit duration $\tau$ is better constrained so it can be better as a fit parameter.
+For a circular orbit, the transit duration is \citep{Winn:2010}
+\begin{equation}
+  \tau = \frac{P}{\pi}\,\sin^{-1}\left( \frac{\sqrt{(1 + k^2) - b^2}}{a\,\sin i} \right) \quad.
+\end{equation}
+Rearranging this, we find
+\begin{equation}
+  a^2\,\sin^2 i\,\sin^2\left(\frac{\pi\,\tau}{P}\right) = (1 + k^2) - b^2 \quad.
+\end{equation}
+Then, using the fact that $\cos^2 i = b^2 / a^2$, we find
+\begin{equation}
+  a^2 = \frac{(1 + k)^2 - b^2\,\cos^2\phi}{\sin^2\phi}
+\end{equation}
+for $\phi = \pi\,\tau / P$.
+And the Jacobian is
+\begin{eqnarray}
+  \frac{\dd a}{\dd \tau} &=& \frac{\pi\,\cos \phi}{a\,P\,\sin^3 \phi}\,\left[b^2 - (1 + k)^2\right] \quad.
+\end{eqnarray}
+
+Finally, from the period and semi-major axis, we can compute the implied stellar density (under this assumption of a circular orbit)
+\begin{equation}
+  \rho_\mathrm{circ} = \frac{3\,\pi\,a^3}{G\,P^2} \quad.
+\end{equation}
+It is important to note that this is not necessarily the same as the actual stellar density and that, in a multi-planet system, this implied density won't be the same for each planet \citep[see, for example,][]{Dawson:2012, Kipping:2012}.
+
 
 
 
@@ -90,13 +220,14 @@ Table with priors
 
 \section{Discussion}
 
-\section{Data Availibility}
+\section{Data Availability}
 
 
 
 \acknowledgments
 
-I would like to thank.
+We would like to thank xyz. 
+Work was started during `online.tess.science`
 
 
 

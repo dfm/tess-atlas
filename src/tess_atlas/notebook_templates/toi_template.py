@@ -223,8 +223,6 @@ def build_planet_transit_model(tic_entry):
     n = tic_entry.planet_count
     t0s = np.array([planet.t0 for planet in tic_entry.candidates])
     depths = np.array([planet.depth for planet in tic_entry.candidates])
-    periods = np.array([planet.period for planet in tic_entry.candidates])
-    tmaxs = np.array([planet.tmax for planet in tic_entry.candidates])
     durations = np.array([planet.duration for planet in tic_entry.candidates])
     max_durations = np.array(
         [planet.duration_max for planet in tic_entry.candidates]
@@ -277,7 +275,7 @@ def build_planet_transit_model(tic_entry):
                     name=f"{ORBITAL_PERIOD}_{planet.index}",
                     m=planet.period_min,
                     alpha=2.0 / 3.0,
-                    testval=planet.period_min,
+                    testval=planet.period,
                 )
                 p_param = p_prior
                 tmax_prior = planet.t0

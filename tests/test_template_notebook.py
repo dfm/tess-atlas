@@ -11,6 +11,8 @@ from tess_atlas.tess_atlas_version import __version__
 
 SINGLE_PLANET = 103
 MULTI_PLANET = 178  # has 3 planets
+MULTI_MODAL = 273
+SINGLE_TRANSIT = 1812
 
 
 class NotebookRunnerTestCase(unittest.TestCase):

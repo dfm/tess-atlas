@@ -103,13 +103,19 @@ def save_samples(inference_data, outdir):
     samples.to_csv(fpath, index=False)
 
 
+def check_df_for_finites(df):
+    if df.isnull().values.any():
+        raise ValueError(f"The model(testval) has a nan:\n{df}")
+    if np.isinf(df).values.sum() > 0:
+        raise ValueError(f"The model(testval) has an inf:\n{df}")
+
+
 def test_model(model, point=None, show_summary=False):
     """Test a point in the model and assure no nans"""
     with model:
         test_prob = model.check_test_point(point)
         test_prob.name = "log P(test-point)"
-        if test_prob.isnull().values.any():
-            raise ValueError(f"The model(testval) has a nan:\n{test_prob}")
+        check_df_for_finites(test_prob)
         if show_summary:
             test_pt = pd.Series(
                 {

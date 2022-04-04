@@ -342,9 +342,7 @@ def build_planet_transit_model(tic_entry):
         residual = y - lightcurve
         gp = GaussianProcess(kernel, t=t, diag=yerr ** 2 + jitter_prior ** 2)
         gp.marginal(name="obs", observed=residual)
-        my_planet_transit_model.gp_mu = gp.predict(
-            residual, t=t, return_var=False
-        )
+        my_planet_transit_model.gp_mu = gp.predict(residual, return_var=False)
 
         # cache params
         my_params = dict(
@@ -378,17 +376,20 @@ test_model(planet_transit_model, init_params, show_summary=True)
 # Now we can plot our initial model and priors:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-lightcurve_models = compute_variable(
-    model=planet_transit_model,
-    samples=[[init_params[n] for n in model_varnames]],
-    target=planet_transit_model.lightcurve_models,
+initial_lc_models = (
+    compute_variable(
+        model=planet_transit_model,
+        samples=[[init_params[n] for n in model_varnames]],
+        target=planet_transit_model.lightcurve_models,
+    )
+    * 1e3
 )
 
 # + tags=["exe"]
-plot_lightcurve(tic_entry, lightcurve_models * 1e3)
+plot_lightcurve(tic_entry, initial_lc_models)
 
 # + tags=["exe"]
-plot_folded_lightcurve(tic_entry, lightcurve_models * 1e3)
+plot_folded_lightcurve(tic_entry, initial_lc_models)
 
 # + tags=["exe"]
 prior_samples = sample_prior(planet_transit_model)
@@ -436,13 +437,18 @@ summary(inference_data)
 # Below are plots of the posterior probability distributuions:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_posteriors(tic_entry, inference_data)
+plot_posteriors(tic_entry, inference_data, init_params=init_params)
 
 # -
 # We can also plot the best-fitting light-curve model
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_phase(tic_entry, inference_data, planet_transit_model)
+plot_phase(
+    tic_entry,
+    inference_data,
+    planet_transit_model,
+    initial_lightcurves=initial_lc_models,
+)
 
 # -
 

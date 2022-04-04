@@ -5,7 +5,6 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
-
 from typing import Optional
 
 import matplotlib.pyplot as plt
@@ -25,7 +24,11 @@ from .labels import (
     TIME_SINCE_TRANSIT_LABEL,
 )
 from .plotter_backend import PlotterBackend
-from .plotting_utils import get_colors, get_lc_and_gp_from_inference_object
+from .plotting_utils import (
+    get_colors,
+    get_lc_and_gp_from_inference_object,
+    get_longest_unbroken_section_of_data,
+)
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -36,6 +39,7 @@ class MatplotlibPlotter(PlotterBackend):
         tic_entry: TICEntry,
         model_lightcurves: Optional[np.ndarray] = None,
         save: Optional[bool] = True,
+        zoom_in: Optional[bool] = False,
     ) -> plt.Figure:
         """Plot lightcurve data + transit fits (if provided) in one plot
 
@@ -51,18 +55,33 @@ class MatplotlibPlotter(PlotterBackend):
         fig, ax = plt.subplots(1, figsize=(7, 5))
 
         lc = tic_entry.lightcurve
+
+        if zoom_in:
+            idx, _ = get_longest_unbroken_section_of_data(lc.time)
+        else:
+            idx = [i for i in range(len(lc.time))]
+
         ax.scatter(
-            lc.time, lc.flux, color="k", label="Data", s=0.75, alpha=0.5
+            lc.time[idx],
+            lc.flux[idx],
+            color="k",
+            label="Data",
+            s=0.75,
+            alpha=0.5,
         )
         ax.set_ylabel(FLUX_LABEL)
         ax.set_xlabel(TIME_LABEL)
 
         for i, model_lightcurve in enumerate(model_lightcurves):
             ax.plot(
-                lc.time, model_lightcurve, label=f"Planet {i} fit", c=colors[i]
+                lc.time[idx],
+                model_lightcurve[idx],
+                label=f"Planet {i} fit",
+                c=colors[i],
+                alpha=0.75,
             )
 
-        ax.legend(markerscale=5)
+        ax.legend(markerscale=5, frameon=False)
 
         fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
         if save:
@@ -138,7 +157,9 @@ class MatplotlibPlotter(PlotterBackend):
         tic_entry,
         inference_data,
         model,
-        data_bins: Optional[int] = 300,
+        initial_lightcurves: Optional[np.ndarray] = None,
+        data_bins: Optional[int] = 200,
+        plot_error_bars: Optional[bool] = False,
         plot_data_ci: Optional[bool] = False,
         plot_raw: Optional[bool] = False,
         zoom_y_axis: Optional[bool] = False,
@@ -155,14 +176,16 @@ class MatplotlibPlotter(PlotterBackend):
         y = tic_entry.lightcurve.flux
         yerr = tic_entry.lightcurve.flux_err
 
-        # get posterior df
+        # get posterior df + compute model vars
         posterior = get_samples_dataframe(inference_data)
-        f0 = np.median(posterior[f"f0"])
-
-        # compute model vars
         lcs, gp_model = get_lc_and_gp_from_inference_object(
-            model, inference_data
+            model, inference_data, 1000
         )
+
+        if initial_lightcurves is None:
+            initial_lightcurves = []
+        else:
+            initial_lightcurves = initial_lightcurves.T
 
         for i in range(tic_entry.planet_count):
             plt.figure(figsize=(7, 5))
@@ -185,6 +208,9 @@ class MatplotlibPlotter(PlotterBackend):
 
             x_fold = (t - t0 + 0.5 * p) % p - 0.5 * p
             idx = np.where((plt_min <= x_fold) & (x_fold <= plt_max))
+
+            if plot_error_bars is False:
+                yerr = np.zeros(len(yerr))
 
             # Plot the folded data
             if plot_raw:
@@ -218,6 +244,16 @@ class MatplotlibPlotter(PlotterBackend):
             # Plot the folded lightcurve model
             inds = np.argsort(x_fold)
             inds = inds[np.abs(x_fold)[inds] < plt_max]
+
+            if len(initial_lightcurves) > 0:
+                lc = initial_lightcurves[i]
+                plt.plot(
+                    x_fold[inds],
+                    lc[inds],
+                    color="tab:red",
+                    label="initial fit",
+                )
+
             pred = lcs[..., inds, i]
             quants = np.percentile(pred, [16, 50, 84], axis=0)
             plt.plot(

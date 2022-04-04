@@ -1,21 +1,11 @@
 import logging
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-import arviz as az
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from corner.arviz_corner import (
-    _var_names,
-    convert_to_dataset,
-    get_coords,
-    xarray_var_iter,
-)
-from pymc3.model import Model
-
-from tess_atlas.analysis import get_untransformed_varnames, sample_prior
 from tess_atlas.data import TICEntry
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from tess_atlas.data.inference_data_tools import get_samples_dataframe
@@ -32,8 +22,6 @@ from .plotting_utils import (
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
-from .labels import ECCENTRICITY_PLOT, POSTERIOR_PLOT
-
 
 def plot_corner(data, extras):
     kwargs = dict(
@@ -42,7 +30,7 @@ def plot_corner(data, extras):
         labelpad=0.1,
         title_kwargs=dict(fontsize=20),
         color="#0072C1",
-        truth_color="tab:orange",
+        truth_color="tab:red",
         quantiles=[0.16, 0.84],
         levels=(1 - np.exp(-0.5), 1 - np.exp(-2), 1 - np.exp(-9.0 / 2.0)),
         plot_density=False,
@@ -96,24 +84,42 @@ def make_titles(df):
     return titles
 
 
-@exception_catcher
-def plot_posteriors(tic_entry: TICEntry, inference_data) -> None:
+def reformat_trues(p: Dict, keys: List[str], val_id: int) -> np.array:
+    return np.array([p[k][val_id] for k in keys])
+
+
+def plot_posteriors(
+    tic_entry: TICEntry, inference_data, initial_params: Optional[Dict] = {}
+) -> None:
     """Plots 1 posterior corner plot for each planet"""
-    params = ["r", "b", "t0", "tmax", "p", "dur"]
+    plot_params = ["r", "b", "t0", "tmax", "p", "dur"]
+    single_transit_params = ["log_r", "b", "t0", "dur"]
+
+    if initial_params:
+        initial_params["log_r"] = np.log(initial_params["r"])
+
     posterior_samples = get_samples_dataframe(inference_data)
+
     colors = get_colors(tic_entry.planet_count)
     for n in range(tic_entry.planet_count):
+        params = plot_params.copy()
+        if tic_entry.candidates[n].has_data_only_for_single_transit:
+            params = single_transit_params.copy()
         planet_params = [f"{p}[{n}]" for p in params]
+        posterior_samples[f"log_r[{n}]"] = np.log(posterior_samples[f"r[{n}]"])
         planet_n_samples = posterior_samples[planet_params]
-        fig = plot_corner(
-            planet_n_samples,
-            extras=dict(
-                range=get_range(planet_n_samples, planet_params),
-                labels=[f"{LATEX[p]}\n" for p in params],
-                titles=make_titles(planet_n_samples),
-                color=colors[n],
-            ),
+        extras = dict(
+            range=get_range(planet_n_samples, planet_params),
+            labels=[f"{LATEX[p]}\n" for p in params],
+            titles=make_titles(planet_n_samples),
+            color=colors[n],
         )
+        if initial_params:
+
+            truths = reformat_trues(initial_params, params, n)
+            if not np.isnan(truths).any():
+                extras["truths"] = truths
+        fig = plot_corner(planet_n_samples.values, extras=extras)
         plt.suptitle(f"Planet {n} Posterior")
         fname = os.path.join(tic_entry.outdir, f"planet_{n}_{POSTERIOR_PLOT}")
         logger.debug(f"Saving {fname}")
@@ -140,7 +146,7 @@ def plot_priors(
     prior_samples, init_params = format_prior_samples_and_initial_params(
         prior_samples, init_params
     )
-    fig = plot_corner(prior_samples, extras=dict(truths=init_params))
+    fig = plot_corner(prior_samples.values, extras=dict(truths=init_params))
     fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
     logger.debug(f"Saving {fname}")
     fig.savefig(fname, bbox_inches="tight")
@@ -156,7 +162,7 @@ def plot_eccentricity_posteriors(
         planet_params = [f"{p}[{n}]" for p in params]
         planet_n_samples = ecc_samples[planet_params]
         fig = plot_corner(
-            planet_n_samples,
+            planet_n_samples.values,
             extras=dict(
                 weights=ecc_samples[f"weights[{n}]"],
                 labels=[LATEX[p] for p in params],

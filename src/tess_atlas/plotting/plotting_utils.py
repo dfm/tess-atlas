@@ -15,7 +15,6 @@ from tess_atlas.data.inference_data_tools import (
 
 from ..analysis import compute_variable, get_untransformed_varnames
 
-
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
@@ -180,11 +179,11 @@ def get_longest_unbroken_section_of_data(t, min_break_len=10):
     return idx, longest_t
 
 
-def get_lc_and_gp_from_inference_object(model, inference_data):
+def get_lc_and_gp_from_inference_object(model, inference_data, n=1000):
     f0 = np.median(get_samples_dataframe(inference_data)[f"f0"])
     varnames = get_untransformed_varnames(model)
     samples = get_posterior_samples(
-        inference_data=inference_data, varnames=varnames, size=1000
+        inference_data=inference_data, varnames=varnames, size=n
     )
     lcs, gp_mus = compute_variable(
         model=model,

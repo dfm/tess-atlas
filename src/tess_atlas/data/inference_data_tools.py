@@ -84,6 +84,15 @@ def get_posterior_samples(
     )
 
 
+def get_median_sample(
+    inference_data, varnames: List[str]
+) -> List[List[float]]:
+    """Get the median sample for each param"""
+    samples = get_posterior_samples(inference_data, varnames)
+    param_lists = [np.stack(param_list) for param_list in samples.T]
+    return [np.median(p, axis=0) for p in param_lists]
+
+
 def convert_to_samples_dict(varnames: List[str], samples: np.ndarray):
     """samples obtained from get_posterior_samples"""
     samples_dict = {}

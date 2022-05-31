@@ -60,6 +60,7 @@ def compute_variable(
     model: Model,
     samples: List[List[float]],
     target: Union[TensorVariable, List[TensorVariable]],
+    verbose: Optional[bool] = True,
 ) -> Union[np.ndarray, Tuple[np.ndarray]]:
     """Computes value for a model variable.
 
@@ -80,7 +81,10 @@ def compute_variable(
 
     #  run post-processing
     results = [
-        func(*s) for s in tqdm(samples, desc="Computing model variable")
+        func(*s)
+        for s in tqdm(
+            samples, desc="Computing model variable", disable=not verbose
+        )
     ]
 
     if isinstance(target, TensorVariable):

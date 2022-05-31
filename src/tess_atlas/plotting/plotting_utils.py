@@ -11,6 +11,7 @@ from matplotlib.ticker import ScalarFormatter
 from tess_atlas.data.inference_data_tools import (
     get_posterior_samples,
     get_samples_dataframe,
+    get_median_sample,
 )
 
 from ..analysis import compute_variable, get_untransformed_varnames
@@ -185,13 +186,15 @@ def get_lc_and_gp_from_inference_object(model, inference_data, n=1000):
     samples = get_posterior_samples(
         inference_data=inference_data, varnames=varnames, size=n
     )
-    lcs, gp_mus = compute_variable(
-        model=model,
-        samples=samples,
-        target=[model.lightcurve_models, model.gp_mu],
+    median_sample = get_median_sample(
+        inference_data=inference_data, varnames=varnames
+    )
+    lcs = compute_variable(model, samples, target=model.lightcurve_models)
+    gp_mu = compute_variable(
+        model, [median_sample], target=model.gp_mu, verbose=False
     )
     lcs = lcs * 1e3  # scale the lcs
-    gp_model = np.median(gp_mus, axis=0) + f0
+    gp_model = gp_mu[0] + f0
     return lcs, gp_model
 
 

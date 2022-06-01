@@ -40,6 +40,7 @@ class MatplotlibPlotter(PlotterBackend):
         model_lightcurves: Optional[np.ndarray] = None,
         save: Optional[bool] = True,
         zoom_in: Optional[bool] = False,
+        observation_periods: Optional[np.ndarray] = None,
     ) -> plt.Figure:
         """Plot lightcurve data + transit fits (if provided) in one plot
 
@@ -50,6 +51,9 @@ class MatplotlibPlotter(PlotterBackend):
             model_lightcurves = []
         else:
             model_lightcurves = model_lightcurves.T
+
+        if observation_periods is None:
+            observation_periods = []
 
         colors = get_colors(tic_entry.planet_count)
         fig, ax = plt.subplots(1, figsize=(7, 5))
@@ -82,6 +86,20 @@ class MatplotlibPlotter(PlotterBackend):
             )
 
         ax.legend(markerscale=5, frameon=False)
+
+        for i, period in enumerate(observation_periods):
+            c = "gray"
+            if i % 2 == 0:
+                c = "lightgray"
+            for p in period:
+                ax.axvline(
+                    p,
+                    color=c,
+                    ls="--",
+                    alpha=0.35,
+                    zorder=-100,
+                )
+            ax.axvspan(period[0], period[1], facecolor=c, alpha=0.1)
 
         fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
         if save:

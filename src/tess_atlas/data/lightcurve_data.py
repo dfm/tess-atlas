@@ -37,31 +37,8 @@ class LightCurveData(DataObject):
     @classmethod
     def from_database(cls, tic: int, outdir: str):
         """Uses lightkurve to get TESS data for a TIC from MAST"""
-
         logger.info("Downloading LightCurveData from MAST")
-        search = lk.search_lightcurve(
-            target=f"TIC {tic}", mission="TESS", author="SPOC"
-        )
-        logger.debug(f"Search  succeeded: {search}")
-
-        # Restrict to short cadence no "fast" cadence
-        search = search[np.where(search.table["t_exptime"] == 120)]
-
-        logger.info(
-            f"Downloading {len(search)} observations of light curve data "
-            f"(TIC {tic})"
-        )
-        cache_dir = get_cache_dir(default=outdir)
-
-        # see lightkurve docs on quality flags:
-        # http://docs.lightkurve.org/reference/api/lightkurve.SearchResult.download_all.html
-        data = search.download_all(
-            download_dir=cache_dir,
-            flux_column="pdcsap_flux",
-            quality_bitmask="hardest",
-        )
-        if data is None:
-            raise ValueError(f"No light curves for TIC {tic}")
+        data = download_lightkurve_data(tic, outdir)
         logger.info("Completed light curve data download")
         data = data.stitch()
         data = data.remove_nans().remove_outliers(sigma=10)
@@ -101,3 +78,38 @@ class LightCurveData(DataObject):
     @staticmethod
     def get_filepath(outdir, fname="lightcurve.csv"):
         return os.path.join(outdir, fname)
+
+    def get_observation_durations(self, tic):
+        data = download_lightkurve_data(tic, self.outdir)
+        observation_durations = []
+        for obs in data:
+            t = obs.time.value
+            observation_durations.append([min(t), max(t)])
+        return np.array(observation_durations)
+
+
+def download_lightkurve_data(tic, outdir):
+    search = lk.search_lightcurve(
+        target=f"TIC {tic}", mission="TESS", author="SPOC"
+    )
+    logger.debug(f"Search  succeeded: {search}")
+
+    # Restrict to short cadence no "fast" cadence
+    search = search[np.where(search.table["t_exptime"] == 120)]
+
+    logger.info(
+        f"Downloading {len(search)} observations of light curve data "
+        f"(TIC {tic})"
+    )
+    cache_dir = get_cache_dir(default=outdir)
+
+    # see lightkurve docs on quality flags:
+    # http://docs.lightkurve.org/reference/api/lightkurve.SearchResult.download_all.html
+    data = search.download_all(
+        download_dir=cache_dir,
+        flux_column="pdcsap_flux",
+        quality_bitmask="hardest",
+    )
+    if data is None:
+        raise ValueError(f"No light curves for TIC {tic}")
+    return data

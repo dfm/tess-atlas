@@ -95,6 +95,8 @@ def download_lightkurve_data(tic, outdir):
     search = lk.search_lightcurve(
         target=f"TIC {tic}", mission="TESS", author="SPOC"
     )
+    if not search:
+        raise ValueError(f"Search contains no data products")
     logger.debug(f"Search  succeeded: {search}")
 
     # Restrict to short cadence no "fast" cadence

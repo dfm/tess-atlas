@@ -54,7 +54,7 @@ def plot_lightcurve_gp_and_residuals(tic_entry, model, zoom_in=True):
     ax = axes[2]
     models = gp_model + net_lc
     resid = y - models
-    rms = np.sqrt(np.median(resid ** 2))
+    rms = np.sqrt(np.median(resid**2))
     mask = np.abs(resid) < 5 * rms
     total_outliers = np.sum(~mask)
 

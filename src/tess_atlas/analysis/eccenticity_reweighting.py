@@ -30,7 +30,7 @@ def calculate_eccentricity_weights(
 
     # Compute the "g" parameter from Dawson & Johnson and what true
     # density that implies
-    g = (1 + ecc * np.sin(omega)) / np.sqrt(1 - ecc ** 2)
+    g = (1 + ecc * np.sin(omega)) / np.sqrt(1 - ecc**2)
     rho = rho_circ / g[:, None] ** 3
 
     # Re-weight these samples to get weighted posterior samples

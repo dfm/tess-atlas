@@ -43,7 +43,7 @@ def get_kernel_params(tic_entry: TICEntry):
         )
 
         gp = GaussianProcess(
-            kernel, t=x, diag=yerr ** 2 + sigma0 ** 2, mean=mean, quiet=True
+            kernel, t=x, diag=yerr**2 + sigma0**2, mean=mean, quiet=True
         )
         gp.marginal("obs", observed=y)
 

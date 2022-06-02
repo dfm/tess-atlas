@@ -89,9 +89,6 @@ class LightCurveData(DataObject):
 
 
 def download_lightkurve_data(tic, outdir):
-
-    # TODO: raise error somewhere here -- test out with the TOIs that dont have the error https://github.com/dfm/tess-atlas/issues/157
-
     search = lk.search_lightcurve(
         target=f"TIC {tic}", mission="TESS", author="SPOC"
     )

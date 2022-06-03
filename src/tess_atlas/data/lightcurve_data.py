@@ -10,6 +10,7 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .data_object import DataObject
 from ..utils import get_cache_dir
 
+
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
@@ -88,7 +89,7 @@ class LightCurveData(DataObject):
         return np.array(observation_durations)
 
 
-def download_lightkurve_data(tic, outdir):
+def search_for_lightkurve_data(tic):
     search = lk.search_lightcurve(
         target=f"TIC {tic}", mission="TESS", author="SPOC"
     )
@@ -98,7 +99,16 @@ def download_lightkurve_data(tic, outdir):
 
     # Restrict to short cadence no "fast" cadence
     search = search[np.where(search.table["t_exptime"] == 120)]
+    if len(search) < 1:
+        raise ValueError(
+            f"Search contains no data products with t_exptime == 120"
+        )
 
+    return search
+
+
+def download_lightkurve_data(tic, outdir):
+    search = search_for_lightkurve_data(tic)
     logger.info(
         f"Downloading {len(search)} observations of light curve data "
         f"(TIC {tic})"

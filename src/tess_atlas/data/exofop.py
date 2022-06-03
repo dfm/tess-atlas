@@ -4,6 +4,7 @@ from typing import List
 
 import pandas as pd
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+import lightkurve as lk
 
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
@@ -15,10 +16,10 @@ TIC_SEARCH = EXOFOP + "target.php?id={tic_id}"
 DIR = os.path.dirname(__file__)
 
 
-def get_tic_database():
+def get_tic_database(clean=False, check_lk=False):
     # if we have a cached database file
     cached_file = os.path.join(DIR, "cached_tic_database.csv")
-    if os.path.isfile(cached_file):
+    if os.path.isfile(cached_file) and not clean:
         db = pd.read_csv(cached_file)
     else:
         # go online to grab database and cache
@@ -30,6 +31,8 @@ def get_tic_database():
     db = db.astype({"TOI int": "int", "planet count": "int"})
     db["Multiplanet System"] = db["TOI int"].duplicated(keep=False)
     db["Single Transit"] = db["Period (days)"] <= 0
+    if check_lk:
+        db["Lightcurve Availible"] = [is_lightcurve_availible_for_tic()]
     return db
 
 
@@ -76,3 +79,12 @@ def get_tic_url(tic_id):
 def get_toi_list():
     database = get_tic_database()
     return list(set(database["TOI"].values.astype(int)))
+
+
+def is_lightcurve_availible(tic):
+    search = lk.search_lightcurve(
+        target=f"TIC {tic}", mission="TESS", author="SPOC"
+    )
+    if len(search) > 1:
+        return True
+    return False

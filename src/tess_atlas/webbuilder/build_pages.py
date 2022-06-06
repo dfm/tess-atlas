@@ -9,6 +9,7 @@ import os
 import subprocess
 from distutils import log as dist_log
 from distutils.dir_util import copy_tree
+import tarfile
 
 from tess_atlas.webbuilder.make_tois_homepage import make_menu_page
 
@@ -18,6 +19,12 @@ dist_log.set_threshold(dist_log.INFO)
 TEMPLATES_DIR = f"{os.path.dirname(__file__)}/../../../docs/"
 NOTEBOOKS_DIR = "content/toi_notebooks"
 MENU_PAGE = "content/toi_fits.md"
+
+
+def make_tarfile(output_filename, source_dir):
+    print(f"TARing {webdir} -> {output_filename}")
+    with tarfile.open(output_filename, "w:gz") as tar:
+        tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 
 def build_webdir_structure(outdir, notebooks_dir, new_notebook_dir):
@@ -30,6 +37,7 @@ def build_webdir_structure(outdir, notebooks_dir, new_notebook_dir):
 def make_book(outdir: str, notebooks_dir: str, rebuild: bool):
     outdir_present = os.path.isdir(outdir)
     new_notebook_dir = os.path.join(outdir, NOTEBOOKS_DIR)
+    webdir = os.path.join(outdir, "_build")
 
     if rebuild or outdir_present is False:
         build_webdir_structure(outdir, notebooks_dir, new_notebook_dir)
@@ -41,15 +49,11 @@ def make_book(outdir: str, notebooks_dir: str, rebuild: bool):
         path_to_menu_page=os.path.join(outdir, MENU_PAGE),
     )
     subprocess.run(
-        f"sphinx-build -b {new_notebook_dir} {outdir}", shell=True, check=True
+        f"sphinx-build -b html {outdir} {webdir}", shell=True, check=True
     )
 
-    print(f"TARing contents")
-    subprocess.run(
-        f"tar -czf {os.path.dirname(outdir)}.tar {outdir}",
-        shell=True,
-        check=True,
-    )
+    make_tarfile("tess_atlas_pages.tar.gz", source_dir=webdir)
+
     print("Done! ")
 
 

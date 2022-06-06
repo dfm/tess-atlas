@@ -9,7 +9,7 @@ from jinja2 import Template
 HEADER = Template(
     """
 ---
-## {doc}`TOI {{toi_int}} <toi_notebooks/{{toi_fname}}>`
+### {doc}`TOI {{toi_int}} <toi_notebooks/{{toi_fname}}>`
 """
 )
 

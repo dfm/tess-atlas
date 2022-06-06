@@ -27,13 +27,19 @@ def make_tarfile(output_filename, source_dir):
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 
+def sphinx_build_pages(outdir, webdir):
+    command = f"sphinx-build -b html {outdir} {webdir}"
+    print(f"Running >>> \n \033[31m {command} \033[0m")
+    subprocess.run(command, shell=True, check=True)
+
+
 def build_webdir_structure(
     outdir, notebooks_dir, new_notebook_dir, rebuild="hard"
 ):
     print(f"Website being built at {outdir}")
     os.makedirs(outdir, exist_ok=True)
     copy_tree(TEMPLATES_DIR, outdir)  # copy templates to outdir
-    if rebuild == "hard":  # copy notebooks to new outdir
+    if rebuild != "soft":  # copy notebooks to new outdir
         copy_tree(notebooks_dir, new_notebook_dir)
 
 
@@ -53,9 +59,8 @@ def make_book(outdir: str, notebooks_dir: str, rebuild: str):
         notebook_regex=os.path.join(new_notebook_dir, "toi_*.ipynb"),
         path_to_menu_page=os.path.join(outdir, MENU_PAGE),
     )
-    subprocess.run(
-        f"sphinx-build -b html {outdir} {webdir}", shell=True, check=True
-    )
+
+    sphinx_build_pages(outdir, webdir)
 
     make_tarfile("tess_atlas_pages.tar.gz", source_dir=webdir)
 

@@ -27,6 +27,7 @@ html_theme_options = dict(
     use_fullscreen_button=True,
     use_download_button=True,
     search_bar_text="Search the Atlas...",
+    show_toc_level=1,
 )
 html_static_path = ["_static"]
 language = None

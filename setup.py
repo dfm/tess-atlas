@@ -91,7 +91,13 @@ if __name__ == "__main__":
         long_description=read("README.md"),
         long_description_content_type="text/markdown",
         packages=PACKAGES,
-        package_data={"tess_atlas": ["notebook_templates/*.py", "data/*.csv"]},
+        package_data={
+            "tess_atlas": [
+                "notebook_templates/*.py",
+                "data/*.csv",
+                "webbuilder/template/",
+            ]
+        },
         package_dir={"": "src"},
         include_package_data=True,
         install_requires=INSTALL_REQUIRES,

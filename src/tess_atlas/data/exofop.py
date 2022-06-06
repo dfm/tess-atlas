@@ -4,7 +4,10 @@ from typing import List
 
 import pandas as pd
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+from tess_atlas.data.data_utils import get_file_timestamp
 import lightkurve as lk
+
+from tqdm.auto import tqdm
 
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
@@ -16,23 +19,27 @@ TIC_SEARCH = EXOFOP + "target.php?id={tic_id}"
 DIR = os.path.dirname(__file__)
 
 
-def get_tic_database(clean=False, check_lk=False):
+def get_tic_database(clean=False):
     # if we have a cached database file
     cached_file = os.path.join(DIR, "cached_tic_database.csv")
     if os.path.isfile(cached_file) and not clean:
-        db = pd.read_csv(cached_file)
-    else:
-        # go online to grab database and cache
-        db = pd.read_csv(TIC_DATASOURCE)
-        db.to_csv(cached_file, index=False)
+        cache_time = get_file_timestamp(cached_file)
+        logger.debug(f"Loading cached TIC list (last modified {cache_time})")
+        return pd.read_csv(cached_file)
+
+    # go online to grab database and cache
+    db = pd.read_csv(TIC_DATASOURCE)
+    db.to_csv(cached_file, index=False)
     db[["TOI int", "planet count"]] = (
         db["TOI"].astype(str).str.split(".", 1, expand=True)
     )
     db = db.astype({"TOI int": "int", "planet count": "int"})
     db["Multiplanet System"] = db["TOI int"].duplicated(keep=False)
     db["Single Transit"] = db["Period (days)"] <= 0
-    if check_lk:
-        db["Lightcurve Availible"] = [is_lightcurve_availible_for_tic()]
+    db["Lightcurve Availible"] = [
+        is_lightcurve_availible(tic)
+        for tic in tqdm(db["TIC ID"], desc="Checking for lightcurve data")
+    ]
     return db
 
 
@@ -82,6 +89,9 @@ def get_toi_list():
 
 
 def is_lightcurve_availible(tic):
+    # TODO: would be better if we use
+    # tess_atlas.lightcurve_data.search_for_lightkurve_data
+    # however -- getting a silly import error -- probably recursive :(
     search = lk.search_lightcurve(
         target=f"TIC {tic}", mission="TESS", author="SPOC"
     )

@@ -1,7 +1,7 @@
 TESS Atlas
 ============
 
-*TESS Atlas* contains fits for all the `TESS Objects of intrest <https://exofop.ipac.caltech.edu/tess/>`_ (TOIs).
+*TESS Atlas* contains fits for all the `TESS Objects of interest <https://exofop.ipac.caltech.edu/tess/>`_ (TOIs).
 Here we display the fits, along with the code to reproduce them and posterior samples files from our analysis.
 
 

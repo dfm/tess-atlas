@@ -38,6 +38,8 @@ INSTALL_REQUIRES = [
     "nbconvert~=5.6",
     "jupyter_client==6.1.12",  # pinned beacuse of nbconvert bug https://github.com/jupyter/nbconvert/pull/1549#issuecomment-818734169
     "jupyter-book",
+    "sphinx-book-theme",
+    "sphinx_design",
     "click~=7.1",
     "jupytext",
 ]

@@ -40,7 +40,9 @@ def make_book(outdir: str, notebooks_dir: str, rebuild: bool):
         notebook_regex=os.path.join(new_notebook_dir, "toi_*.ipynb"),
         path_to_menu_page=os.path.join(outdir, MENU_PAGE),
     )
-    subprocess.run(f"jupyter-book build {outdir}", shell=True, check=True)
+    subprocess.run(
+        f"sphinx-build -b {new_notebook_dir} {outdir}", shell=True, check=True
+    )
 
     print(f"TARing contents")
     subprocess.run(

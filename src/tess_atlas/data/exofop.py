@@ -9,7 +9,6 @@ import lightkurve as lk
 
 from tqdm.auto import tqdm
 
-
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 EXOFOP = "https://exofop.ipac.caltech.edu/tess/"
@@ -29,17 +28,17 @@ def get_tic_database(clean=False):
 
     # go online to grab database and cache
     db = pd.read_csv(TIC_DATASOURCE)
-    db.to_csv(cached_file, index=False)
     db[["TOI int", "planet count"]] = (
         db["TOI"].astype(str).str.split(".", 1, expand=True)
     )
     db = db.astype({"TOI int": "int", "planet count": "int"})
     db["Multiplanet System"] = db["TOI int"].duplicated(keep=False)
     db["Single Transit"] = db["Period (days)"] <= 0
-    db["Lightcurve Availible"] = [
+    db["Lightcurve Availible"] = [  # slow!!
         is_lightcurve_availible(tic)
-        for tic in tqdm(db["TIC ID"], desc="Checking for lightcurve data")
+        for tic in tqdm(db["TIC ID"], desc="Checking TIC for lightcurve data")
     ]
+    db.to_csv(cached_file, index=False)
     return db
 
 
@@ -83,9 +82,11 @@ def get_tic_url(tic_id):
     return TIC_SEARCH.format(tic_id=tic_id)
 
 
-def get_toi_list():
-    database = get_tic_database()
-    return list(set(database["TOI"].values.astype(int)))
+def get_toi_list(remove_toi_without_lk=True):
+    db = get_tic_database()
+    if remove_toi_without_lk:
+        db = db[db["Lightcurve Availible"] == True]
+    return list(set(db["TOI"].values.astype(int)))
 
 
 def is_lightcurve_availible(tic):

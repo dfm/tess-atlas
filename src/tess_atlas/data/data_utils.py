@@ -14,7 +14,7 @@ def load_json(fpath: str) -> Dict:
         return json.load(f)
 
 
-def get_file_timestamp(filepath):
+def get_file_timestamp(filepath) -> str:
     if not os.path.isfile(filepath):
         return f"UNKNOWN TIME ({filepath} unrecognised file)"
     modified_time = os.path.getmtime(filepath)

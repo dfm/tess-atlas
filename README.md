@@ -3,7 +3,7 @@
 [![](https://img.shields.io/badge/Paper-Download-orange)](https://nightly.link/dfm/tess-atlas/workflows/build_paper/paper/main.pdf.zip)
 
 <p align="center">
-  <img width = "450" src="docs/_static/atlas_logo.png" />
+  <img width = "450" src="src/tess_atlas/webbuilder/template/_static/atlas_logo.png" />
   <br>
   <b>TESS Atlas</b>
 </p>

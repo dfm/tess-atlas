@@ -15,8 +15,8 @@ from tess_atlas.webbuilder.make_tois_homepage import make_menu_page
 
 dist_log.set_verbosity(dist_log.INFO)
 dist_log.set_threshold(dist_log.INFO)
-
-TEMPLATES_DIR = f"{os.path.dirname(__file__)}/../../../docs/"
+DIR = os.path.abspath(os.path.dirname(__file__))
+TEMPLATES_DIR = f"{DIR}/template/"
 NOTEBOOKS_DIR = "content/toi_notebooks"
 MENU_PAGE = "content/toi_fits.md"
 

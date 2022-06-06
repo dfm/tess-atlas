@@ -22,25 +22,30 @@ MENU_PAGE = "content/toi_fits.md"
 
 
 def make_tarfile(output_filename, source_dir):
-    print(f"TARing {webdir} -> {output_filename}")
+    print(f"TARing {source_dir} -> {output_filename}")
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 
-def build_webdir_structure(outdir, notebooks_dir, new_notebook_dir):
+def build_webdir_structure(
+    outdir, notebooks_dir, new_notebook_dir, rebuild="hard"
+):
     print(f"Website being built at {outdir}")
     os.makedirs(outdir, exist_ok=True)
     copy_tree(TEMPLATES_DIR, outdir)  # copy templates to outdir
-    copy_tree(notebooks_dir, new_notebook_dir)  # copy notebooks to new outdir
+    if rebuild == "hard":  # copy notebooks to new outdir
+        copy_tree(notebooks_dir, new_notebook_dir)
 
 
-def make_book(outdir: str, notebooks_dir: str, rebuild: bool):
+def make_book(outdir: str, notebooks_dir: str, rebuild: str):
     outdir_present = os.path.isdir(outdir)
     new_notebook_dir = os.path.join(outdir, NOTEBOOKS_DIR)
     webdir = os.path.join(outdir, "_build")
 
     if rebuild or outdir_present is False:
-        build_webdir_structure(outdir, notebooks_dir, new_notebook_dir)
+        build_webdir_structure(
+            outdir, notebooks_dir, new_notebook_dir, rebuild
+        )
     else:
         print(f"Website being updated at {outdir}")
 
@@ -66,8 +71,10 @@ def get_cli_args():
     )
     parser.add_argument(
         "--rebuild",
-        action="store_true",  # False by default
-        help="Rebuild from scratch (even if some webpages exist).",
+        type=str,
+        default="",
+        help="""'hard': Rebuild from scratch (even if some webpages exist).
+        'soft': Rebuild pages w/o copying notebooks again.""",
     )
     args = parser.parse_args()
     return args.web_outdir, args.notebooks_dir, args.rebuild

@@ -18,7 +18,7 @@ dist_log.set_threshold(dist_log.INFO)
 DIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATES_DIR = f"{DIR}/template/"
 NOTEBOOKS_DIR = "content/toi_notebooks"
-MENU_PAGE = "content/toi_fits.md"
+MENU_PAGE = "content/toi_fits.rst"
 
 
 def make_tarfile(output_filename, source_dir):

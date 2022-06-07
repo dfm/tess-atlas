@@ -40,6 +40,7 @@ INSTALL_REQUIRES = [
     "jupyter-book",
     "sphinx-book-theme",
     "sphinx_design",
+    "sphinx-remove-toctrees",
     "click~=7.1",
     "jupytext",
 ]

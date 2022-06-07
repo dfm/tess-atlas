@@ -28,7 +28,7 @@ def make_tarfile(output_filename, source_dir):
 
 
 def sphinx_build_pages(outdir, webdir):
-    command = f"sphinx-build -b html {outdir} {webdir}"
+    command = f"sphinx-build -b html -j auto {outdir} {webdir}"
     print(f"Running >>> \n \033[31m {command} \033[0m")
     subprocess.run(command, shell=True, check=True)
 

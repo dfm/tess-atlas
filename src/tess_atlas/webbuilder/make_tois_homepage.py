@@ -6,31 +6,21 @@ import os
 
 from jinja2 import Template
 
-HEADER = Template(
-    """
----
-## {doc}`TOI {{toi_int}} <toi_notebooks/{{toi_fname}}>`
-"""
-)
+
+TOI_LINK = Template("`TOI {{toi_int}}  <toi_notebooks/{{toi_fname}}>`_")
 
 IMAGE = Template(
-    """
-```{image} toi_notebooks/{{rel_path}}
-:name: TOI {{toi_int}}
-```
+    """.. figure:: toi_notebooks/{{rel_path}}
+            :target: toi_notebooks/{{toi_fname}}
+
 """
 )
 
-ERROR_HEADER = """
----
-# Erroneous fits:
-"""
 
-ERROR = Template(
-    """
-- [TOI {{toi_int}}](toi_notebooks/{{toi_fname}})
-"""
-)
+def render_page_template(fname, page_data):
+    with open(fname) as file_:
+        template = Template(file_.read())
+    return template.render(**page_data)
 
 
 def get_toi_str_from_path(path):
@@ -45,6 +35,12 @@ def get_toi_number(path):
     return int(get_toi_str_from_path(path))
 
 
+def render_toi_data(path):
+    fname = get_toi_fname(path)
+    toi_int = get_toi_number(path)
+    return TOI_LINK.render(toi_int=toi_int, toi_fname=fname)
+
+
 def sort_files(files):
     return sorted(files, key=lambda x: get_toi_number(x))
 
@@ -53,7 +49,13 @@ def get_phase_plots(notebook_path, notebook_dir):
     toi_str = get_toi_str_from_path(notebook_path)
     phase_regex = os.path.join(notebook_dir, f"toi_{toi_str}_files/phase*.png")
     phase_plots = glob.glob(phase_regex)
-    return phase_plots
+    return [p.split(notebook_dir)[1] for p in phase_plots]
+
+
+def render_image_data(notebook_path, notebook_dir):
+    image_paths = get_phase_plots(notebook_path, notebook_dir)
+    toi_fname = get_toi_fname(notebook_path)
+    return [IMAGE.render(rel_path=p, toi_fname=toi_fname) for p in image_paths]
 
 
 def split_notebooks(notebook_files, notebook_dir):
@@ -66,30 +68,35 @@ def split_notebooks(notebook_files, notebook_dir):
     return with_plots, without_plots
 
 
-def make_menu_page(notebook_regex, path_to_menu_page):
+def generate_page_data(notebook_regex):
     notebook_files = sort_files(glob.glob(notebook_regex))
     notebook_dir = os.path.dirname(notebook_regex)
 
     success_notebooks, failed_notebooks = split_notebooks(
         notebook_files, notebook_dir
     )
+    num_fail, num_pass = len(failed_notebooks), len(success_notebooks)
 
-    lines = []
-
+    successful_data = {"TOI": ["Phase Plot"]}
     for notebook_path in success_notebooks:
-        fname = get_toi_fname(notebook_path)
-        toi_int = get_toi_number(notebook_path)
-        phase_plots = get_phase_plots(notebook_path, notebook_dir)
-        lines.append(HEADER.render(toi_int=toi_int, toi_fname=fname))
-        for phase_plot in phase_plots:
-            rel_path = phase_plot.split(notebook_dir)[1]
-            lines.append(IMAGE.render(rel_path=rel_path, toi_int=toi_int))
+        toi_data = render_toi_data(notebook_path)
+        image_data = render_image_data(notebook_path, notebook_dir)
+        successful_data[toi_data] = image_data
 
-    lines.append(ERROR_HEADER)
-    for notebook_path in failed_notebooks:
-        fname = get_toi_fname(notebook_path)
-        toi_int = get_toi_number(notebook_path)
-        lines.append(ERROR.render(toi_int=toi_int, toi_fname=fname))
+    failed_data = [render_toi_data(p) for p in failed_notebooks]
 
-    with open(path_to_menu_page, "a") as f:
-        f.writelines(lines)
+    return dict(
+        total_number_tois=num_fail + num_pass,
+        number_successful_tois=num_pass,
+        number_failed_tois=num_fail,
+        successful_tois=successful_data,
+        failed_tois=failed_data,
+    )
+
+
+def make_menu_page(notebook_regex, path_to_menu_page):
+    page_data = generate_page_data(notebook_regex)
+    page_contents = render_page_template(path_to_menu_page, page_data)
+
+    with open(path_to_menu_page, "w") as f:
+        f.write(page_contents)

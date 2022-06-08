@@ -16,6 +16,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_design",
     "sphinx_book_theme",
+    "sphinx_remove_toctrees",
 ]
 # nbsphinx_execute = 'never'
 jupyter_execute_notebooks = "off"
@@ -27,12 +28,16 @@ html_theme_options = dict(
     use_fullscreen_button=True,
     use_download_button=True,
     search_bar_text="Search the Atlas...",
+    show_toc_level=1,
+    collapse_navigation=True,
+    show_prev_next=False,
 )
 html_static_path = ["_static"]
 language = None
 pygments_style = "sphinx"
-html_add_permalinks = "¶"
+html_permalinks = True
 html_sourcelink_suffix = ""
 numfig = True
 panels_add_bootstrap_css = False
 suppress_warnings = ["myst.domains"]
+html_copy_source = False

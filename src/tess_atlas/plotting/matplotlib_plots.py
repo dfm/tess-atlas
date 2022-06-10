@@ -193,12 +193,15 @@ class MatplotlibPlotter(PlotterBackend):
         t = tic_entry.lightcurve.time
         y = tic_entry.lightcurve.flux
         yerr = tic_entry.lightcurve.flux_err
+        toi = tic_entry.toi_number
 
         # get posterior df + compute model vars
         posterior = get_samples_dataframe(inference_data)
         lcs, gp_model = get_lc_and_gp_from_inference_object(
             model, inference_data, 1000
         )
+        # get rid of noise in data
+        y = y - gp_model
 
         if initial_lightcurves is None:
             initial_lightcurves = []
@@ -212,9 +215,6 @@ class MatplotlibPlotter(PlotterBackend):
             pvals = posterior[f"p[{i}]"]
             p, p_mean, p_std = pvals.median(), pvals.mean(), pvals.std()
             t0 = np.median(posterior[f"t0[{i}]"])
-
-            # get rid of noise in data
-            y = y - gp_model
 
             # Compute the median of posterior estimate of the contribution from
             # the other planets and remove this from the data
@@ -305,13 +305,13 @@ class MatplotlibPlotter(PlotterBackend):
             plt.legend(fontsize=10, loc=4)
             plt.xlabel(TIME_SINCE_TRANSIT_LABEL)
             plt.ylabel(FLUX_LABEL)
-            plt.title(f"Planet {i + 1}")
+            plt.title(f"TOI {toi}: Planet {i + 1}")
             plt.xlim(plt_min, plt_max)
             if zoom_y_axis:
                 plt.ylim(-ylim, ylim)
             plt.tight_layout()
 
-            fname = PHASE_PLOT.replace(".", f"_{i + 1}.")
+            fname = PHASE_PLOT.replace(".", f"_TOI{toi}_{i + 1}.")
             if plot_label:
                 fname = f"{plot_label}_{fname}"
 

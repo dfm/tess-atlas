@@ -340,7 +340,9 @@ def build_planet_transit_model(tic_entry):
 
         # Finally the GP likelihood
         residual = y - lightcurve
-        gp = GaussianProcess(kernel, t=t, diag=yerr**2 + jitter_prior**2)
+        gp = GaussianProcess(
+            kernel, t=t, diag=yerr**2 + jitter_prior**2, quiet=True
+        )
         gp.marginal(name="obs", observed=residual)
         my_planet_transit_model.gp_mu = gp.predict(residual, return_var=False)
 

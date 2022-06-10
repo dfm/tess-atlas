@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import math
+import re
+
 from matplotlib.ticker import ScalarFormatter
 
 from tess_atlas.data.inference_data_tools import (
@@ -19,6 +22,10 @@ from ..analysis import compute_variable, get_untransformed_varnames
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+
+
+UNREADABLE_MINUS = str("\u2212")
+READABLE_MINUS = str("\u002D")
 
 
 def get_colors(
@@ -69,7 +76,7 @@ def format_label_string_with_offset(ax, axis="both"):
     """Format the label string with the exponent from the ScalarFormatter"""
     ax.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
     ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
-    ax.ticklabel_format(axis=axis, style="sci", scilimits=(-1e4, 1e4))
+    ax.ticklabel_format(axis=axis, style="sci", scilimits=[-4, 4])
 
     axes_instances = []
     if axis in ["x", "both"]:
@@ -83,10 +90,32 @@ def format_label_string_with_offset(ax, axis="both"):
 
         plt.draw()  # Update the text
         offset_text = ax.get_offset_text().get_text()
-
         label = ax.get_label().get_text()
         ax.offsetText.set_visible(False)
         ax.set_label_text(update_label(label, offset_text))
+
+
+def parse_matplotlib_sf(v: str) -> float:
+
+    if UNREADABLE_MINUS in v:
+        v = v.replace(UNREADABLE_MINUS, READABLE_MINUS)
+
+    match_number = re.compile("-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *-?\ *[0-9]+)?")
+    vals = [float(x) for x in re.findall(match_number, v)]
+
+    offset = vals[-1]
+    multiplyer = vals[0] if len(vals) > 1 else ""
+    # sign = '-' if offset < 0 else "+"
+
+    if multiplyer:
+        multiplyer = f"{multiplyer:.0e}x "
+
+    if offset > 100:
+        offset = f"{int(offset):+}"
+    else:
+        offset = f"{offset:+.2f}"
+
+    return offset, multiplyer
 
 
 def update_label(old_label, offset_text):
@@ -99,10 +128,9 @@ def update_label(old_label, offset_text):
         units = ""
     label = old_label.replace("[{}]".format(units), "")
 
-    if "+" in offset_text:
-        offset_text = "+" + str(int(float(offset_text.replace("+", ""))))
+    offset, multiplyer = parse_matplotlib_sf(offset_text)
 
-    return "{} [{} {}]".format(label, offset_text, units)
+    return f"{multiplyer}{label} [{offset} {units}]"
 
 
 def get_one_dimensional_median_and_error_bar(
@@ -207,3 +235,72 @@ def exception_catcher(func):
             pass
 
     return wrapper
+
+
+def to_precision(x, p):
+    """
+    returns a string representation of x formatted with a precision of p
+
+    Based on the webkit javascript implementation taken from here:
+    https://code.google.com/p/webkit-mirror/source/browse/JavaScriptCore/kjs/number_object.cpp
+    """
+
+    x = float(x)
+
+    if x == 0.0:
+        return "0." + "0" * (p - 1)
+
+    out = []
+
+    if x < 0:
+        out.append("-")
+        x = -x
+
+    e = int(math.log10(x))
+    tens = math.pow(10, e - p + 1)
+    n = math.floor(x / tens)
+
+    if n < math.pow(10, p - 1):
+        e = e - 1
+        tens = math.pow(10, e - p + 1)
+        n = math.floor(x / tens)
+
+    if abs((n + 1.0) * tens - x) <= abs(n * tens - x):
+        n = n + 1
+
+    if n >= math.pow(10, p):
+        n = n / 10.0
+        e = e + 1
+
+    m = "%.*g" % (p, n)
+
+    if e < -2 or e >= p:
+        out.append(m[0])
+        if p > 1:
+            out.append(".")
+            out.extend(m[1:p])
+        out.append("e")
+        if e > 0:
+            out.append("+")
+        out.append(str(e))
+    elif e == (p - 1):
+        out.append(m)
+    elif e >= 0:
+        out.append(m[: e + 1])
+        if e + 1 < len(m):
+            out.append(".")
+            out.extend(m[e + 1 :])
+    else:
+        out.append("0.")
+        out.extend(["0"] * -(e + 1))
+        out.append(m)
+
+    out = "".join(out)
+    val = float(out)
+    sign = "-" if val < 0 else "+"
+
+    simple_out = str(float(out))
+    if len(simple_out) < p + 1:
+        return sign + simple_out
+
+    return sign + out

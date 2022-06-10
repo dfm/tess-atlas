@@ -22,7 +22,7 @@ from .plotting_utils import (
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
-
+# @exception_catcher
 def plot_corner(data, extras):
     kwargs = dict(
         smooth=0.9,
@@ -120,7 +120,7 @@ def plot_posteriors(
             if not np.isnan(truths).any():
                 extras["truths"] = truths
         fig = plot_corner(planet_n_samples.values, extras=extras)
-        plt.suptitle(f"Planet {n} Posterior")
+        plt.suptitle(f"TOI {tic_entry.toi_number}\nPlanet {n+1} Posterior")
         fname = os.path.join(tic_entry.outdir, f"planet_{n}_{POSTERIOR_PLOT}")
         logger.debug(f"Saving {fname}")
         fig.savefig(fname, bbox_inches="tight")
@@ -152,7 +152,6 @@ def plot_priors(
     fig.savefig(fname, bbox_inches="tight")
 
 
-@exception_catcher
 def plot_eccentricity_posteriors(
     tic_entry: TICEntry, ecc_samples: pd.DataFrame
 ) -> None:

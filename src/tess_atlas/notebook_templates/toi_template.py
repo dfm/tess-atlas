@@ -59,6 +59,7 @@
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 # %load_ext autoreload
+# %load_ext autotime
 # %autoreload 2
 # %matplotlib inline
 

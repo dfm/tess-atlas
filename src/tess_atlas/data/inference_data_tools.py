@@ -152,14 +152,23 @@ def get_optimized_init_params(
             theta = model.test_point
         init_logp = get_logp(model, theta)
         kwargs = dict(verbose=verbose, progress=verbose)
-        theta = pmx.optimize(theta, [noise_params[0]], **kwargs)
-        theta = pmx.optimize(theta, planet_params, **kwargs)
-        theta = pmx.optimize(theta, noise_params, **kwargs)
-        theta = pmx.optimize(theta, stellar_params, **kwargs)
-        theta = pmx.optimize(theta, period_params, **kwargs)
+        all_params = [*planet_params, *noise_params, *period_params]
+        timing_params = [planet_params[1], period_params[0]]
+        radius_ratio = [planet_params[0]]
+        jitter = [noise_params[0]]
+        for _ in range(2):
+            theta = pmx.optimize(theta, jitter, **kwargs)
+            theta = pmx.optimize(theta, planet_params, **kwargs)
+            theta = pmx.optimize(theta, noise_params, **kwargs)
+            theta = pmx.optimize(theta, stellar_params, **kwargs)
+            theta = pmx.optimize(theta, period_params, **kwargs)
+            theta = pmx.optimize(theta, radius_ratio, **kwargs)
+            theta = pmx.optimize(theta, timing_params, **kwargs)
+            theta = pmx.optimize(theta, all_params, **kwargs)
         final_logp = get_logp(model, theta)
         logger.info(
-            f"Optimization complete! " f"(logp: {init_logp} -> {final_logp}"
+            f"Optimization complete! "
+            f"(logp: {init_logp:.2f} -> {final_logp:.2f})"
         )
         return {k: v.tolist() for k, v in theta.items()}
 

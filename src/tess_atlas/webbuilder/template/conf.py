@@ -41,3 +41,6 @@ numfig = True
 panels_add_bootstrap_css = False
 suppress_warnings = ["myst.domains"]
 html_copy_source = False
+
+
+# https://stackoverflow.com/questions/55297443/including-notebook-with-nbsphinx-fails/70474616#70474616

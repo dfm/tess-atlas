@@ -1,6 +1,8 @@
 import argparse
 import pandas as pd
+import os
 from ..data.exofop import get_toi_list
+
 
 from typing import Optional, List
 
@@ -51,15 +53,14 @@ def get_cli_args(cli_data):
         default=None,
     )
     args = parser.parse_args(cli_data)
-
-    if args.toi_csv and args.toi_number is None:
+    os.makedirs(args.outdir, exist_ok=True)
+    if args.toi_csv and args.toi_number is None:  # get TOI numbers from CSV
         toi_numbers = get_toi_numbers(args.toi_csv)
-    elif args.toi_csv is None and args.toi_number:
+    elif args.toi_csv is None and args.toi_number:  # get single TOI number
         toi_numbers = [args.toi_number]
     else:
-        raise ValueError(
-            f"You have provided TOI CSC: {args.toi_csv}, TOI NUMBER: {args.toi_number}."
-            f"You need to provide one of the two (not both)."
-        )
+        toi_fname = os.path.join(args.outdir, "tois.csv")  # get all TOIs
+        make_toi_csv(toi_fname)
+        toi_numbers = get_toi_numbers(toi_fname)
 
     return toi_numbers, args.outdir, args.module_loads, args.submit, args.clean

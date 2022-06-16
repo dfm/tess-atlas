@@ -3,15 +3,19 @@
 """Module to build home page for TOIs"""
 import glob
 import os
+from tess_atlas.data.exofop import (
+    get_toi_numbers_for_different_categories,
+    get_toi_list,
+)
 
 from jinja2 import Template
 
 
-TOI_LINK = Template("`TOI {{toi_int}}  <toi_notebooks/{{toi_fname}}>`_")
+TOI_LINK = Template("`TOI {{toi_int}}  <toi_notebooks/{{toi_fname}}.html>`_")
 
 IMAGE = Template(
     """.. figure:: toi_notebooks/{{rel_path}}
-            :target: toi_notebooks/{{toi_fname}}
+            :target: toi_notebooks/{{toi_fname}}.html
 
 """
 )
@@ -68,7 +72,49 @@ def split_notebooks(notebook_files, notebook_dir):
     return with_plots, without_plots
 
 
+def generate_number_data(successful_data, failed_data):
+    categorised_tois = get_toi_numbers_for_different_categories()
+    numbers = {k: len(v) for k, v in categorised_tois.items()}
+    numbers["total"] = len(get_toi_list())
+    total_done, total_fail = 0, 0
+    for type in categorised_tois.keys():
+        numbers[f"{type}_done"] = len(successful_data[type].keys()) - 1
+        print(successful_data[type].keys())
+        numbers[f"{type}_fail"] = len(failed_data[type])
+        total_done += numbers[f"{type}_done"]
+        total_fail += numbers[f"{type}_fail"]
+    numbers.update(dict(done=total_done, fail=total_fail))
+    return numbers
+
+
+def get_toi_category(notebook_path):
+    categorised_tois = get_toi_numbers_for_different_categories()
+    toi_number = get_toi_number(notebook_path)
+    for type in ["single", "multi", "norm"]:
+        if toi_number in categorised_tois[type]:
+            return type
+    return "norm"
+
+
 def generate_page_data(notebook_regex):
+    """
+    required data:
+    - "number" dict with keys {
+        done, fail, single, multi, norm,
+        fail_single, fail_multi, fail_norm,
+        done_single, done_norm, done_multi
+    }
+    - "successful_tois" dict of dict {
+        "normal" {toi_link: toi_phase_plot},
+        "single" {toi_link: toi_phase_plot},
+        "multi" {toi_link: toi_phase_plot},
+    }
+    - "failed_tois" dict of {
+        "normal" [toi_link],
+        "single" [toi_link]
+        "multi" [toi_link]
+    }
+    """
     notebook_files = sort_files(glob.glob(notebook_regex))
     notebook_dir = os.path.dirname(notebook_regex)
 
@@ -77,18 +123,26 @@ def generate_page_data(notebook_regex):
     )
     num_fail, num_pass = len(failed_notebooks), len(success_notebooks)
 
-    successful_data = {"TOI": ["Phase Plot"]}
+    categorised_tois = get_toi_numbers_for_different_categories()
+    successful_data = {
+        k: {"TOI": ["Phase Plot"]} for k in categorised_tois.keys()
+    }
+    failed_data = {k: [] for k in categorised_tois.keys()}
+
     for notebook_path in success_notebooks:
         toi_data = render_toi_data(notebook_path)
         image_data = render_image_data(notebook_path, notebook_dir)
-        successful_data[toi_data] = image_data
+        toi_type = get_toi_category(notebook_path)
+        successful_data[toi_type][toi_data] = image_data
 
-    failed_data = [render_toi_data(p) for p in failed_notebooks]
+    for notebook_path in failed_notebooks:
+        toi_type = get_toi_category(notebook_path)
+        failed_data[toi_type].append(render_toi_data(notebook_path))
 
+    number = generate_number_data(successful_data, failed_data)
+    number["fail"], number["done"] = num_fail, num_pass
     return dict(
-        total_number_tois=num_fail + num_pass,
-        number_successful_tois=num_pass,
-        number_failed_tois=num_fail,
+        number=number,
         successful_tois=successful_data,
         failed_tois=failed_data,
     )

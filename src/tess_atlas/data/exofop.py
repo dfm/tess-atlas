@@ -6,7 +6,7 @@ import pandas as pd
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from tess_atlas.data.data_utils import get_file_timestamp
 import lightkurve as lk
-
+import functools
 from tqdm.auto import tqdm
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
@@ -18,6 +18,7 @@ TIC_SEARCH = EXOFOP + "target.php?id={tic_id}"
 DIR = os.path.dirname(__file__)
 
 
+@functools.lru_cache()
 def get_tic_database(clean=False):
     # if we have a cached database file
     cached_file = os.path.join(DIR, "cached_tic_database.csv")
@@ -48,16 +49,18 @@ def get_tic_id_for_toi(toi_number: int) -> int:
     return int(toi["TIC ID"])
 
 
+@functools.lru_cache()
 def get_toi_numbers_for_different_categories():
     tic_db = get_tic_database()
+    tic_db = filter_db_without_lk(tic_db, remove=True)
     multi = tic_db[tic_db["Multiplanet System"]]
-    sing = tic_db[tic_db["Single Transit"]]
-    basic = tic_db[
+    single = tic_db[tic_db["Single Transit"]]
+    norm = tic_db[
         (~tic_db["Single Transit"]) & (~tic_db["Multiplanet System"])
     ]
-    dfs = [multi, sing, basic]
+    dfs = [multi, single, norm]
     toi_dfs = {}
-    for df, name in zip(dfs, ["multi", "single", "basic"]):
+    for df, name in zip(dfs, ["multi", "single", "norm"]):
         toi_ids = list(set(df["TOI"].astype(int)))
         toi_dfs[name] = pd.DataFrame(dict(toi_numbers=toi_ids))
     return toi_dfs
@@ -82,10 +85,15 @@ def get_tic_url(tic_id):
     return TIC_SEARCH.format(tic_id=tic_id)
 
 
+def filter_db_without_lk(db, remove=True):
+    if remove:
+        db = db[db["Lightcurve Availible"] == True]
+    return db
+
+
 def get_toi_list(remove_toi_without_lk=True):
     db = get_tic_database()
-    if remove_toi_without_lk:
-        db = db[db["Lightcurve Availible"] == True]
+    db = filter_db_without_lk(db, remove_toi_without_lk)
     return list(set(db["TOI"].values.astype(int)))
 
 

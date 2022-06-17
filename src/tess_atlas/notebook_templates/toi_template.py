@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.6.0
+#       jupytext_version: 1.10.3
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -59,6 +59,7 @@
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 # %load_ext autoreload
+# %load_ext memory_profiler
 # %load_ext autotime
 # %autoreload 2
 # %matplotlib inline
@@ -133,14 +134,12 @@ logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")
 # Downloading the data (this may take a few minutes):
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry = TICEntry.load(toi=TOI_NUMBER)
-
 # -
 
 # Some of the TOIs parameters stored on ExoFOP:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.display()
-
 # -
 
 # Plot of the lightcurve:
@@ -148,7 +147,6 @@ tic_entry.display()
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_lightcurve(tic_entry)
-
 # -
 # ## Fitting stellar parameters
 # Now that we have the data, we can define a Bayesian model to fit it.
@@ -188,9 +186,7 @@ plot_lightcurve(tic_entry)
 # [Kipping 2013]: https://arxiv.org/abs/1308.0009
 # [SHOTterm]: https://celerite2.readthedocs.io/en/latest/api/python/?highlight=SHOTerm#celerite2.terms.SHOTerm
 
-# + pycharm={"name": "#%%\n"} tags=["def"]
-
-
+# + pycharm={"name": "#%%\n"} tags=["def", "hide-cell"]
 DEPTH = "depth"
 DURATION = "dur"
 RADIUS_RATIO = "r"
@@ -420,13 +416,13 @@ def run_inference(model) -> InferenceData:
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
+# %%memit
 if tic_entry.inference_data is None:
     inference_data = run_inference(planet_transit_model)
 else:
     logger.info("Using cached run")
     inference_data = tic_entry.inference_data
 inference_data
-
 # -
 
 # Lets save the posteriors and sampling metadata for future use, and take a look at summary statistics
@@ -434,25 +430,23 @@ inference_data
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.save_data(inference_data=inference_data)
 summary(inference_data)
-
 # -
 # ## Results
 # Below are plots of the posterior probability distributuions:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_posteriors(tic_entry, inference_data, initial_params=init_params)
-
 # -
 # We can also plot the best-fitting light-curve model
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
+# %%memit
 plot_phase(
     tic_entry,
     inference_data,
     planet_transit_model,
     initial_lightcurves=initial_lc_models,
 )
-
 # -
 
 # ### Post-processing: Eccentricity
@@ -487,13 +481,11 @@ else:
     logger.info(
         "Stellar data not present for TIC. Skipping eccentricity calculations."
     )
-
 # -
-# Finally, we also store some diagnostic plots (these can be accessed in the output directory for the analysis).
+# Finally, we also store some diagnostic plots.
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
+# + pycharm={"name": "#%%\n"} tags=["exe", "hide-cell"]
 plot_diagnostics(tic_entry, planet_transit_model)
-
 # -
 # ## Citations
 #

@@ -3,6 +3,7 @@ from abc import ABC
 import logging
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+from .data_utils import sizeof
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
@@ -36,3 +37,7 @@ class DataObject(ABC):
     @staticmethod
     def cached_data_present(fpath: str) -> bool:
         return os.path.isfile(fpath)
+
+    @property
+    def mem_size(self):
+        return sizeof(self)

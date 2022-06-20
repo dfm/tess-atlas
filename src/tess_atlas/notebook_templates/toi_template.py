@@ -139,7 +139,7 @@ tic_entry = TICEntry.load(toi=TOI_NUMBER)
 # Some of the TOIs parameters stored on ExoFOP:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-tic_entry.display()
+tic_entry
 # -
 
 # Plot of the lightcurve:
@@ -468,7 +468,7 @@ plot_phase(
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 star = tic_entry.stellar_data
-star.display()
+star
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 if star.density_data_present:

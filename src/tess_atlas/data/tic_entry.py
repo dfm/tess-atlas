@@ -5,7 +5,6 @@ import shutil
 
 import pandas as pd
 from arviz import InferenceData
-from IPython.display import HTML, display
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
@@ -27,7 +26,7 @@ TOI_DIR = "toi_{toi}_files"
 
 
 class TICEntry(DataObject):
-    """Hold information about a TIC (TESS Input Catalog) entry"""
+    """Holds information about a TIC (TESS Input Catalog) entry"""
 
     def __init__(
         self,
@@ -108,14 +107,15 @@ class TICEntry(DataObject):
             [candidate.to_dict() for candidate in self.candidates]
         )
 
-    def display(self):
+    def _repr_html_(self):
         df = self.to_dataframe()
         df = df.transpose()
         df.columns = df.loc["TOI"]
-        display(df)
-        more_data_str = "More data on ExoFOP page"
-        html_str = f"<a href='{self.exofop_url}'>{more_data_str}</a>"
-        display(HTML(html_str))
+        return (
+            f"{df._repr_html_()}<br>\n"
+            f"Memory: {self.mem_size}<br>\n"
+            f"<a href='{self.exofop_url}'>More data on ExoFOP page</a>"
+        )
 
     @property
     def outdir(self):

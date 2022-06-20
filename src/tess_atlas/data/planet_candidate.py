@@ -128,3 +128,9 @@ class PlanetCandidate(DataObject):
             "Planet SNR": self.snr,
             "Single Transit": self.has_data_only_for_single_transit,
         }
+
+    def _repr_html_(self):
+        data = self.to_dict()
+        data.pop("TOI")
+        html = "\n".join([f"<li>{k}: {v}</li>" for k, v in data.items()])
+        return f"TOI {self.toi_id}: \n" "<ul>\n" f"{html}" "</ul>"

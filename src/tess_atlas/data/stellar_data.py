@@ -7,7 +7,6 @@ from typing import Dict
 import numpy as np
 from astroquery.exceptions import NoResultsWarning, ResolverError
 from astroquery.mast import Catalogs
-from IPython.display import HTML, display
 from requests.models import HTTPError
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
@@ -98,13 +97,13 @@ class StellarData(DataObject):
             stellar_data.append("No data present")
         return "\n".join(stellar_data)
 
-    def display(self):
+    def _repr_html_(self):
         str_list = self.__str__().split("\n")
         new_str = [f"<b>{str_list[0]}</b>", "<ul>"]
         for i in range(1, len(str_list)):
             new_str.append(f"<li>{str_list[i]}</li>")
         new_str.append("</ul>")
-        return display(HTML("\n".join(new_str)))
+        return "\n".join(new_str)
 
     def to_dict(self):
         return dict(

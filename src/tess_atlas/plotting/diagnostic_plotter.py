@@ -79,7 +79,6 @@ def plot_lightcurve_gp_and_residuals(tic_entry, model, zoom_in=True):
 
 def trace_plot(tic_entry):
     with az.style.context("default", after_reset=True):
-        plt.close("all")
         az.plot_trace(
             tic_entry.inference_data,
             divergences="top",
@@ -100,4 +99,3 @@ def plot_diagnostics(tic_entry, model):
         plot_data_ci=True,
         plot_label="data_ci",
     )
-    plt.close("all")

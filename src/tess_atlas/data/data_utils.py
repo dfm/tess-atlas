@@ -1,7 +1,9 @@
 import json
-from typing import Dict
+from typing import Dict, Optional, Union
 import os.path
 import time
+from math import floor, log
+from pympler.asizeof import asizeof
 
 
 def save_json(fpath: str, data_dict: Dict):
@@ -19,3 +21,19 @@ def get_file_timestamp(filepath) -> str:
         return f"UNKNOWN TIME ({filepath} unrecognised file)"
     modified_time = os.path.getmtime(filepath)
     return time.ctime(modified_time)
+
+
+def format_bytes_to_human_readable(bytes):
+    lg = 0 if bytes <= 0 else floor(log(bytes, 1024))
+    return f"{round(bytes / 1024 ** lg, 2)} {['B', 'KB', 'MB', 'GB', 'TB'][int(lg)]}"
+
+
+def sizeof(obj, human_readable: Optional[bool] = True) -> Union[str, int]:
+    """Estimates total memory usage of (possibly nested) `obj`.
+    Does NOT handle circular object references!
+    """
+    bytes = asizeof(obj)
+    if human_readable:
+        return format_bytes_to_human_readable(bytes)  # str
+    else:
+        return bytes  # int

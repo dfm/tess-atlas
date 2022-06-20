@@ -144,6 +144,7 @@ def get_optimized_init_params(
     period_params,
     theta=None,
     verbose=False,
+    return_all=False,
 ):
     """Get params with maximimal log prob for sampling starting point"""
     logger.info("Optimizing sampling starting point")

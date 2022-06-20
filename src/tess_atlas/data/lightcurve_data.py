@@ -34,6 +34,7 @@ class LightCurveData(DataObject):
         self.flux = flux
         self.flux_err = flux_err
         self.outdir = outdir
+        self.len = len(time)
 
     @classmethod
     def from_database(cls, tic: int, outdir: str):
@@ -87,6 +88,12 @@ class LightCurveData(DataObject):
             t = obs.time.value
             observation_durations.append([min(t), max(t)])
         return np.array(observation_durations)
+
+    def _repr_html_(self):
+        return (
+            f"{self.__class__.__name__}: "
+            f"{self.len} datapoints ({self.mem_size})"
+        )
 
 
 def search_for_lightkurve_data(tic):

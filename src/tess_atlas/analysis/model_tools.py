@@ -60,7 +60,7 @@ def compute_variable(
     model: Model,
     samples: List[List[float]],
     target: Union[TensorVariable, List[TensorVariable]],
-    verbose: Optional[bool] = True,
+    verbose: Optional[bool] = False,
 ) -> Union[np.ndarray, Tuple[np.ndarray]]:
     """Computes value for a model variable.
 

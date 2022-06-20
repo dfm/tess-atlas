@@ -208,7 +208,7 @@ def get_longest_unbroken_section_of_data(t, min_break_len=10):
     return idx, longest_t
 
 
-def get_lc_and_gp_from_inference_object(model, inference_data, n=1000):
+def get_lc_and_gp_from_inference_object(model, inference_data, n=12):
     f0 = np.median(get_samples_dataframe(inference_data)[f"f0"])
     varnames = get_untransformed_varnames(model)
     samples = get_posterior_samples(

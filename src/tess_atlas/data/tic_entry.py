@@ -26,7 +26,7 @@ TOI_DIR = "toi_{toi}_files"
 
 
 class TICEntry(DataObject):
-    """Hold information about a TIC (TESS Input Catalog) entry"""
+    """Holds information about a TIC (TESS Input Catalog) entry"""
 
     def __init__(
         self,

@@ -416,7 +416,6 @@ def run_inference(model) -> InferenceData:
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-# %%memit
 if tic_entry.inference_data is None:
     inference_data = run_inference(planet_transit_model)
 else:

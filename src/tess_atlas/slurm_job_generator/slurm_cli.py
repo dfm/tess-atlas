@@ -17,7 +17,7 @@ def make_toi_csv(fname: str, toi_numbers: Optional[List[int]] = []):
         toi_numbers = get_toi_list()
     toi_numbers = list(set([int(i) for i in toi_numbers]))
     data = pd.DataFrame(dict(toi_numbers=toi_numbers))
-    data.to_csv(fname)
+    data.to_csv(fname, index=False)
 
 
 def get_cli_args(cli_data):

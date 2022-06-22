@@ -79,7 +79,6 @@ def generate_number_data(successful_data, failed_data):
     total_done, total_fail = 0, 0
     for type in categorised_tois.keys():
         numbers[f"{type}_done"] = len(successful_data[type].keys()) - 1
-        print(successful_data[type].keys())
         numbers[f"{type}_fail"] = len(failed_data[type])
         total_done += numbers[f"{type}_done"]
         total_fail += numbers[f"{type}_fail"]

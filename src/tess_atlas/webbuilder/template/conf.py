@@ -40,7 +40,7 @@ html_sourcelink_suffix = ""
 numfig = True
 panels_add_bootstrap_css = False
 suppress_warnings = ["myst.domains"]
-html_copy_source = False
+html_copy_source = True
 remove_from_toctrees = ["content/toi_notebooks/toi_*.ipynb"]
 
 # https://stackoverflow.com/questions/55297443/including-notebook-with-nbsphinx-fails/70474616#70474616

@@ -47,7 +47,7 @@ def make_slurm_file(
     array_kwargs = dict(
         array_end=None,
         array_args=None,
-        logfile=mkdir(log_dir, f"{jobname}_%j.log"),
+        log_file=mkdir(log_dir, f"{jobname}_%j.log"),
     )
     if array_job:
         array_kwargs = dict(

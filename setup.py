@@ -100,6 +100,7 @@ if __name__ == "__main__":
                 "notebook_templates/*.py",
                 "data/*.csv",
                 "webbuilder/template/",
+                "slurm_job_generator/templates/*.sh",
             ]
         },
         package_dir={"": "src"},
@@ -113,7 +114,7 @@ if __name__ == "__main__":
                 "run_toi=tess_atlas.notebook_preprocessors.run_toi:main",
                 "run_tois=tess_atlas.notebook_preprocessors.run_tois:main",
                 "runs_stats_plotter=tess_atlas.analysis.stats_plotter:main",
-                "make_webpages=tess_atlas.webbuilder.build_pages:main",
+                "make_webpages=tess_atlas.webbuilder.web_cli:main",
                 "make_slurm_job=tess_atlas.slurm_job_generator.slurm_job_generator:main",
                 "download_toi=tess_atlas.api.download_analysed_toi:main",
             ]

@@ -29,7 +29,10 @@ def get_python_source_command():
 
 
 def to_str_list(li):
-    return " ".join([str(i) for i in li])
+    if type(li[0]) != str:
+        return " ".join([str(i) for i in li])
+    else:
+        return li
 
 
 def mkdir(base, name):

@@ -1,8 +1,11 @@
 """
-TODO:
+#TODO:
 1. add to webpage
 2. 'all' is not inclusive of runs that failed before logging Time
 3. automate process during the building of webpages
+
+#TODO: combine with analysis.stats_plotter
+#TODO: combine with slurm_utils
 """
 import pandas as pd
 import matplotlib.pyplot as plt

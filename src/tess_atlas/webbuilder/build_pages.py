@@ -4,7 +4,6 @@ Make summary plots + page
 Run loader example
 Build jupyter-book
 """
-import argparse
 import os
 import subprocess
 from distutils import log as dist_log
@@ -65,30 +64,3 @@ def make_book(outdir: str, notebooks_dir: str, rebuild: str):
     make_tarfile("tess_atlas_pages.tar.gz", source_dir=webdir)
 
     print("Done! ")
-
-
-def get_cli_args():
-    """Get the TOI number from the CLI and return it"""
-    parser = argparse.ArgumentParser(prog="build webpages")
-    parser.add_argument("web_outdir", type=str, help="The weboutdir")
-    parser.add_argument(
-        "notebooks_dir", type=str, help="Directory with analysed notebooks"
-    )
-    parser.add_argument(
-        "--rebuild",
-        type=str,
-        default="",
-        help="""'hard': Rebuild from scratch (even if some webpages exist).
-        'soft': Rebuild pages w/o copying notebooks again.""",
-    )
-    args = parser.parse_args()
-    return args.web_outdir, args.notebooks_dir, args.rebuild
-
-
-def main():
-    outdir, notebooks_dir, rebuild = get_cli_args()
-    make_book(outdir=outdir, notebooks_dir=notebooks_dir, rebuild=rebuild)
-
-
-if __name__ == "__main__":
-    main()

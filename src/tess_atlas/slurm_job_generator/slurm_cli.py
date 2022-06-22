@@ -30,7 +30,9 @@ def get_cli_args(cli_data):
         help="CSV with the toi numbers to analyse (csv needs a column with `toi_numbers`)",
     )
     parser.add_argument(
-        "--outdir", help="outdir for jobs", default="notebooks"
+        "--outdir",
+        help="outdir for jobs. If outdir already has analysed TOIs, than (and the kwarg 'clean' not passed), than slurm files for only the unanalysed TOIs generated)",
+        default="tess_atlas_catalog",
     )
     parser.add_argument(
         "--module_loads",

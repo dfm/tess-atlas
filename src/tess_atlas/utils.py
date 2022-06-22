@@ -57,6 +57,7 @@ def notebook_initalisations():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
     warnings.filterwarnings("ignore", category=UserWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     set_plotting_style()
     set_theano_cache()

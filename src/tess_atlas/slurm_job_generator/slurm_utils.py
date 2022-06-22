@@ -35,13 +35,6 @@ def to_str_list(li):
         return li
 
 
-def mkdir(base, name):
-    newpth = os.path.join(base, name)
-    dirname = base if "." in name else newpth
-    os.makedirs(dirname, exist_ok=True)
-    return newpth
-
-
 def get_completed_toi_pe_results_paths(outdir: str):
     search_path = os.path.join(outdir, "*/toi_*_files/*.netcdf")
     netcdf_files = glob.glob(search_path)

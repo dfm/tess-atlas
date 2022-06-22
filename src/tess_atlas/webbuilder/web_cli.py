@@ -11,10 +11,8 @@ def get_cli_args():
     )
     parser.add_argument(
         "--rebuild",
-        type=str,
-        default="",
-        help="""'hard': Rebuild from scratch (even if some webpages exist).
-        'soft': Rebuild pages w/o copying notebooks again.""",
+        action="store_true",  # False by default
+        help="""flag to rebuild from scratch (even if some webpages exist).""",
     )
     args = parser.parse_args()
     return args.webdir, args.notebooks, args.rebuild

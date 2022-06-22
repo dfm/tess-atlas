@@ -6,6 +6,7 @@ from typing import List
 from .slurm_cli import get_cli_args
 from .file_generators import make_slurm_file, make_main_submitter
 from .slurm_utils import mkdir, get_unprocessed_toi_numbers
+from tess_atlas.tess_atlas_version import __version__
 
 MAX_ARRAY_SIZE = 2048
 
@@ -26,40 +27,57 @@ def setup_jobs(
         toi_numbers[i : i + MAX_ARRAY_SIZE]
         for i in range(0, len(toi_numbers), MAX_ARRAY_SIZE)
     ]
+    kwargs = dict(
+        outdir=outdir,
+        module_loads=module_loads,
+        submit_dir=submit_dir,
+    )
 
     generation_fns, analysis_fns = [], []
 
     for i, toi_batch in enumerate(toi_batches):
+        cmd = "srun run_toi ${ARRAY_ARGS[$SLURM_ARRAY_TASK_ID]} "
+        cmd += f"--outdir {outdir} "
+        common_array_kwargs = dict(
+            **kwargs,
+            array_args=toi_batch,
+            jobid=i,
+            array_job=True,
+        )
         generation_fns.append(
             make_slurm_file(
-                outdir=outdir,
-                toi_numbers=toi_batch,
-                module_loads=module_loads,
-                extra_jobargs="--setup",
+                **common_array_kwargs,
                 cpu_per_task=1,
                 time="20:00",
                 jobname=f"gen",
                 mem="1000MB",
-                submit_dir=submit_dir,
-                jobid=i,
+                command=f"{cmd} --setup",
             )
         )
         analysis_fns.append(
             make_slurm_file(
-                outdir=outdir,
-                toi_numbers=toi_batch,
-                module_loads=module_loads,
-                extra_jobargs="",
+                **common_array_kwargs,
                 cpu_per_task=2,
                 time="300:00",
                 jobname=f"pe",
                 mem="1500MB",
-                submit_dir=submit_dir,
-                jobid=i,
+                command=cmd,
             )
         )
 
-    submit_file = make_main_submitter(generation_fns, analysis_fns, submit_dir)
+    notebook_dir = os.path.join(outdir, __version__)
+    web_fn = make_slurm_file(
+        **kwargs,
+        cpu_per_task=1,
+        time="06:00:00",
+        jobname=f"web",
+        mem="64GB",
+        command=f"make_webpages --webdir webpages --notebooks {notebook_dir}",
+    )
+
+    submit_file = make_main_submitter(
+        generation_fns, analysis_fns, web_fn, submit_dir
+    )
 
     if submit:
         os.system(f"bash {submit_file}")

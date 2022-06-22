@@ -7,11 +7,11 @@
 #SBATCH --time={{time}}
 #SBATCH --mem={{mem}}
 #SBATCH --cpus-per-task={{cpu_per_task}}
-#SBATCH --array=0-{{array_end}}
-
+{% if array_job=="True" -%}      #SBATCH --array=0-{{array_end}}
+{% endif %}
 module load {{module_loads}}
 {{load_env}}
-
-TOI_NUMBERS=({{toi_numbers}})
-
-srun run_toi ${TOI_NUMBERS[$SLURM_ARRAY_TASK_ID]} --outdir {{outdir}} {{extra_jobargs}}
+{% if array_job=="True" %}
+ARRAY_ARGS=({{array_args}})
+{% endif %}
+{{command}}

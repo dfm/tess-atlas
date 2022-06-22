@@ -20,6 +20,7 @@ class JobgenTest(unittest.TestCase):
         self.toi_list = "module load 1"
         self.toi_fn = f"{self.outdir}/toi.csv"
         self.make_toi_file()
+        self.toi_int = pd.read_csv(self.toi_fn).toi_numbers.values.tolist()
 
     def make_toi_file(self):
         df = pd.DataFrame(dict(id=[0, 1], toi_numbers=[100, 101]))
@@ -32,7 +33,7 @@ class JobgenTest(unittest.TestCase):
             shutil.rmtree(self.outdir)
 
     def test_slurmfile(self):
-        setup_jobs(self.toi_fn, self.outdir, self.module_loads, False, True)
+        setup_jobs(self.toi_int, self.outdir, self.module_loads, False, True)
 
     def test_single_job_slurmfile(self):
         setup_jobs(

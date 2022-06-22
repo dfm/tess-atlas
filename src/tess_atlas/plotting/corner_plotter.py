@@ -89,6 +89,7 @@ def reformat_trues(p: Dict, keys: List[str], val_id: int) -> np.array:
     return np.array([p[k][val_id] for k in keys])
 
 
+@exception_catcher
 def plot_posteriors(
     tic_entry: TICEntry, inference_data, initial_params: Optional[Dict] = {}
 ) -> None:
@@ -127,6 +128,7 @@ def plot_posteriors(
         fig.savefig(fname, bbox_inches="tight")
 
 
+@exception_catcher
 def plot_posteriors_all(tic_entry: TICEntry, inference_data) -> None:
     """Plots posteriors for all planets in one corner"""
     params = ["r", "b", "t0", "tmax", "p", "dur"]
@@ -153,6 +155,7 @@ def plot_priors(
     fig.savefig(fname, bbox_inches="tight")
 
 
+@exception_catcher
 def plot_eccentricity_posteriors(
     tic_entry: TICEntry, ecc_samples: pd.DataFrame
 ) -> None:

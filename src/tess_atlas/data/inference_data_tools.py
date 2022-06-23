@@ -149,8 +149,10 @@ def get_optimized_init_params(
     """Get params with maximimal log prob for sampling starting point"""
     logger.info("Optimizing sampling starting point")
     with model:
+        cache = []
         if theta is None:
             theta = model.test_point
+        cache.append(theta)
         init_logp = get_logp(model, theta)
         kwargs = dict(verbose=verbose, progress=verbose)
         all_params = [*planet_params, *noise_params, *period_params]
@@ -159,19 +161,30 @@ def get_optimized_init_params(
         jitter = [noise_params[0]]
         for _ in range(2):
             theta = pmx.optimize(theta, jitter, **kwargs)
+            cache.append(theta)
             theta = pmx.optimize(theta, planet_params, **kwargs)
+            cache.append(theta)
             theta = pmx.optimize(theta, noise_params, **kwargs)
+            cache.append(theta)
             theta = pmx.optimize(theta, stellar_params, **kwargs)
+            cache.append(theta)
             theta = pmx.optimize(theta, period_params, **kwargs)
+            cache.append(theta)
             theta = pmx.optimize(theta, radius_ratio, **kwargs)
+            cache.append(theta)
             theta = pmx.optimize(theta, timing_params, **kwargs)
+            cache.append(theta)
             theta = pmx.optimize(theta, all_params, **kwargs)
+            cache.append(theta)
         final_logp = get_logp(model, theta)
         logger.info(
             f"Optimization complete! "
             f"(logp: {init_logp:.2f} -> {final_logp:.2f})"
         )
-        return {k: v.tolist() for k, v in theta.items()}
+        if return_all:
+            return [{k: v.tolist() for k, v in t.items()} for t in cache]
+        else:
+            return {k: v.tolist() for k, v in theta.items()}
 
 
 def get_logp(model, point):

@@ -390,6 +390,8 @@ plot_lightcurve(tic_entry, initial_lc_models)
 # + tags=["exe"]
 plot_folded_lightcurve(tic_entry, initial_lc_models)
 
+# TODO: plot some diagnostics
+
 # + tags=["exe"]
 prior_samples = sample_prior(planet_transit_model)
 if prior_samples:

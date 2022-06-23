@@ -41,6 +41,7 @@ INSTALL_REQUIRES = [
     "sphinx-book-theme",
     "sphinx_design",
     "sphinx-remove-toctrees",
+    "sphinx_togglebutton",
     "click~=7.1",
     "jupytext",
     "ipython-autotime",

@@ -77,7 +77,7 @@ def plot_lightcurve_gp_and_residuals(tic_entry, model, zoom_in=True):
     fig.savefig(os.path.join(tic_entry.outdir, DIAGNOSTIC_LIGHTCURVE_PLOT))
 
 
-def trace_plot(tic_entry):
+def plot_inference_trace(tic_entry):
     with az.style.context("default", after_reset=True):
         az.plot_trace(
             tic_entry.inference_data,
@@ -91,7 +91,6 @@ def trace_plot(tic_entry):
 
 def plot_diagnostics(tic_entry, model):
     plot_lightcurve_gp_and_residuals(tic_entry, model)
-    trace_plot(tic_entry)
     MatplotlibPlotter.plot_phase(
         tic_entry,
         tic_entry.inference_data,

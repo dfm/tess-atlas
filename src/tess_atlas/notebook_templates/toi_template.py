@@ -108,6 +108,7 @@ from tess_atlas.plotting import (
     plot_posteriors,
     plot_priors,
     plot_diagnostics,
+    plot_inference_trace,
 )
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -431,7 +432,10 @@ inference_data
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.save_data(inference_data=inference_data)
 summary(inference_data)
+# + tags=["exe", "hide-cell"]
+plot_inference_trace(tic_entry)
 # -
+
 # ## Results
 # Below are plots of the posterior probability distributuions:
 

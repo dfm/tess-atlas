@@ -108,6 +108,7 @@ from tess_atlas.plotting import (
     plot_posteriors,
     plot_priors,
     plot_diagnostics,
+    plot_inference_trace,
 )
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -162,8 +163,8 @@ plot_lightcurve(tic_entry)
 # $$\vec{\theta} = \{d_i, t0_i, tmax_i, b_i, r_i, f0, u1, u2\},$$
 # where
 # * $d_i$ transit durations for each planet,
-# * $t0_i$ time of first transit for each planet (reference time),
-# * $tmax_i$ time of the last transit observed by TESS for each planet (a second reference time),
+# * $tmin_i$ time of first transit for each planet (reference time),
+# * $tmax_i$ time of the last transit for each planet (a second reference time),
 # * $b_i$ impact parameter for each planet,
 # * $r_i$ planet radius in stellar radius for each planet,
 # * $f0$ baseline relative flux of the light curve from star,
@@ -190,7 +191,7 @@ plot_lightcurve(tic_entry)
 DEPTH = "depth"
 DURATION = "dur"
 RADIUS_RATIO = "r"
-TIME_START = "t0"
+TIME_START = "tmin"
 TIME_END = "tmax"
 ORBITAL_PERIOD = "p"
 MEAN_FLUX = "f0"
@@ -218,7 +219,7 @@ def build_planet_transit_model(tic_entry):
     yerr = tic_entry.lightcurve.flux_err
 
     n = tic_entry.planet_count
-    t0s = np.array([planet.t0 for planet in tic_entry.candidates])
+    tmins = np.array([planet.tmin for planet in tic_entry.candidates])
     depths = np.array([planet.depth for planet in tic_entry.candidates])
     durations = np.array([planet.duration for planet in tic_entry.candidates])
     max_durations = np.array(
@@ -255,12 +256,12 @@ def build_planet_transit_model(tic_entry):
 
         ## define orbit-timing parameters
 
-        # 1) t0: the time of the first transit in data (a reference time)
-        t0_norm = pm.Bound(
-            pm.Normal, lower=t0s - max_durations, upper=t0s + max_durations
+        # 1) tmin: the time of the first transit in data (a reference time)
+        tmin_norm = pm.Bound(
+            pm.Normal, lower=tmins - max_durations, upper=tmins + max_durations
         )
-        t0_priors = t0_norm(
-            TIME_START, mu=t0s, sigma=0.5 * durations, shape=n, testval=t0s
+        tmin_priors = tmin_norm(
+            TIME_START, mu=tmins, sigma=0.5 * durations, shape=n, testval=tmins
         )
 
         # 2) period: the planets' orbital period
@@ -275,7 +276,7 @@ def build_planet_transit_model(tic_entry):
                     testval=planet.period,
                 )
                 p_param = p_prior
-                tmax_prior = planet.t0
+                tmax_prior = planet.tmin
             # if more than one transit in data we use a second time reference (tmax)
             else:
                 tmax_norm = pm.Bound(
@@ -289,7 +290,7 @@ def build_planet_transit_model(tic_entry):
                     sigma=0.5 * planet.duration,
                     testval=planet.tmax,
                 )
-                p_prior = (tmax_prior - t0_priors[n]) / planet.num_periods
+                p_prior = (tmax_prior - tmin_priors[n]) / planet.num_periods
                 p_param = tmax_prior
 
             p_params.append(p_param)  # the param needed to calculate p
@@ -324,7 +325,7 @@ def build_planet_transit_model(tic_entry):
         ## define the lightcurve model mu(t;paramters)
         orbit = xo.orbits.KeplerianOrbit(
             period=p_priors,
-            t0=t0_priors,
+            t0=tmin_priors,
             b=b_priors,
             duration=d_priors,
             ror=r_priors,
@@ -390,6 +391,8 @@ plot_lightcurve(tic_entry, initial_lc_models)
 # + tags=["exe"]
 plot_folded_lightcurve(tic_entry, initial_lc_models)
 
+# TODO: plot some diagnostics
+
 # + tags=["exe"]
 prior_samples = sample_prior(planet_transit_model)
 if prior_samples:
@@ -429,7 +432,10 @@ inference_data
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.save_data(inference_data=inference_data)
 summary(inference_data)
+# + tags=["exe", "hide-cell"]
+plot_inference_trace(tic_entry)
 # -
+
 # ## Results
 # Below are plots of the posterior probability distributuions:
 

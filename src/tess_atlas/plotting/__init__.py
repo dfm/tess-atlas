@@ -4,7 +4,7 @@ from .corner_plotter import plot_eccentricity_posteriors, plot_posteriors
 from .histogram_plotter import plot_priors
 from .matplotlib_plots import MatplotlibPlotter
 from .plotly_plots import PlotlyPlotter
-from .diagnostic_plotter import plot_diagnostics
+from .diagnostic_plotter import plot_diagnostics, plot_inference_trace
 
 if os.environ.get("INTERACTIVE_PLOTS", default="False") == "TRUE":
     plot_lightcurve = PlotlyPlotter.plot_lightcurve

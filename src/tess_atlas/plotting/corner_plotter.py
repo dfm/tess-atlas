@@ -94,8 +94,8 @@ def plot_posteriors(
     tic_entry: TICEntry, inference_data, initial_params: Optional[Dict] = {}
 ) -> None:
     """Plots 1 posterior corner plot for each planet"""
-    plot_params = ["r", "b", "t0", "tmax", "p", "dur"]
-    single_transit_params = ["log_r", "b", "t0", "dur"]
+    plot_params = ["r", "b", "tmin", "tmax", "p", "dur"]
+    single_transit_params = ["log_r", "b", "tmin", "dur"]
 
     if initial_params:
         initial_params["log_r"] = np.log(initial_params["r"])

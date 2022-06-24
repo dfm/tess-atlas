@@ -324,7 +324,7 @@ def build_planet_transit_model(tic_entry):
         ## define the lightcurve model mu(t;paramters)
         orbit = xo.orbits.KeplerianOrbit(
             period=p_priors,
-            tmin=tmin_priors,
+            t0=tmin_priors,
             b=b_priors,
             duration=d_priors,
             ror=r_priors,

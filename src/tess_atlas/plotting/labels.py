@@ -13,7 +13,7 @@ DIAGNOSTIC_TRACE_PLOT = "diagnostic_trace_plot.png"
 DEPTH = "depth"
 DURATION = "dur"
 RADIUS_RATIO = "r"
-TIME_START = "t0"
+TIME_START = "tmin"
 TIME_END = "tmax"
 ORBITAL_PERIOD = "p"
 MEAN_FLUX = "f0"
@@ -34,7 +34,7 @@ LATEX = {
     IMPACT_PARAM: r"$b$",
     MEAN_FLUX: r"$f_0$",
     ORBITAL_PERIOD: r"$P$ [days]",
-    TIME_START: r"$t_0$ [BJD]",
+    TIME_START: r"$t_{\rm min}$ [BJD]",
     TIME_END: r"$t_{\rm max}$ [BJD]",
     f"{LIMB_DARKENING_PARAM}_1": r"$u_1$",
     f"{LIMB_DARKENING_PARAM}_2": r"$u_2$",

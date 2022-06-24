@@ -64,15 +64,36 @@ class PlanetCandidate(DataObject):
 
     @property
     def num_periods(self):
-        """number of periods between t0 and tmax"""
+        """number of periods between tmin and tmax"""
         if self.has_data_only_for_single_transit:
             return 0
-        return (np.floor(max(self.__time) - self.t0) / self.period).astype(int)
+        lc_tmax = max(self.__time)  # lc --> lightcurve
+        n = np.floor(lc_tmax - self.tmin) / self.period
+        if n <= 0:
+            raise ValueError(
+                """Number periods {} is invalid:
+                (np.floor(lc_tmax - tmin) / period)
+                lc_tmax = {}
+                tmin = {}
+                spoc period = {}
+                """.format(
+                    n, lc_tmax, self.tmin, self.period
+                )
+            )
+        return n.astype(int)
 
     @property
     def tmax(self):
         """Time of the last transit"""
-        return self.t0 + self.num_periods * self.period
+        return self.tmin + (self.num_periods * self.period)
+
+    @property
+    def tmin(self):
+        """Time of the first transit (t0 might be a future epoch)"""
+        lc_min = min(self.__time)
+        return (
+            self.t0 + np.ceil((lc_min - self.t0) / self.period) * self.period
+        )
 
     @property
     def period_min(self):
@@ -81,6 +102,11 @@ class PlanetCandidate(DataObject):
             np.abs(self.t0 - self.__time.max()),
             np.abs(self.__time.min() - self.t0),
         )
+
+    @property
+    def period_estimate(self):
+        """period estimate from tmin tmax num_periods"""
+        return (self.tmax - self.tmin) / self.num_periods
 
     @property
     def duration_max(self):
@@ -116,10 +142,10 @@ class PlanetCandidate(DataObject):
 
     def get_timefold(self, t):
         """Used in plotting"""
-        return calculate_time_fold(t, self.t0, self.period)
+        return calculate_time_fold(t, self.tmin, self.period)
 
-    def to_dict(self):
-        return {
+    def to_dict(self, extra=False):
+        data = {
             "TOI": self.toi_id,
             "Period (days)": self.period,
             "Epoch (TBJD)": self.t0,
@@ -128,9 +154,23 @@ class PlanetCandidate(DataObject):
             "Planet SNR": self.snr,
             "Single Transit": self.has_data_only_for_single_transit,
         }
+        if extra:
+
+            data.update(
+                {
+                    "Min-Max Epochs (TBJD)": f"{self.tmin:.2f} - {self.tmax:.2f}",
+                    "Period estimation": self.period_estimate,
+                    "Num Periods": self.num_periods,
+                    "duration range": f"{self.duration_min} {self.duration_max}",
+                }
+            )
+        return data
 
     def _repr_html_(self):
-        data = self.to_dict()
-        data.pop("TOI")
-        html = "\n".join([f"<li>{k}: {v}</li>" for k, v in data.items()])
+        d = self.to_dict()
+        d.pop("TOI")
+        d = {
+            k: f"{v:.2f}" if isinstance(v, float) else v for k, v in d.items()
+        }
+        html = "\n".join([f"<li>{k}: {v}</li>" for k, v in d.items()])
         return f"TOI {self.toi_id}: \n" "<ul>\n" f"{html}" "</ul>"

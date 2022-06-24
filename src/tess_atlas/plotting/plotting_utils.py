@@ -226,6 +226,46 @@ def get_lc_and_gp_from_inference_object(model, inference_data, n=12):
     return lcs, gp_model
 
 
+def generate_model_lightcurve(
+    planet_transit_model,
+    b: float,
+    dur: float,
+    f0: float,
+    jitter: float,
+    p: float,
+    r: float,
+    rho: float,
+    rho_circ: float,
+    sigma: float,
+    t0: float,
+    tmax: float,
+    u: List,
+):
+    """Function to manually test some parameter values for the model"""
+    tmax_1 = tmax
+    samp = [
+        [b],
+        [dur],
+        f0,
+        jitter,
+        [p],
+        [r],
+        rho,
+        [rho_circ],
+        sigma,
+        [t0],
+        [tmax],
+        tmax_1,
+        u,
+    ]
+    lc = compute_variable(
+        model=planet_transit_model,
+        samples=[samp],
+        target=planet_transit_model.lightcurve_models,
+    )
+    return np.array(lc[0] * 1e3)
+
+
 def exception_catcher(func):
     def wrapper(*args, **kwargs):
         try:

@@ -152,39 +152,44 @@ def get_optimized_init_params(
         cache = []
         if theta is None:
             theta = model.test_point
-        cache.append(theta)
         init_logp = get_logp(model, theta)
+        cache.append(dict(theta=theta, logp=init_logp))
         kwargs = dict(verbose=verbose, progress=verbose)
         all_params = [*planet_params, *noise_params, *period_params]
         timing_params = [planet_params[1], period_params[0]]
         radius_ratio = [planet_params[0]]
         jitter = [noise_params[0]]
+        optimization_order = [
+            jitter,
+            planet_params,
+            noise_params,
+            stellar_params,
+            period_params,
+            radius_ratio,
+            timing_params,
+            all_params,
+        ]
+
         for _ in range(2):
-            theta = pmx.optimize(theta, jitter, **kwargs)
-            cache.append(theta)
-            theta = pmx.optimize(theta, planet_params, **kwargs)
-            cache.append(theta)
-            theta = pmx.optimize(theta, noise_params, **kwargs)
-            cache.append(theta)
-            theta = pmx.optimize(theta, stellar_params, **kwargs)
-            cache.append(theta)
-            theta = pmx.optimize(theta, period_params, **kwargs)
-            cache.append(theta)
-            theta = pmx.optimize(theta, radius_ratio, **kwargs)
-            cache.append(theta)
-            theta = pmx.optimize(theta, timing_params, **kwargs)
-            cache.append(theta)
-            theta = pmx.optimize(theta, all_params, **kwargs)
-            cache.append(theta)
+            for optimization_param in optimization_order:
+                theta = pmx.optimize(theta, optimization_param, **kwargs)
+                cache.append(dict(theta=theta, logp=get_logp(model, theta)))
+
         final_logp = get_logp(model, theta)
         logger.info(
             f"Optimization complete! "
-            f"(logp: {init_logp:.2f} -> {final_logp:.2f})"
+            f"(logp: {init_logp:.2f} -> {cache[-1]['logp']:.2f})"
         )
+
+        # format theta values
+        for i in range(len(cache)):
+            t = cache[i]["theta"]
+            cache[i]["theta"] = {k: v.tolist() for k, v in t.items()}
+
         if return_all:
-            return [{k: v.tolist() for k, v in t.items()} for t in cache]
+            return cache
         else:
-            return {k: v.tolist() for k, v in theta.items()}
+            return thetas[-1]
 
 
 def get_logp(model, point):

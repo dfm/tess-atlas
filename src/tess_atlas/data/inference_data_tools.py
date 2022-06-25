@@ -189,7 +189,7 @@ def get_optimized_init_params(
         if return_all:
             return cache
         else:
-            return thetas[-1]
+            return cache[-1]["theta"]
 
 
 def get_logp(model, point):

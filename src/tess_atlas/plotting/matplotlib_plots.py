@@ -214,7 +214,7 @@ class MatplotlibPlotter(PlotterBackend):
             # Get the posterior median orbital parameters
             pvals = posterior[f"p[{i}]"]
             p, p_mean, p_std = pvals.median(), pvals.mean(), pvals.std()
-            t0 = np.median(posterior[f"t0[{i}]"])
+            t0 = np.median(posterior[f"tmin[{i}]"])
 
             # Compute the median of posterior estimate of the contribution from
             # the other planets and remove this from the data

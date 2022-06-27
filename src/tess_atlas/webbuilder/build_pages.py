@@ -84,7 +84,7 @@ def build_webdir_structure(
 
 
 def make_book(
-    outdir: str, notebooks_dir: str, rebuild: str, update_api_files=True
+    outdir: str, notebooks_dir: str, rebuild: str, update_api_files=False
 ):
     # make + check for dirs
     outdir_present = os.path.isdir(outdir)

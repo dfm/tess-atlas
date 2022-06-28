@@ -1,5 +1,5 @@
 import argparse
-from .page_builder import PageBuilder
+from .page_builder import make_book
 
 
 def get_cli_args():
@@ -24,7 +24,7 @@ def get_cli_args():
     return dict(
         builddir=args.webdir,
         notebook_dir=args.notebooks,
-        rebuild=args.redbuild,
+        rebuild=args.rebuild,
         update_api_files=args.add_api,
     )
 

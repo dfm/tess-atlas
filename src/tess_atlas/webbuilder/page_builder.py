@@ -10,9 +10,11 @@ import shutil
 from typing import Optional
 from ..file_management import copy_tree, make_tarfile
 
-
+from tess_atlas.utils import setup_logger
 from tess_atlas.webbuilder.make_tois_homepage import make_menu_page
 
+
+logger = setup_logger("page builder")
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATES_DIR = f"{DIR}/template/"
@@ -23,7 +25,7 @@ MENU_PAGE = "content/toi_fits.rst"
 def log(t, red=True):
     if red:
         t = f"\033[31m {t} \033[0m"
-    print(t)
+    logger.info(t)
 
 
 class PageBuilder:
@@ -63,7 +65,7 @@ class PageBuilder:
             log(f"Website being updated at {self.builddir}")
         else:
             log(f"Website being built at {self.builddir}")
-            if rebuild:
+            if self.rebuild:
                 shutil.rmtree(self.builddir)
             os.makedirs(self.builddir, exist_ok=True)
             copy_tree(TEMPLATES_DIR, self.builddir)
@@ -85,7 +87,7 @@ class PageBuilder:
         toi_regex = os.path.join(self.building_notebook_dir, "toi_*.ipynb")
         make_menu_page(
             notebook_regex=toi_regex,
-            path_to_menu_page=os.path.join(self.webdir, MENU_PAGE),
+            path_to_menu_page=os.path.join(self.builddir, MENU_PAGE),
         )
 
         # build book
@@ -96,10 +98,10 @@ class PageBuilder:
             copy_tree(self.notebook_src, self.building_notebook_dir)
 
         # tar pages
-        log("\nTARing webdir contents\n")
-        make_tarfile("tess_atlas_pages.tar.gz", source_dir=webdir)
+        log("TARing webdir contents\n")
+        make_tarfile("tess_atlas_pages.tar.gz", source_dir=self.webdir)
 
-        log("Done! ")
+        log("Done!")
 
 
 def make_book(builddir, notebook_dir, rebuild, update_api_files):

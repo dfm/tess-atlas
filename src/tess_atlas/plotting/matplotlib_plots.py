@@ -182,6 +182,7 @@ class MatplotlibPlotter(PlotterBackend):
         plot_raw: Optional[bool] = False,
         zoom_y_axis: Optional[bool] = False,
         plot_label: Optional[str] = "",
+        num_lc_for_phase: Optional[int] = 12,
     ):
         """Adapted from exoplanet tutorials
         https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
@@ -198,7 +199,7 @@ class MatplotlibPlotter(PlotterBackend):
         # get posterior df + compute model vars
         posterior = get_samples_dataframe(inference_data)
         lcs, gp_model = get_lc_and_gp_from_inference_object(
-            model, inference_data, 1000
+            model, inference_data, n=num_lc_for_phase
         )
         # get rid of noise in data
         y = y - gp_model

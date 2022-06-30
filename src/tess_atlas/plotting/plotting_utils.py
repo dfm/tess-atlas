@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import math
+from scipy.interpolate import interp1d
 import re
 
 from matplotlib.ticker import ScalarFormatter
@@ -26,6 +27,29 @@ logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 UNREADABLE_MINUS = str("\u2212")
 READABLE_MINUS = str("\u002D")
+
+
+def fold_lightcurve_models(lc, lc_models, t0s, periods, plt_min, plt_max):
+    num_lc = len(lc_models)
+    xs, ys = [], []
+
+    print(lc_models.shape)
+
+    # fold lightcurve models
+    for i in range(num_lc):
+        x, fold_idx = fold_data(lc, t0s[i], periods[i], plt_min, plt_max)
+        xs.append(x[fold_idx])
+        ys.append(lc_models[i, fold_idx])
+
+    # determine which lightcurve model is the longest
+    longest_x_id = np.argmax([len(x) for x in xs])
+    longest_x = xs[longest_x_id]
+
+    # interpolate each lightcurve model to have same lengths
+    for i, (x, y) in enumerate(zip(xs, ys)):
+        f = interp1d(x, y, fill_value="extrapolate")
+        ys[i] = f(longest_x)
+    return longest_x, np.array(ys)
 
 
 def get_colors(
@@ -208,7 +232,9 @@ def get_longest_unbroken_section_of_data(t, min_break_len=10):
     return idx, longest_t
 
 
-def get_lc_and_gp_from_inference_object(model, inference_data, n=12):
+def get_lc_and_gp_from_inference_object(
+    model, inference_data, n=12, sample=None
+):
     f0 = np.median(get_samples_dataframe(inference_data)[f"f0"])
     varnames = get_untransformed_varnames(model)
     samples = get_posterior_samples(
@@ -223,47 +249,55 @@ def get_lc_and_gp_from_inference_object(model, inference_data, n=12):
     )
     lcs = lcs * 1e3  # scale the lcs
     gp_model = gp_mu[0] + f0
-    return lcs, gp_model
+    samples = [{k: v for k, v in zip(varnames, s)} for s in samples]
+    return lcs, gp_model, samples
 
 
 def generate_model_lightcurve(
     planet_transit_model,
-    b: float,
-    dur: float,
-    f0: float,
-    jitter: float,
-    p: float,
-    r: float,
-    rho: float,
-    rho_circ: float,
-    sigma: float,
-    t0: float,
-    tmax: float,
-    u: List,
+    sample: Optional[Dict] = None,
+    b: Optional[float] = None,
+    dur: Optional[float] = None,
+    f0: Optional[float] = None,
+    jitter: Optional[float] = None,
+    p: Optional[float] = None,
+    r: Optional[float] = None,
+    rho: Optional[float] = None,
+    rho_circ: Optional[float] = None,
+    sigma: Optional[float] = None,
+    t0: Optional[float] = None,
+    tmax: Optional[float] = None,
+    u: Optional[List] = None,
 ):
     """Function to manually test some parameter values for the model"""
-    tmax_1 = tmax
-    samp = [
-        [b],
-        [dur],
-        f0,
-        jitter,
-        [p],
-        [r],
-        rho,
-        [rho_circ],
-        sigma,
-        [t0],
-        [tmax],
-        tmax_1,
-        u,
-    ]
+    if sample is None:
+        assert b is not None, "Either pass 1 sample-dict or individual params"
+        tmax_1 = tmax
+        samp = [
+            [b],
+            [dur],
+            f0,
+            jitter,
+            [p],
+            [r],
+            rho,
+            [rho_circ],
+            sigma,
+            [t0],
+            [tmax],
+            tmax_1,
+            u,
+        ]
+    else:
+        model_varnames = get_untransformed_varnames(planet_transit_model)
+        samp = [sample[n] for n in model_varnames]
+
     lc = compute_variable(
         model=planet_transit_model,
         samples=[samp],
         target=planet_transit_model.lightcurve_models,
     )
-    return np.array(lc[0] * 1e3)
+    return np.array(lc * 1e3)
 
 
 def exception_catcher(func):
@@ -275,3 +309,13 @@ def exception_catcher(func):
             pass
 
     return wrapper
+
+
+def fold_data(lc, t0, p, plt_min, plt_max):
+    # wrap data around period with t0 offset
+    x_fold = lc.timefold(t0=t0, p=p)
+    # ignore data far away from period
+    idx = np.where((plt_min <= x_fold) & (x_fold <= plt_max))
+    inds = np.argsort(x_fold)
+    inds = inds[np.abs(x_fold)[inds] < plt_max]
+    return x_fold, inds

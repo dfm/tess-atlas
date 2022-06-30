@@ -47,7 +47,7 @@
 #
 # 1. [Getting started](#Getting-started)
 # 2. [Downloading Data](#Downloading-Data)
-# 3. [Fitting stellar parameters](#Fitting-stellar-parameters)
+# 3. [Fitting transit parameters](#Fitting-transit-parameters)
 # 4. [Results](#Results)
 # 5. [Citations](#Citations)
 # 6. [Posterior constraints](#Posterior-constraints)
@@ -149,7 +149,7 @@ tic_entry
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_lightcurve(tic_entry)
 # -
-# ## Fitting stellar parameters
+# ## Fitting transit parameters
 # Now that we have the data, we can define a Bayesian model to fit it.
 #
 # ### The probabilistic model

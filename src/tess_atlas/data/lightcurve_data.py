@@ -95,6 +95,10 @@ class LightCurveData(DataObject):
             f"{self.len} datapoints ({self.mem_size})"
         )
 
+    def timefold(self, t0, p):
+        hp = 0.5 * p
+        return (self.time - t0 + hp) % p - hp
+
 
 def search_for_lightkurve_data(tic):
     search = lk.search_lightcurve(

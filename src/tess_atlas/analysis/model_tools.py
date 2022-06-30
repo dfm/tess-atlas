@@ -65,29 +65,40 @@ def compute_variable(
     """Computes value for a model variable.
 
     :param Model model: The pymc3 model object
+    :param List[List[float]] samples: the samples to evaluate the model at
     :param InferenceData idata: The inference data trace
     :param TensorVariable target: The tensor (or list of tensors) that you want to compute for the samples
-    :param int size: The number of samples to draw (leave it as None for all, but that's probably not what we want).
+    :param Union[np.ndarray, Tuple[np.ndarray]] return_arr: The (pre-allocated) array to store the results.
 
     :return: np.ndarray: i rows of predictions, each with j entries.
     """
-    varnames = get_untransformed_varnames(model)
+
+    # preprocessing
+    if not isinstance(target, list):
+        target = [target]
+    num_target, num_samp = len(target), len(samples)
+    assert num_samp > 0, f"At least 1 sample needed"
 
     # compile a function to compute the target
-    vars = [model[n] for n in varnames]
+    varnames = get_untransformed_varnames(model)
+    model_vars = [model[n] for n in varnames]
     func = theano.function(
-        inputs=vars, outputs=target, on_unused_input="ignore"
+        inputs=model_vars, outputs=target, on_unused_input="ignore"
     )
 
-    #  run post-processing
-    results = [
-        func(*s)
-        for s in tqdm(
-            samples, desc="Computing model variable", disable=not verbose
-        )
+    # pre-generate array for data
+    res = func(*samples[0])
+    out_array = [
+        np.zeros((len(samples), *res[i].shape)) for i in range(num_target)
     ]
 
-    if isinstance(target, TensorVariable):
-        return np.array(results)
+    # call model function and pre-comute out
+    for i in range(num_samp):
+        res = func(*samples[i])
+        for t in range(num_target):
+            out_array[t][i, :] = res[t][:]
+
+    if num_target == 1:
+        return out_array[0]
     else:
-        return (np.array(i) for i in list(zip(*results)))
+        return out_array

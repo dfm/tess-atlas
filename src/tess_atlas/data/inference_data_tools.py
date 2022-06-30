@@ -39,19 +39,26 @@ def save_inference_data(inference_data, outdir: str):
     save_samples(inference_data, outdir)
 
 
-def summary(inference_data) -> pd.DataFrame:
+def summary(inference_data, just_planet_params=False) -> pd.DataFrame:
     """Returns a dataframe with the mean+sd of each candidate's p, b, r"""
     df = az.summary(
         inference_data, var_names=["~lightcurves"], filter_vars="like"
     )
-    df = (
-        df.transpose()
-        .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
-        .transpose()
-    )
-    df = df[["mean", "sd"]]
-    df["parameter"] = df.index
-    df.set_index(["parameter"], inplace=True, append=False, drop=True)
+    if just_planet_params:
+        df = (
+            df.transpose()
+            .filter(regex=r"(.*p\[.*)|(.*r\[.*)|(.*b\[.*)")
+            .transpose()
+        )
+        df = df[["mean", "sd"]]
+        df["parameter"] = df.index
+        df.set_index(["parameter"], inplace=True, append=False, drop=True)
+
+    for i, row in df.iterrows():
+        if row["r_hat"] > 1.01:
+            logger.warning(
+                f"Sampler may not have convereged! {i} r-hat: {row['r_hat']}"
+            )
     return df
 
 

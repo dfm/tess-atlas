@@ -29,10 +29,7 @@ def get_python_source_command():
 
 
 def to_str_list(li):
-    if type(li[0]) != str:
-        return " ".join([str(i) for i in li])
-    else:
-        return li
+    return " ".join([str(i) for i in li])
 
 
 def get_completed_toi_pe_results_paths(outdir: str):

@@ -1,5 +1,5 @@
 import argparse
-from .build_pages import make_book
+from .page_builder import make_book
 
 
 def get_cli_args():
@@ -14,13 +14,23 @@ def get_cli_args():
         action="store_true",  # False by default
         help="""flag to rebuild from scratch (even if some webpages exist).""",
     )
+    parser.add_argument(
+        "--add-api",
+        action="store_true",  # False by default
+        help="""flag to copy over files for API""",
+    )
     args = parser.parse_args()
-    return args.webdir, args.notebooks, args.rebuild
+
+    return dict(
+        builddir=args.webdir,
+        notebook_dir=args.notebooks,
+        rebuild=args.rebuild,
+        update_api_files=args.add_api,
+    )
 
 
 def main():
-    outdir, notebooks_dir, rebuild = get_cli_args()
-    make_book(outdir=outdir, notebooks_dir=notebooks_dir, rebuild=rebuild)
+    make_book(**get_cli_args())
 
 
 if __name__ == "__main__":

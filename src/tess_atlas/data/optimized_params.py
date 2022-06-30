@@ -1,6 +1,8 @@
 import logging
 import os
 from typing import Dict, List
+from copy import deepcopy
+import pandas as pd
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
@@ -32,9 +34,26 @@ class OptimizedParams(DataObject):
     def __str__(self):
         return self.to_dict().__str__()
 
-    def to_dict(self):
-        return self.params
+    def to_dict(self, remove_extras=False):
+        d = deepcopy(self.params)
+        if remove_extras:
+            d = {k: v for k, v in d.items() if "__" not in k}
+        return d
+
+    def to_dataframe(self):
+        d = self.to_dict(remove_extras=True)
+        u = d.pop("u")
+        val_len = max([len(v) for v in d.values() if isinstance(v, list)])
+        for k, v in d.items():
+            if not isinstance(v, list):
+                d[k] = [v] * val_len
+        d["u"] = [u] * val_len
+        df = pd.DataFrame(d)
+        return df
 
     @staticmethod
     def get_filepath(outdir: str, fname="optimized_params.json") -> str:
         return os.path.join(outdir, fname)
+
+    def _repr_html_(self):
+        return self.to_dataframe()._repr_html_()

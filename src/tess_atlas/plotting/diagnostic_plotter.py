@@ -12,14 +12,16 @@ from .plotting_utils import (
 from .labels import DIAGNOSTIC_LIGHTCURVE_PLOT, DIAGNOSTIC_TRACE_PLOT
 
 
-def plot_lightcurve_gp_and_residuals(tic_entry, model, zoom_in=True):
+def plot_lightcurve_gp_and_residuals(
+    tic_entry, model, zoom_in=True, num_lc=12
+):
     "Adapted from https://gallery.exoplanet.codes/tutorials/tess/"
-
+    # todo plot the maximum posterior param
     colors = get_colors(tic_entry.planet_count)
     t = tic_entry.lightcurve.time
     y = tic_entry.lightcurve.flux
-    lcs, gp_model = get_lc_and_gp_from_inference_object(
-        model, tic_entry.inference_data
+    lcs, gp_model, _ = get_lc_and_gp_from_inference_object(
+        model, tic_entry.inference_data, n=num_lc
     )
     if zoom_in:
         idx, _ = get_longest_unbroken_section_of_data(t)

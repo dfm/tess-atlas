@@ -5,6 +5,9 @@ import multiprocessing as mp
 import os
 import sys
 import warnings
+import datetime
+import logging
+import time
 
 import matplotlib.pyplot as plt
 from IPython import get_ipython
@@ -13,13 +16,24 @@ RUNNER_LOGGER_NAME = "TESS-ATLAS-RUNNER"
 NOTEBOOK_LOGGER_NAME = "TESS-ATLAS"
 
 
+class DeltaTimeFormatter(logging.Formatter):
+    def format(self, record):
+        duration = datetime.datetime.utcfromtimestamp(
+            record.relativeCreated / 1000
+        )
+        record.delta = duration.strftime("%H:%M:%S")
+        return super().format(record)
+
+
 def setup_logger(logger_name, outdir=""):
     logger = logging.getLogger(logger_name)
     logger.handlers.clear()
     logger.setLevel(logging.INFO)
 
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    # add custom formatter to root logger
+    handler = logging.StreamHandler()
+    formatter = DeltaTimeFormatter(
+        "\033[92m[%(delta)s - %(name)s]\033[0m %(message)s"
     )
 
     # console logging

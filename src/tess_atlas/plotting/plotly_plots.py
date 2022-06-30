@@ -80,7 +80,7 @@ class PlotlyPlotter(PlotterBackend):
             planet = tic_entry.candidates[i]
             fig.add_trace(
                 go.Scattergl(
-                    x=planet.get_timefold(lc.time),
+                    x=lc.timefold(t0=planet.tmin, p=planet.period),
                     y=lc.flux,
                     mode="markers",
                     marker=dict(
@@ -101,7 +101,7 @@ class PlotlyPlotter(PlotterBackend):
             planet = tic_entry.candidates[i]
             fig.add_trace(
                 go.Scattergl(
-                    x=planet.get_timefold(lc.time),
+                    x=lc.timefold(t0=planet.tmin, p=planet.period),
                     y=model_lightcurve,
                     mode="markers",
                     name=f"Planet {i + 1}",

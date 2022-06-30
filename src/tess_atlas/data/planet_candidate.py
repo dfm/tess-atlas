@@ -6,12 +6,6 @@ from .data_object import DataObject
 from .lightcurve_data import LightCurveData
 
 
-def calculate_time_fold(t, t0, p):
-    """Function to get time-fold"""
-    hp = 0.5 * p
-    return (t - t0 + hp) % p - hp
-
-
 class PlanetCandidate(DataObject):
     """Plant Candidate obtained by TESS."""
 
@@ -19,11 +13,11 @@ class PlanetCandidate(DataObject):
         self,
         toi_id: float,
         period: float,
-        time: np.ndarray,
         t0: float,
         depth: float,
         duration: float,
         snr: float,
+        lightcurve: LightCurveData,
     ):
         """
         :param float toi_id: The toi number X.Y where the Y represents the
@@ -38,7 +32,7 @@ class PlanetCandidate(DataObject):
         :param float snr: Planet SNR.
         """
         self.toi_id = toi_id
-        self.__time = time
+        self.lc = lightcurve
         self.has_data_only_for_single_transit = False
         self.period = period
         self.t0 = t0
@@ -54,7 +48,7 @@ class PlanetCandidate(DataObject):
     def period(self, p):
         if (p <= 0.0) or np.isnan(p):
             self.has_data_only_for_single_transit = True
-            self.__period = self.__time.max() - self.__time.min()
+            self.__period = self.lc.time.max() - self.lc.time.min()
         else:
             self.__period = p
 
@@ -67,7 +61,7 @@ class PlanetCandidate(DataObject):
         """number of periods between tmin and tmax"""
         if self.has_data_only_for_single_transit:
             return 0
-        lc_tmax = max(self.__time)  # lc --> lightcurve
+        lc_tmax = max(self.lc.time)  # lc --> lightcurve
         n = np.floor(lc_tmax - self.tmin) / self.period
         if n <= 0:
             raise ValueError(
@@ -90,7 +84,7 @@ class PlanetCandidate(DataObject):
     @property
     def tmin(self):
         """Time of the first transit (t0 might be a future epoch)"""
-        lc_min = min(self.__time)
+        lc_min = min(self.lc.time)
         return (
             self.t0 + np.ceil((lc_min - self.t0) / self.period) * self.period
         )
@@ -116,7 +110,7 @@ class PlanetCandidate(DataObject):
 
     @property
     def duration_min(self):
-        return min(self.duration, 2 * np.min(np.diff(self.__time)))
+        return min(self.duration, 2 * np.min(np.diff(self.lc.time)))
 
     @classmethod
     def from_database(cls, toi_data: Dict, lightcurve: LightCurveData):
@@ -127,7 +121,7 @@ class PlanetCandidate(DataObject):
             depth=toi_data["Depth (ppm)"]
             * 1e-3,  # convert to parts per thousand
             duration=toi_data["Duration (hours)"] / 24.0,  # convert to days,
-            time=lightcurve.time,
+            lightcurve=lightcurve,
             snr=toi_data["Planet SNR"],
         )
         return cls(**unpack_data)
@@ -140,10 +134,6 @@ class PlanetCandidate(DataObject):
         """Saving done by Tic Entry"""
         pass
 
-    def get_timefold(self, t):
-        """Used in plotting"""
-        return calculate_time_fold(t, self.tmin, self.period)
-
     def to_dict(self, extra=False):
         data = {
             "TOI": self.toi_id,
@@ -155,7 +145,6 @@ class PlanetCandidate(DataObject):
             "Single Transit": self.has_data_only_for_single_transit,
         }
         if extra:
-
             data.update(
                 {
                     "Min-Max Epochs (TBJD)": f"{self.tmin:.2f} - {self.tmax:.2f}",

@@ -5,7 +5,7 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
-from typing import Optional
+from typing import Optional, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,6 +28,9 @@ from .plotting_utils import (
     get_colors,
     get_lc_and_gp_from_inference_object,
     get_longest_unbroken_section_of_data,
+    fold_data,
+    generate_model_lightcurve,
+    fold_lightcurve_models,
 )
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
@@ -47,6 +50,8 @@ class MatplotlibPlotter(PlotterBackend):
         model_lightcurves: (lightcurve_num, lightcurve_y_vals, planet_id)
 
         """
+        # todo truncate region of missing data on axes
+
         if model_lightcurves is None:
             model_lightcurves = []
         else:
@@ -115,6 +120,7 @@ class MatplotlibPlotter(PlotterBackend):
         save: Optional[bool] = True,
     ) -> plt.Figure:
         """Subplots of folded lightcurves + transit fits (if provided) for each transit"""
+        # TODO: merge with plotting of phase-plot
         if model_lightcurves is None:
             model_lightcurves = []
         else:
@@ -136,7 +142,7 @@ class MatplotlibPlotter(PlotterBackend):
             lc = tic_entry.lightcurve
             planet = tic_entry.candidates[i]
             axes_cb = axes[i].scatter(
-                planet.get_timefold(lc.time),
+                lc.timefold(t0=planet.tmin, p=planet.period),
                 lc.flux,
                 c=lc.time,
                 label=f"Data",
@@ -149,7 +155,7 @@ class MatplotlibPlotter(PlotterBackend):
             lc = tic_entry.lightcurve
             planet = tic_entry.candidates[i]
             axes[i].scatter(
-                planet.get_timefold(lc.time),
+                lc.timefold(t0=planet.tmin, p=planet.period),
                 model_lightcurve,
                 label=f"Planet {i + 1} fit",
                 s=5,
@@ -175,13 +181,14 @@ class MatplotlibPlotter(PlotterBackend):
         tic_entry,
         inference_data,
         model,
-        initial_lightcurves: Optional[np.ndarray] = None,
+        initial_params: Optional[Dict] = None,
         data_bins: Optional[int] = 200,
         plot_error_bars: Optional[bool] = False,
         plot_data_ci: Optional[bool] = False,
         plot_raw: Optional[bool] = False,
         zoom_y_axis: Optional[bool] = False,
         plot_label: Optional[str] = "",
+        num_lc: Optional[int] = 12,
     ):
         """Adapted from exoplanet tutorials
         https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
@@ -190,23 +197,25 @@ class MatplotlibPlotter(PlotterBackend):
         # set some plotting constants
         plt_min, plt_max = -0.3, 0.3
         colors = get_colors(tic_entry.planet_count)
-        t = tic_entry.lightcurve.time
-        y = tic_entry.lightcurve.flux
-        yerr = tic_entry.lightcurve.flux_err
+        lc = tic_entry.lightcurve
+        t = lc.time
+        y = lc.flux
+        yerr = lc.flux_err
         toi = tic_entry.toi_number
 
         # get posterior df + compute model vars
         posterior = get_samples_dataframe(inference_data)
-        lcs, gp_model = get_lc_and_gp_from_inference_object(
-            model, inference_data, 1000
+        lcs, gp_model, model_samples = get_lc_and_gp_from_inference_object(
+            model, inference_data, n=num_lc
         )
         # get rid of noise in data
         y = y - gp_model
 
-        if initial_lightcurves is None:
-            initial_lightcurves = []
-        else:
-            initial_lightcurves = initial_lightcurves.T
+        initial_lightcurves = (
+            []
+            if initial_params is None
+            else generate_model_lightcurve(model, initial_params)
+        )
 
         for i in range(tic_entry.planet_count):
             plt.figure(figsize=(7, 5))
@@ -224,17 +233,18 @@ class MatplotlibPlotter(PlotterBackend):
                 if j != i:
                     ith_flux -= np.median(lcs[..., j], axis=(0, 1))
 
-            x_fold = (t - t0 + 0.5 * p) % p - 0.5 * p
-            idx = np.where((plt_min <= x_fold) & (x_fold <= plt_max))
-
             if plot_error_bars is False:
                 yerr = np.zeros(len(yerr))
 
             # Plot the folded data
+            x_fold, idx = fold_data(lc, t0, p, plt_min, plt_max)
+            xy_dat = (
+                x_fold[idx],
+                ith_flux[idx],
+            )
             if plot_raw:
                 plt.errorbar(
-                    x_fold[idx],
-                    ith_flux[idx],
+                    *xy_dat,
                     yerr=yerr[idx],
                     fmt=".k",
                     label="data",
@@ -242,8 +252,7 @@ class MatplotlibPlotter(PlotterBackend):
                 )
             elif plot_data_ci:
                 plot_ci(
-                    x_fold[idx],
-                    ith_flux[idx],
+                    *xy_dat,
                     plt.gca(),
                     label="data",
                     zorder=-1000,
@@ -252,33 +261,41 @@ class MatplotlibPlotter(PlotterBackend):
                 )
             else:  # default
                 plot_xy_binned(
-                    x=x_fold[idx],
-                    y=ith_flux[idx],
+                    *xy_dat,
                     yerr=yerr[idx],
                     ax=plt.gca(),
                     bins=data_bins,
                 )
 
             # Plot the folded lightcurve model
-            inds = np.argsort(x_fold)
-            inds = inds[np.abs(x_fold)[inds] < plt_max]
-
             if len(initial_lightcurves) > 0:
-                lc = initial_lightcurves[i]
+                init_x, init_y = fold_lightcurve_models(
+                    lc,
+                    initial_lightcurves[i].T,
+                    [initial_params["tmin"][i]],
+                    [initial_params["p"][i]],
+                    plt_min,
+                    plt_max,
+                )
                 plt.plot(
-                    x_fold[inds],
-                    lc[inds],
+                    init_x,
+                    init_y[0],
                     color="tab:red",
                     label="initial fit",
                 )
 
-            pred = lcs[..., inds, i]
-            quants = np.percentile(pred, [16, 50, 84], axis=0)
-            plt.plot(
-                x_fold[inds], quants[1, :], color=colors[i], label="model"
+            pred_x, pred_y = fold_lightcurve_models(
+                lc,
+                lcs[..., i],
+                t0s=[s["tmin"] for s in model_samples],
+                periods=[s["p"] for s in model_samples],
+                plt_min=plt_min,
+                plt_max=plt_max,
             )
+            quants = np.percentile(pred_y, [16, 50, 84], axis=0)
+            plt.plot(pred_x, quants[1, :], color=colors[i], label="model")
             art = plt.fill_between(
-                x_fold[inds],
+                pred_x,
                 quants[0, :],
                 quants[2, :],
                 color=colors[i],
@@ -287,7 +304,7 @@ class MatplotlibPlotter(PlotterBackend):
             )
             art.set_edgecolor("none")
 
-            ylim = np.abs(np.min(pred)) * 1.2
+            ylim = np.abs(np.min(np.hstack(pred_y))) * 1.2
 
             # Annotate the plot with the planet's period
             txt = f"period = {p_mean:.4f} +/- {p_std:.4f} d"
@@ -302,7 +319,7 @@ class MatplotlibPlotter(PlotterBackend):
                 fontsize=12,
             )
 
-            plt.legend(fontsize=10, loc=4)
+            plt.legend(fontsize=10, loc="lower right")
             plt.xlabel(TIME_SINCE_TRANSIT_LABEL)
             plt.ylabel(FLUX_LABEL)
             plt.title(f"TOI {toi}: Planet {i + 1}")

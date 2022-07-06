@@ -61,7 +61,7 @@
 # %load_ext autoreload
 # %load_ext memory_profiler
 # %load_ext autotime
-## %load_ext jupyternotify
+# # %load_ext jupyternotify
 # %autoreload 2
 # %matplotlib inline
 
@@ -359,7 +359,7 @@ def build_planet_transit_model(tic_entry):
 planet_transit_model, params = build_planet_transit_model(tic_entry)
 model_varnames = get_untransformed_varnames(planet_transit_model)
 test_model(planet_transit_model)
-## %notify -m "Planet model ready!"
+# # %notify -m "Planet model ready!"
 
 # -
 

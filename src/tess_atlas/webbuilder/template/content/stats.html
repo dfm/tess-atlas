@@ -1,0 +1,34 @@
+<html>
+    <header>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap.min.css" rel="stylesheet">
+        <style type="text/css" class="init">
+            div.dataTables_wrapper {
+                width: 80%;
+                margin: 0 auto;
+            }
+        </style>
+    </header>
+
+    <body>
+
+
+    <h1>Run stats</h1>
+    <img width=80% src="{{image_path}}" align="middle" />
+
+    {{table_html}}
+
+
+    </body>
+
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap.min.js"></script>
+        <script>
+        $(document).ready( function () {
+            $('#table').DataTable({
+                scrollX: true
+            });
+        });
+        </script>
+</html>

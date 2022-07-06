@@ -33,8 +33,6 @@ def fold_lightcurve_models(lc, lc_models, t0s, periods, plt_min, plt_max):
     num_lc = len(lc_models)
     xs, ys = [], []
 
-    print(lc_models.shape)
-
     # fold lightcurve models
     for i in range(num_lc):
         x, fold_idx = fold_data(lc, t0s[i], periods[i], plt_min, plt_max)

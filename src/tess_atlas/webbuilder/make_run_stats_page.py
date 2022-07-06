@@ -45,7 +45,9 @@ def load_run_stats(notebook_root):
     run_stats = pd.read_csv(fname[0])
     cols = ["toi_numbers", "execution_complete", "duration"]
     run_stats.columns = cols
-    run_stats.duration = run_stats.duration.apply(lambda x: round(x / 3600, 2))
+    run_stats.duration = run_stats.duration.apply(
+        lambda x: round(x / (60 * 60), 2)
+    )
     # keep only the longest duration for the TOI (the shorter one is just generation)
     run_stats = run_stats.sort_values(by="duration", ascending=False)
     run_stats["duplicate"] = run_stats.duplicated("toi_numbers", keep="first")
@@ -54,7 +56,7 @@ def load_run_stats(notebook_root):
 
 
 def parse_logs(notebook_root):
-    logs = glob.glob(f"{notebook_root}/log_pe/*.log")
+    logs = glob.glob(f"{notebook_root}/log_pe/pe_*.log")
     toi_nums = []
     log_line = []
     for l in tqdm(logs, desc="Parsing logs"):
@@ -119,15 +121,17 @@ def load_toi_summary_data(notebook_root):
     df = pd.merge(df, log_df, how="left", on="toi_numbers")
     df["url"] = [URL.format(i) for i in df.toi_numbers]
     df["execution_complete"] = df["execution_complete"].fillna(False)
-    df["phaseplt_present"] = do_tois_have_netcdf(notebook_root, df.toi_numbers)
-    df["netcdf_present"] = do_tois_have_phase_plot(
+    df["duration"] = df["duration"].fillna(10)
+    df["phaseplt_present"] = do_tois_have_phase_plot(
         notebook_root, df.toi_numbers
     )
+    df["netcdf_present"] = do_tois_have_netcdf(notebook_root, df.toi_numbers)
     df["STATUS"] = get_status(df)
     df["TOI"] = create_gsheet_url(df)
     df["category"] = get_category(df)
     df["logs"] = format_logs(df)
-    return df[["TOI", "STATUS", "category", "duration", "logs", ""]]
+    #     return df[['TOI','STATUS', "category", "duration", "logs"]]
+    return df
 
 
 def get_status(df):
@@ -175,35 +179,9 @@ def format_logs(df):
     return logs
 
 
-def plot_runtimes(fname):
-    all = pd.read_csv(fname)
-    all["hours"] = all["duration_in_s"] / 3600
-    s_runs = runtime_data[all["execution_complete"] == True]
-    f_runs = runtime_data[all["execution_complete"] == False]
-    fig, ax = plt.subplots(1, 1)
-    kwgs = dict(bins=50, histtype="step", lw=3)
-    ax.hist(
-        runtime_data["hours"],
-        color="tab:blue",
-        **kwgs,
-        label=f"All ({len(all)})",
-    )
-    ax.hist(
-        s_runs["hours"],
-        color="tab:green",
-        **kwgs,
-        label=f"Successful ({len(s_runs)})",
-    )
-    ax.hist(
-        f_runs["hours"],
-        color="tab:red",
-        **kwgs,
-        label=f"Failed ({len(f_runs)})",
-    )
-    ax.set_ylabel("# TOIs")
-    ax.set_xlabel("Hours")
-    ax.legend()
-    fig.savefig("plot.png")
+def make_menu_page(notebook_regex, path_to_menu_page):
+    page_data = generate_page_data(notebook_regex)
+    page_contents = render_page_template(path_to_menu_page, page_data)
 
-
-plot_runtimes("run_stats.csv")
+    with open(path_to_menu_page, "w") as f:
+        f.write(page_contents)

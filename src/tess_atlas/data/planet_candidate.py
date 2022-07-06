@@ -92,9 +92,11 @@ class PlanetCandidate(DataObject):
     @property
     def period_min(self):
         """the minimum possible period"""
+        lc_min = min(self.lc.time)
+        lc_max = max(self.lc.time)
         return np.maximum(
-            np.abs(self.t0 - self.__time.max()),
-            np.abs(self.__time.min() - self.t0),
+            np.abs(self.t0 - lc_max),
+            np.abs(lc_min - self.t0),
         )
 
     @property

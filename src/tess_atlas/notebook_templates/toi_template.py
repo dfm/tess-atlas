@@ -55,12 +55,13 @@
 #
 # ## Getting started
 #
-# To get going, we'll need to make out plots show up inline:
+# To get going, we'll add some _magic_:
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 # %load_ext autoreload
 # %load_ext memory_profiler
 # %load_ext autotime
+# %load_ext jupyternotify
 # %autoreload 2
 # %matplotlib inline
 
@@ -358,7 +359,7 @@ def build_planet_transit_model(tic_entry):
 planet_transit_model, params = build_planet_transit_model(tic_entry)
 model_varnames = get_untransformed_varnames(planet_transit_model)
 test_model(planet_transit_model)
-
+# %notify -m "Planet model ready!"
 
 # -
 

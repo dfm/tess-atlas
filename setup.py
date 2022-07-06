@@ -47,7 +47,7 @@ INSTALL_REQUIRES = [
     "ipython-autotime",
     "memory_profiler",
     "pympler",
-    "jupyternotify",
+    # "jupyternotify",
 ]
 EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}
 EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [

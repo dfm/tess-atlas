@@ -72,7 +72,7 @@ class LightCurveData(DataObject):
     @property
     def cadence(self):
         """How often TESS photometric observations are stored."""
-        return np.min(np.diff(self.lc.time))
+        return np.min(np.diff(self.time))
 
     def to_dict(self):
         return dict(time=self.time, flux=self.flux, flux_err=self.flux_err)

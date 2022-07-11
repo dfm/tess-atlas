@@ -32,7 +32,7 @@ class PlanetCandidate(DataObject):
         :param float snr: Planet SNR.
         """
         self.toi_id = toi_id
-        self.lc = lightcurve
+        self.lc = lightcurve  # lc --> lightcurve
         self.has_data_only_for_single_transit = False
         self.period = period
         self.t0 = t0
@@ -61,7 +61,7 @@ class PlanetCandidate(DataObject):
         """number of periods between tmin and tmax"""
         if self.has_data_only_for_single_transit:
             return 0
-        lc_tmax = max(self.lc.time)  # lc --> lightcurve
+        lc_tmax = max(self.lc.time)
         n = np.floor(lc_tmax - self.tmin) / self.period
         if n <= 0:
             raise ValueError(
@@ -79,7 +79,8 @@ class PlanetCandidate(DataObject):
     @property
     def tmax(self):
         """Time of the last transit"""
-        return self.tmin + (self.num_periods * self.period)
+        tlast = self.num_periods * self.period
+        return self.tmin + tlast
 
     @property
     def tmin(self):
@@ -112,7 +113,9 @@ class PlanetCandidate(DataObject):
 
     @property
     def duration_min(self):
-        return min(self.duration, 2 * np.min(np.diff(self.lc.time)))
+        return min(
+            0.1 * self.duration, 2 * self.lc.cadence
+        )  # the min should be 0.1 * duration, to 10 * duration
 
     @classmethod
     def from_database(cls, toi_data: Dict, lightcurve: LightCurveData):

@@ -109,13 +109,11 @@ class PlanetCandidate(DataObject):
     def duration_max(self):
         if self.has_data_only_for_single_transit:
             return 1.0
-        return max(1.5 * self.duration, 0.1)
+        return max(10 * self.duration, 0.1)
 
     @property
     def duration_min(self):
-        return min(
-            0.1 * self.duration, 2 * self.lc.cadence
-        )  # the min should be 0.1 * duration, to 10 * duration
+        return min(0.1 * self.duration, 2 * self.lc.cadence)
 
     @classmethod
     def from_database(cls, toi_data: Dict, lightcurve: LightCurveData):

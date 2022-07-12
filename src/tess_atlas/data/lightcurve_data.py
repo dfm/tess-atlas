@@ -112,7 +112,7 @@ class LightCurveData(DataObject):
 
     def save_data(self, outdir):
         fpath = self.get_filepath(outdir)
-        self.raw_lc.to_fits(fpath)
+        self.raw_lc.to_fits(fpath, overwrite=True)
 
     @staticmethod
     def get_filepath(outdir, fname="lightkurve_lc.fits"):

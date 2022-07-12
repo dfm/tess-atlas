@@ -90,7 +90,7 @@ class StellarData(DataObject):
             stellar_data.append(
                 f"radius = {self.radius:0.2f} ± {self.radius_error:0.2f} (Rsun)"
             )
-        if self.density_data_present():
+        if self.density_data_present:
             stellar_data.append(
                 f"density = {self.density:0.2f} ± {self.density_error:0.2f} (solar)"
             )

@@ -7,6 +7,7 @@ ECCENTRICITY_PLOT = "eccentricity_posteriors.png"
 PRIOR_PLOT = "priors.png"
 DIAGNOSTIC_LIGHTCURVE_PLOT = "diagnostic_flux_vs_time.png"
 DIAGNOSTIC_TRACE_PLOT = "diagnostic_trace_plot.png"
+DIAGNOSTIC_RAW_LC_PLOT = "diagnostic_raw_lc_plot.png"
 
 
 # PARAM CONSTANTS

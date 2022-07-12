@@ -3,7 +3,9 @@ from typing import Dict, Optional, Union
 import os.path
 import time
 from math import floor, log
-from pympler.asizeof import asizeof
+
+# from pympler.asizeof import asizeof
+import pickle
 
 
 def save_json(fpath: str, data_dict: Dict):
@@ -32,7 +34,8 @@ def sizeof(obj, human_readable: Optional[bool] = True) -> Union[str, int]:
     """Estimates total memory usage of (possibly nested) `obj`.
     Does NOT handle circular object references!
     """
-    bytes = asizeof(obj)
+    # bytes = asizeof(obj)
+    bytes = len(pickle.dumps(obj))
     if human_readable:
         return format_bytes_to_human_readable(bytes)  # str
     else:

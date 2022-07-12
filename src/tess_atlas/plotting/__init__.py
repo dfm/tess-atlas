@@ -12,9 +12,7 @@ from .diagnostic_plotter import (
 
 if os.environ.get("INTERACTIVE_PLOTS", default="False") == "TRUE":
     plot_lightcurve = plotly_plots.plot_lightcurve
-    plot_folded_lightcurve = plotly_plots.plot_folded_lightcurve
     plot_phase = matplotlib_plots.plot_phase
 else:
     plot_lightcurve = matplotlib_plots.plot_lightcurve
-    plot_folded_lightcurve = matplotlib_plots.plot_folded_lightcurve
     plot_phase = matplotlib_plots.plot_phase

@@ -3,7 +3,7 @@ import numpy as np
 import arviz as az
 import os
 
-from ..data import LightCurveData
+from ..data.lightcurve_data import LightCurveData, residual_rms
 from . import matplotlib_plots
 from .plotting_utils import (
     get_longest_unbroken_section_of_data,
@@ -73,8 +73,10 @@ def plot_lightcurve_gp_and_residuals(
     ax = axes[2]
     models = gp_model + net_lc
     resid = y - models
-    rms = np.sqrt(np.median(resid**2))
-    mask = np.abs(resid) < 5 * rms
+    rms = residual_rms(resid)
+    rms_mult = 5
+    rms_threshold = rms * rms_mult
+    mask = np.abs(resid) < rms_threshold
     total_outliers = np.sum(~mask)
 
     ax.plot(t[idx], resid[idx], "k", label=f"residuals")
@@ -82,13 +84,26 @@ def plot_lightcurve_gp_and_residuals(
         t[~mask],
         resid[~mask],
         "xr",
-        label=f"outliers ({total_outliers} total)",
+        label=f"outliers ({total_outliers})",
     )
+    ax.axhline(
+        -rms_threshold,
+        color="red",
+        ls="--",
+        lw=1,
+        label=f"rms * {rms_mult} (rms={rms:.4f})",
+    )
+    ax.axhline(rms_threshold, color="red", ls="--", lw=1)
     ax.axhline(0, color="#aaaaaa", lw=1, label="zero-line")
     ax.set_ylabel("residuals")
     ax.legend(fontsize=10, loc=3)
     ax.set_xlim(t[idx].min(), t[idx].max())
     ax.set_xlabel("time [days]")
+
+    if total_outliers > 100:
+        logger.warning(
+            "Large number of outliers in residuals after fitting model."
+        )
 
     if zoom_in:
         perc_data = int(100 * (len(idx) / len(t)))
@@ -112,8 +127,8 @@ def plot_diagnostics(tic_entry, model):
     plot_lightcurve_gp_and_residuals(tic_entry, model)
     matplotlib_plots.plot_phase(
         tic_entry,
-        tic_entry.inference_data,
         model,
+        tic_entry.inference_data,
         plot_data_ci=True,
         plot_label="data_ci",
     )

@@ -103,7 +103,6 @@ from tess_atlas.utils import get_notebook_logger
 os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
-    plot_folded_lightcurve,
     plot_lightcurve,
     plot_phase,
     plot_posteriors,
@@ -398,12 +397,15 @@ initial_lc_models = (
     )
     * 1e3
 )
-
-# + tags=["exe"]
 plot_lightcurve(tic_entry, initial_lc_models)
 
 # + tags=["exe"]
-plot_folded_lightcurve(tic_entry, initial_lc_models)
+plot_phase(
+    tic_entry,
+    planet_transit_model,
+    initial_params=init_params,
+    plot_all_datapoints=True,
+)
 
 # + tags=["exe"]
 prior_samples = sample_prior(planet_transit_model)

@@ -101,7 +101,7 @@ class LightCurveData(DataObject):
             return_trend=True, window_length=window_length, sigma=sigma
         )
         resid = lc.flux - trend.flux
-        rms = np.sqrt(np.median((resid - np.median(resid)) ** 2))
+        rms = residual_rms(resid)
         good = resid < rms_threshold * rms
         return lc[good]
 
@@ -203,3 +203,7 @@ def download_lightkurve_data(tic, outdir):
         raise ValueError(f"No light curves for TIC {tic}")
     data = data.stitch().remove_nans()
     return data
+
+
+def residual_rms(resid):
+    return np.sqrt(np.median((resid - np.median(resid)) ** 2))

@@ -76,6 +76,7 @@ class StellarData(DataObject):
     def save_data(self, outdir):
         save_json(self.get_filepath(outdir), self.to_dict())
 
+    @property
     def density_data_present(self):
         return no_nans_present([self.density, self.density_error])
 

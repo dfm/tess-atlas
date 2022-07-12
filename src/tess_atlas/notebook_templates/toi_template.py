@@ -462,8 +462,8 @@ plot_posteriors(tic_entry, inference_data, initial_params=init_params)
 # %%memit
 plot_phase(
     tic_entry,
-    inference_data,
     planet_transit_model,
+    inference_data,
     initial_params=init_params,
 )
 # -

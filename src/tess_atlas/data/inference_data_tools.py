@@ -152,6 +152,7 @@ def get_optimized_init_params(
     theta=None,
     verbose=False,
     return_all=False,
+    quick=False,
 ):
     """Get params with maximimal log prob for sampling starting point"""
     logger.info("Optimizing sampling starting point")
@@ -176,11 +177,16 @@ def get_optimized_init_params(
             timing_params,
             all_params,
         ]
-
-        for _ in range(2):
-            for optimization_param in optimization_order:
-                theta = pmx.optimize(theta, optimization_param, **kwargs)
-                cache.append(dict(theta=theta, logp=get_logp(model, theta)))
+        if quick:
+            theta = pmx.optimize(theta, period_params, **kwargs)
+            cache.append(dict(theta=theta, logp=get_logp(model, theta)))
+        else:
+            for _ in range(2):
+                for optimization_param in optimization_order:
+                    theta = pmx.optimize(theta, optimization_param, **kwargs)
+                    cache.append(
+                        dict(theta=theta, logp=get_logp(model, theta))
+                    )
 
         final_logp = get_logp(model, theta)
         logger.info(

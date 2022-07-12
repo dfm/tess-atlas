@@ -40,6 +40,10 @@ def create_toi_notebook(
             txt = re.sub(r"draws=[0-9]+", f"draws={10}", txt)
             txt = re.sub(r"chains=[0-9]+", f"chains={1}", txt)
             txt = re.sub(r"cores=[0-9]+", f"cores={1}", txt)
+            txt = txt.replace(
+                "init_params(planet_transit_model, **params)",
+                "init_params(planet_transit_model, **params, quick=True)",
+            )
         f.write(txt)
 
 

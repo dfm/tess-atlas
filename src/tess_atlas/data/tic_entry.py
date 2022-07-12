@@ -113,7 +113,7 @@ class TICEntry(DataObject):
         df.columns = df.loc["TOI"]
         return (
             f"{df._repr_html_()}<br>\n"
-            f"Memory: {self.mem_size}<br>\n"
+            # f"Memory: {self.mem_size}<br>\n"
             f"<a href='{self.exofop_url}'>More data on ExoFOP page</a>"
         )
 

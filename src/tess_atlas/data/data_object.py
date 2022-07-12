@@ -1,7 +1,6 @@
 import os
 from abc import ABC
 import logging
-from functools import cached_property
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .data_utils import sizeof
@@ -39,6 +38,8 @@ class DataObject(ABC):
     def cached_data_present(fpath: str) -> bool:
         return os.path.isfile(fpath)
 
-    @cached_property
+    @property
     def mem_size(self):
-        return sizeof(self)
+        if not hasattr(self, "__mem"):
+            self.__mem = sizeof(self)
+        return self.__mem

@@ -10,7 +10,6 @@ from typing import List, Optional
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 from .data_object import DataObject
-from .planet_candidate import PlanetCandidate
 from ..utils import get_cache_dir
 
 
@@ -130,7 +129,8 @@ class LightCurveData(DataObject):
     def _repr_html_(self):
         return (
             f"{self.__class__.__name__}: "
-            f"{self.len} datapoints ({self.mem_size})"
+            f"{self.len} datapoints "
+            # f"({self.mem_size})"
         )
 
     def timefold(self, t0, p):
@@ -139,7 +139,7 @@ class LightCurveData(DataObject):
 
     def filter_non_transit_data(
         self,
-        candidates: List[PlanetCandidate],
+        candidates: List,
         day_buffer: Optional[float] = 0.3,
     ):
         """Remove data outside transits (keep 'day-buffer' days near transit)"""
@@ -154,7 +154,7 @@ class LightCurveData(DataObject):
 
     def get_transit_mask(
         self,
-        candidates: List[PlanetCandidate],
+        candidates: List,
         day_buffer: Optional[float] = 0.3,
     ):
         """Get mask for data with transits (keep 'day-buffer' days near transit)"""

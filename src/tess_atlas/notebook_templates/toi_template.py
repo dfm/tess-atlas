@@ -110,6 +110,7 @@ from tess_atlas.plotting import (
     plot_priors,
     plot_diagnostics,
     plot_inference_trace,
+    plot_raw_lightcurve,
 )
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
@@ -144,12 +145,24 @@ tic_entry = TICEntry.load(toi=TOI_NUMBER)
 tic_entry
 # -
 
+# If the amount of lightcurve data availible is large we filter the data to keep data within 0.3 days of the transits.
+
+# + tags=["exe"]
+if tic_entry.lightcurve.len > 1e5:
+    tic_entry.lightcurve.filter_non_transit_data(
+        tic_entry.candidates, day_buffer=0.3
+    )
+# -
+
 # Plot of the lightcurve:
 
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_lightcurve(tic_entry)
+# + tags=["exe", "hide-cell"]
+plot_raw_lightcurve(tic_entry)
 # -
+
 # ## Fitting transit parameters
 # Now that we have the data, we can define a Bayesian model to fit it.
 #
@@ -391,8 +404,6 @@ plot_lightcurve(tic_entry, initial_lc_models)
 
 # + tags=["exe"]
 plot_folded_lightcurve(tic_entry, initial_lc_models)
-
-# TODO: plot some diagnostics
 
 # + tags=["exe"]
 prior_samples = sample_prior(planet_transit_model)

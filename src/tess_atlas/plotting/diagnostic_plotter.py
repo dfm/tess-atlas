@@ -3,13 +3,30 @@ import numpy as np
 import arviz as az
 import os
 
+from ..data import LightCurveData
 from . import matplotlib_plots
 from .plotting_utils import (
     get_longest_unbroken_section_of_data,
     get_colors,
     get_lc_and_gp_from_inference_object,
 )
-from .labels import DIAGNOSTIC_LIGHTCURVE_PLOT, DIAGNOSTIC_TRACE_PLOT
+from .labels import (
+    DIAGNOSTIC_LIGHTCURVE_PLOT,
+    DIAGNOSTIC_TRACE_PLOT,
+    DIAGNOSTIC_RAW_LC_PLOT,
+)
+
+
+def plot_raw_lightcurve(tic_entry):
+    lc = tic_entry.lightcurve
+    ax = lc.raw_lc.scatter(
+        label=f"Raw Data ({len(lc.raw_lc):,} pts)", color="black"
+    )
+    lc.cleaned_lc.scatter(
+        ax=ax, label=f"Cleaned Data ({len(lc.cleaned_lc):,} pts)", color="gray"
+    )
+    plt.tight_layout()
+    plt.savefig(os.path.join(tic_entry.outdir, DIAGNOSTIC_RAW_LC_PLOT))
 
 
 def plot_lightcurve_gp_and_residuals(

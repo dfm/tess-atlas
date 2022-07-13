@@ -2,6 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import arviz as az
 import os
+import logging
+import os
+
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
+logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 from ..data.lightcurve_data import LightCurveData, residual_rms
 from . import matplotlib_plots

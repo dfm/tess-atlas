@@ -4,6 +4,7 @@ from typing import Optional
 
 import jupytext
 import pkg_resources
+import nbformat
 
 from ..data.tic_entry import TICEntry
 from ..tess_atlas_version import __version__
@@ -46,6 +47,25 @@ def create_toi_notebook(
             )
         f.write(txt)
 
+    # ensure notebook is valid
+    notebook = nbformat.read(notebook_filename, as_version=4)
+    nbformat.validate(notebook)
+
+
+def safe_create_toi_notebook(
+    toi_number: int,
+    notebook_filename: str,
+    quickrun: bool,
+    attempts: Optional[int] = 5,
+):
+    for i in range(attempts):
+        while True:
+            try:
+                create_toi_notebook(toi_number, notebook_filename, quickrun)
+                break
+            except Exception:
+                continue
+
 
 def download_toi_data(toi_number: int, notebook_dir: str):
     curr_dir = os.getcwd()
@@ -85,7 +105,7 @@ def create_toi_notebook_from_template_notebook(
     notebook_dir = os.path.dirname(notebook_filename)
     os.makedirs(notebook_dir, exist_ok=True)
 
-    create_toi_notebook(toi_number, notebook_filename, quickrun)
+    safe_create_toi_notebook(toi_number, notebook_filename, quickrun)
 
     if setup:
         download_toi_data(toi_number, notebook_dir)

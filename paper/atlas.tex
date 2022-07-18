@@ -1,7 +1,8 @@
-\documentclass[modern]{aastex63}
+\documentclass[linenumbers,floatfix,ApJL,twocolumn]{aastex631}
 
 \input{dfmstyle}
 \input{dfmsymbols}
+\input{custom_commands}
 
 \shorttitle{The \tess\ Atlas}
 \shortauthors{the authors}
@@ -17,12 +18,21 @@
 % \input{authors}
 
 
+
+
+
 \begin{abstract}
-\tess\ discovered \red{4,500} exoplanet candidates in \red{3} years of data of which \red{150} are confirmed planets.
-We provide revised transit parameters and accompanying posterior distributions for the \tess\ objects of interest during the first 3 years.
+We present the first \tess Atlas, a transiting exoplanet parameter estimate catalog generated from 2-minute cadence \tess data during 2018 through 2022 (Sectors 1 to 54). 
+Our catalog includes analyses of \red{\numAnalysed} \tess Objects of Interest
+
+of  parameters and accompanying posterior distributions for the \tess\ objects of interest during the first 3 years.
 We present the catalog of parameter estimates and notebooks to reanalyse fav system
 The full catalogue is publicly available at \red{XXX}.
 \end{abstract}
+
+
+We present the first Open Gravitational-wave Catalog (1-OGC), obtained by using the public data from Advanced LIGO's first observing run to search for compact-object binary mergers. Our analysis is based on new methods that improve the separation between signals and noise in matched-filter searches for gravitational waves from the merger of compact objects. 
+% info on sectors: https://heasarc.gsfc.nasa.gov/docs/tess/sector.html
 
 \keywords{%
   methods: data analysis ---
@@ -33,52 +43,20 @@ The full catalogue is publicly available at \red{XXX}.
 
 \section{Introduction} \label{sec:intro}
 
+In July 2020, NASA’s Transiting Exoplanet Survey Satellite \citep{Ricker:2015:JATIS} completed its two-year Primary Mission to search for transiting exoplanets around nearby bright stars. 
+\tess\ recorded 2-minute cadence observations for $\sim200,000$ pre-selected stars that were processed by the \tess\ Science Processing Operations Center \citep{Jenkins:2016:SPIE} pipeline. 
+Additionally, \tess\ also recorded measurements of its entire field of view in 10 and 30-minute sampled full-frame images (FFIs), enabling the flux measurements of tens of millions of stars. Between 2, 10 and 30-minute observations, the \tess\ Primary Mission and the ongoing extended missions have identified over \red{$\numTessCandidates$} planet candidates, \red{$\numTessPlanets$} of which have been confirmed as planets \citep{Stassun:2018:AJ, Stassun:2019:AJ, Guerrero:2021:ApJS, Guerrero:2021:AAS}.
 
 
-In July 2020, NASA’s Transiting Exoplanet Survey Satellite (TESS; Ricker et al. 2015) completed its two-year
-Primary Mission to search for transiting exoplanets around nearby bright stars. TESS’ four cameras observed 96◦×24◦
-sectors of the sky for 27.4 days each, totalling 26 sectors over the Primary Mission. Overall, ∼200,000 pre-selected
-stars received 2-minute cadence observations, which were processed by the TESS Science Processing Operations Center
-(SPOC; Jenkins et al. 2016) pipeline. However, TESS also recorded measurements of its entire field of view in 30-
-minute sampled full-frame images (FFIs), enabling the flux measurements of tens of millions of stars. Between 2- and
-30-minute observations, the TESS Primary Mission resulted in the identification of 2,241 planet candidates (Guerrero
-et al. 2021).
-TESS’ current Extended Mission is capturing millions more stars in FFIs, both increasing the observation baseline
-for stars re-observed from the Primary Mission and increasing the the satellite’s overall coverage of the sky. FFI
-cadence was also reduced from 30 to 10 minutes. Relevant for exoplanet searches, the faster cadence better resolves
-transit shapes and improves the detectability of short-duration signals. Here, we present a magnitude-limited set of
-lightcurves extracted from Extended Mission FFIs each TESS sector by MIT’s Quick-Look Pipeline (QLP; Huang
-et al. 2020). We report on the delivery to the Mikulski Archive for Space Telescopes (MAST) of these High-Level
-Science Products (HLSPs) for 9,115,386 targets observed in the southern ecliptic hemisphere (Sectors 27 – 39). HLSPs
-for the northern hemisphere and ecliptic (Sectors 40 – 55) are upcoming.
-
-
-
-
-
-NASA’s Transiting Exoplanet Survey Satellite \tess instrument is a space-based telescope that employs four cameras to observe $96^{\circ}\times24^{\circ}$ sectors of the sky for 27.4 days each.  
-
-\tess searches for the periodic drops in brightness which occur when planets transit their host star, thusly seeking to identify new extrasolar planets. 
-The primary objective of the \tess is to search for transiting exoplanets around nearby bright stars.
-
-In July 2020, \tess concluded its two-year primary mission 
-
-
-
-A series of previously published \tess catalogue papers presented an increasingly larger number of planet candidate discoveries as additional observations were taken by the spacecraft \cite. 
-These catalogues have been used extensively in the investigation of planetary occurance rates (e.g.,), determination of exoplanet atmospheric properties (e.g., ), and development of planetary confirmation techniques via supplemental analysis and follow-up observations (e.g., ). 
+Previously published \tess\ catalog paper on 2min data presented [info about these candidates -- using XX methods].
+These catalogs have been used in the confirmation of planets (eg)  and determination of planetary occ rates (eg). 
 Furthermore, systems identified as not-planetary in nature have yielded valuable new science on stellar binaries, including eclipsing (e.g., ), self-lensing (eg. ), and tidally interacting systems (e.g., ).
-This paper uses 3 years () of \tess photometry to search for new planet candidates, thus enabling for the first time the detection of Earth-like exoplanets that have periods around one year (given that a minimum of three transits are needed for detection.) 
 
-With this increased sensitivity also comes setbacks — the instrument is sensitive to a significant number of false positives at periods close to one year due to the spacecraft’s heliocentric orbit, combined with a 90 degree boresight rotation every ∼ 90 days and electronic, rolling band systematics present in a few CCD modules.
-Additionally, the number of false positives due to contamination increases with increased sensitivity, as variable stars can induce low-amplitude false positives signatures in sources up to tens of arcseconds away ().
-
-In this work we present new methods to eliminate these false positives and introduce a streamlined planet vetting
-procedure and product set. 
-As a result, we designate an additional \red{XX} planet candidates to bring the cumulative total of \tess planet candidates to \red{XX}.
+This paper uses (3) years of \tess photometry and the 2-min cadnece data to 
 
 We also present the uniform modeling of all transiting planet candidates utilizing a Bayesian framework that provides robust estimates of the uncertainities for all of the planet parameters. 
-The posterior distributions allow us to study the planet population in detail and assess the reliability of the most Earth-like candidates.
+The posterior distributions allow future researchers to study the planet population in detail and assess the reliability of the most Earth-like candidates.
+
 
 
 
@@ -224,17 +202,21 @@ Table with priors
 
 
 
-\acknowledgments
+\begin{acknowledgments}
 
 We would like to thank xyz. 
 Work was started during `online.tess.science`
 
+This work has made use of the TIC through the TESS Science Office’s target selection working group (architects K. Stassun, J. Pepper, N. De Lee, M. Paegert, R. Oelkers). The Filtergraph data portal system is trademarked by Vanderbilt University.
 
+This research has made use of the NASA Exoplanet Archive, which is operated by the California Institute of Technology, under contract with the National Aeronautics and Space Administration under the Exoplanet Exploration Program.
 
 This work made use of the \tess\ catalog on ExoFOP
 
+\end{acknowledgments}
+
 \vspace{5mm}
-\facilities{\tess, \gaia, \kepler, etc.}
+\facilities{\tess, \gaia, \kepler, Exoplanet Archive, etc.}
 
 \software{astropy \citep{Astropy-Collaboration:2013,Astropy-Collaboration:2018}}
 

@@ -22,16 +22,12 @@
 
 
 \begin{abstract}
-We present the first \tess Atlas, a transiting exoplanet parameter estimate catalog generated from 2-minute cadence \tess data during 2018 through 2022 (Sectors 1 to 54). 
-Our catalog includes analyses of \red{\numAnalysed} \tess Objects of Interest
-
-of  parameters and accompanying posterior distributions for the \tess\ objects of interest during the first 3 years.
-We present the catalog of parameter estimates and notebooks to reanalyse fav system
-The full catalogue is publicly available at \red{XXX}.
+We present the first \tess\ Atlas, a transiting exoplanet parameter estimate catalog generated from 2-minute cadence \tess\ data during 2018 through 2022 (Sectors 1 to 54).
+This contains posterior estimates for \red{\numAnalysed} \tess\ Objects of Interest, including \red{\numAnalysedMulti} multi-planet candidate systems and \red{\numAnalysedSingle} candidates with data for only a single transit. 
+Our analysis utilises the No-U-Turns Markov chain Monte Carlo algorithm to sample the parameter space with a circular transit model implemented in \exoplanet. 
+To enable follow-up as our understanding of the underlying populations evolves, we provide posterior samples from our analyses and Jupyter notebooks to reproduce the analyses for each exoplanet candidate.
 \end{abstract}
 
-
-We present the first Open Gravitational-wave Catalog (1-OGC), obtained by using the public data from Advanced LIGO's first observing run to search for compact-object binary mergers. Our analysis is based on new methods that improve the separation between signals and noise in matched-filter searches for gravitational waves from the merger of compact objects. 
 % info on sectors: https://heasarc.gsfc.nasa.gov/docs/tess/sector.html
 
 \keywords{%
@@ -45,76 +41,68 @@ We present the first Open Gravitational-wave Catalog (1-OGC), obtained by using 
 
 In July 2020, NASA’s Transiting Exoplanet Survey Satellite \citep{Ricker:2015:JATIS} completed its two-year Primary Mission to search for transiting exoplanets around nearby bright stars. 
 \tess\ recorded 2-minute cadence observations for $\sim200,000$ pre-selected stars that were processed by the \tess\ Science Processing Operations Center \citep{Jenkins:2016:SPIE} pipeline. 
-Additionally, \tess\ also recorded measurements of its entire field of view in 10 and 30-minute sampled full-frame images (FFIs), enabling the flux measurements of tens of millions of stars. Between 2, 10 and 30-minute observations, the \tess\ Primary Mission and the ongoing extended missions have identified over \red{$\numTessCandidates$} planet candidates, \red{$\numTessPlanets$} of which have been confirmed as planets \citep{Stassun:2018:AJ, Stassun:2019:AJ, Guerrero:2021:ApJS, Guerrero:2021:AAS}.
+Additionally, \tess\ also recorded measurements of its entire field of view in 10 and 30-minute sampled full-frame images (FFIs), enabling the flux measurements of tens of millions of stars. 
+Between 2, 10 and 30-minute observations, the \tess\ Primary Mission and the ongoing extended missions have identified over \red{$\numTessCandidates$} planet candidates, \red{$\numTessPlanets$} of which have been confirmed as planets \citep{Stassun:2018:AJ, Stassun:2019:AJ, Guerrero:2021:ApJS, Guerrero:2021:AAS}. 
+Furthermore, \tess\ data have provided numerous non-exoplanet candidates disclosing new information on eclipsing binaries (e.g., ), and tidally interacting systems (e.g., ), exomoons (e.g., ), comets (e.g., ),  exocoments (e.g., ), supernovae (e.g., ), and more (see [review] for more). \alltodo{get citations}.
 
+In this work we provide a comprehensive catalog of transiting exoplanet posterior estimates for the \red{\numAnalysed} \tess\ Objects of Interest (TOIs) with 2-minute cadence observations from 2018 through 2022. 
+The posterior distributions provide robust uncertainties for the circular transit model's planet orbital timing parameters, stellar limb darkening, stellar density, mean flux and detector-noise parameters. 
+The posterior distributions can allow future researchers to study the planet population in detail and assess the reliability of the most Earth-like candidates, \alltodo{list more things that can be done}.
 
-Previously published \tess\ catalog paper on 2min data presented [info about these candidates -- using XX methods].
-These catalogs have been used in the confirmation of planets (eg)  and determination of planetary occ rates (eg). 
-Furthermore, systems identified as not-planetary in nature have yielded valuable new science on stellar binaries, including eclipsing (e.g., ), self-lensing (eg. ), and tidally interacting systems (e.g., ).
+The remainder of the paper is organised as follows: Section~\ref{sec:method} describes our transit light curve model and the Bayesian framework we use to estimate parameters of exoplanet systems from the observed data. 
+The analysis results are summarised in Section~\ref{sec:results}.
+The catalog, released data, and software to reproduce the results are described in Section~\ref{sec:data} and are available online as supplementary materials (\atlasUrl).
+Finally, we provide concluding remarks in Section~\ref{sec:conclusion}.
 
-This paper uses (3) years of \tess photometry and the 2-min cadnece data to 
+\section{Method} \label{sec:method}
 
-We also present the uniform modeling of all transiting planet candidates utilizing a Bayesian framework that provides robust estimates of the uncertainities for all of the planet parameters. 
-The posterior distributions allow future researchers to study the planet population in detail and assess the reliability of the most Earth-like candidates.
+\alltodo{TOI selection, lightcurve preprocessing, eccentricity posterior postprocessing}
 
+\subsection{Transit light curve model}
 
-
-
-Section~\ref{sec:prob-model} describes our transit lightcurve model and the Bayesian framework we use to estimate parameters of exoplanet systems from the observed data.
-
-\section{Probabilistic Model} \label{sec:prob-model}
-
-\subsection{Transit lightcurve model}
-We assume that exoplanets are on circular, non-interacting Keplerian orbits around their host star.
-Additonally, we approximate the host star's stellar limb darkening profile using \citet{Kipping:2013}'s quadratic limb darkening law.
+There are many options for parameterisation of a transit, but we choose to model these transits as circular, non-interacting Keplerian orbits around their host star, parameterised by their observables. 
+We approximate the host star's stellar limb darkening profile using \citet{Kipping:2013:MNRAS}'s quadratic limb darkening law.
 Finally, we compute the exoplanet's resultant quadratic limb-darkened transit lightcurve using an analytical model implemented in \starry.
 The stellar variables in this model are parameterised by
-the baseline relative flux of the light curve $f0$,
+the baseline relative flux of the light curve $f_0$,
 the mean stellar density $\rho_\star$,
 and two parameters describing the quadratic limb-darkening profile of the
 star $u_1, u_2$.
+To model stellar variability (e.g. asteroseismic oscillation of the star)  we use a Gaussian Process implemented in \celerite\ with a stochastically driven damped harmonic oscillator kernel in linear combination with a jitter term, to capture misspecified error bars and model misspecification. This requires three parameters: the quality factor $Q_{\rm GP}$, the undamped period of the oscillator $\rho_{\rm GP}$, the standard deviation of the process $\sigma_{\rm GP}$.
+
 Each of the $n$ exoplanets in the system are parameterised by the planets'
-orbital period $P_{n}$,
-transit duration $T_{n}$,
-phase or epoch $t0_n$,
-impact parameter $b_n$,
-and the radius of the planet $r_n$ in units of the stellar radius $R_\star$.
-
-We use \exoplanet\, \lightkurve
-
-
-In the case when there are multiple transits present in the data, we use a second reference time $tmax$ instead of $P$
-
-
-\section{Parameterization}
-
-There are many options for parameterization of a transit, but we choose to model these transits as circular orbits parameterized by their observables.
-We also track the relevant Jacobians.
-
-The main parameters are:
 \begin{enumerate}
-  \item \emph{two reference transit times}, one near the beginning of the observations, $t_0$, and one near the end, $t_{-1}$, measured in \tess\ BJD,
-  \item \emph{the approximate transit depth}, $\delta$, measured in parts-per-thousand,
-  \item \emph{the impact parameter} of the orbit, $b$, constrained to be $|b| \le 1$, and
-  \item \emph{the transit duration}, $\tau$, measured in hours.
+  \item \emph{two reference transit times}, one near the beginning of the observations, $t_{\rm min}[n]$, and one near the end, $t_{\rm max}[n]$, measured in \tess\ BJD,
+  \item \emph{the approximate transit depth}, $\delta[n]$, measured in parts-per-thousand,
+  \item \emph{the impact parameter} of the orbit, $b[n]$, constrained to be $|b| \le 1$, and
+  \item \emph{the transit duration}, $\tau[n]$, measured in hours,
+  \item \emph{the radius ratio} $k[n]$ of the planet radius $R_{\rm p}[n]$ divided by the stellar radius $R_\star$.
 \end{enumerate}
+In the case when there are a planet has only a single transit present in the data, we use the planet's orbital period $P[n]$ in place of the second reference time $t_{\rm max}[n]$.
+We also track the relevant Jacobians of the parameters. Some of these parameters are displayed in the schematic diagram in Figure~\ref{fig:schematic-transit-plot}.
 
-With more discussion of the details, motivations, and limitations below.
+\begin{figure}
+  \includegraphics[width=\linewidth]{figures/transit_model.png}
+  \caption{\textit{Schematic diagram of a transit light curve:} \alltodo{write some details about this plot}}
+  \label{fig:schematic-transit-plot}
+\end{figure}
+
+More discussion of the details, motivations, and limitations of this transit parameterisation are presented below.
 
 \paragraph{Transit times}
 To speed up the analysis, we assume that the discovery period and phase of the orbit are close enough to the truth that we can fit only the data near the expected transit times.
 One consequence of this assumption is that we are assuming that the \emph{number} of periods that occur in the \tess\ observational baseline is correct.
 Practically, this means that our prior assumption is that the transits must occur within the data cutouts.
-This can be difficult to enforce---especially for low signal-to-noise transits---but a good approximation can be achieved by fitting for two reference transit times, $t_0$ and $t_{-1}$, with a fixed number of periods, $N_P$, between them, instead of a single reference time and the period.
-Then we can compute the implied period as $P = (t_{-1} - t_0) / N_P$.
+This can be difficult to enforce---especially for low signal-to-noise transits---but a good approximation can be achieved by fitting for two reference transit times, $t_{\rm min}$ and $t_{\rm max}$, with a fixed number of periods, $N_P$, between them, instead of a single reference time and the period.
+Then we can compute the implied period as $P = (t_{\rm max} - t_{\rm min}) / N_P$.
 Importantly this does not change the prior on $P$ and $t_0$ since the Jacobian is a constant $1/N_P$.
 
 \paragraph{Transit depth}
-It is worth spending a moment on the transit depth parameterization.
-This choice of parameterization leads to efficient computation and convergence, but it comes with non-trival shortcomings.
-Since the physical parameter that is required to compute the light curve model is the radius ratio between the planet and the star $k = R_\mathrm{p} / R_\star$, we need to choose a parameterization that is invertible and that isn't generally possible.
-In some cases, using radius ratio directly as the parameter can work well, but \todo{explain cases where it's not}.
-Instead, we choose to parameterize the approximate transit depth $\delta$ using the small planet approximation.
+It is worth spending a moment on the transit depth parameterisation.
+This choice of parameterisation leads to efficient computation and convergence, but it comes with non-trivial shortcomings.
+Since the physical parameter that is required to compute the light curve model is the radius ratio between the planet and the star $k = R_{\rm p} / R_\star$, we need to choose a parameterisation that is invertible and that isn't generally possible.
+In some cases, using radius ratio directly as the parameter can work well, but \alltodo{explain cases where it's not}.
+Instead, we choose to parameterise the approximate transit depth $\delta$ using the small planet approximation.
 This is useful because it is directly invertible (conditioned on the limb darkening parameters and impact parameter), but it restricts us to considering non-grazing transits with impact parameter $|b| \le 1$.
 Accepting this restriction, we can compute the approximate transit depth for a limb darkened light curve by assuming that the intensity of the star is uniform under the disk of the planet.
 For quadratic limb darkening, the intensity profile is
@@ -135,7 +123,7 @@ In this case, the relevant factor is
 \end{equation}
 
 \paragraph{Impact parameter}
-Constrained to be non-grazing. -- Discuss the consequences of this.
+Constrained to be non-grazing. -- \alltodo{Discuss the consequences of this.}
 
 \paragraph{Transit duration}
 The physical parameter required for computing the transit model is the semi-major axis, $a$, in units of the stellar radius, but the transit duration $\tau$ is better constrained so it can be better as a fit parameter.
@@ -169,10 +157,7 @@ It is important to note that this is not necessarily the same as the actual stel
 \subsection{Bayesian Framework}
 
 
-Likelihood, GP, Priors, \celerite
-
-
-Table with priors
+Likelihood, GP, Priors, \celerite, pymc3 sampling
 
 %
 %
@@ -194,37 +179,63 @@ Table with priors
 
 
 
-\section{Results}
 
-\section{Discussion}
+\section{Results}\label{sec:results}
 
-\section{Data Availability}
+\subsection{Systems with multiple planets}
+Some words about these systems
+
+\subsection{Planets with data for one transit}
+Some stuff about single transit systems 
 
 
+\section{Data and software availability}\label{sec:data}
+We provide software to reproduce the analyses and results at \atlasUrl. 
+The website contains one Jupyter notebook for each TOI, demonstrating the end-to-end analysis of a TOI. 
+The notebooks contain software to download and clean light curve data, implementations of the transit-model and priors for inference, the \pymc sampling stage, and a posterior post-processing step.
+The website also documents the method to download our Bayesian parameter inference posterior samples, load them and make various plots.  
+
+\section{Discussion}\label{sec:conclusion}
+We present for the first time a catalog of Bayesian posterior samples for the 2-minute cadence TOIs from 2018-2022. 
+Some words about results. 
+Some stuff about difficulty sampling grazing systems.
+Errors when SPOC estimates are off. 
+We expect the remainder of the \tess\ extended mission will complete by September 2023, at which point an updated catalog will be produced.
 
 \begin{acknowledgments}
 
 We would like to thank xyz. 
+Ozgrav, Flatiron, NECTAR, ADACS, David Liptai
 Work was started during `online.tess.science`
 
-This work has made use of the TIC through the TESS Science Office’s target selection working group (architects K. Stassun, J. Pepper, N. De Lee, M. Paegert, R. Oelkers). The Filtergraph data portal system is trademarked by Vanderbilt University.
+This work has made use of the TIC through the TESS Science Office’s target selection working group (architects K. Stassun, J. Pepper, N. De Lee, M. Paegert, R. Oelkers).
 
 This research has made use of the NASA Exoplanet Archive, which is operated by the California Institute of Technology, under contract with the National Aeronautics and Space Administration under the Exoplanet Exploration Program.
 
 This work made use of the \tess\ catalog on ExoFOP
+
+Total compute time for this work \red{\cpuHrs} \alltodo{get more accurate compute time (this is an overestimate)}. CO$_2$ emission amount for this work would be XX, however as OzStar uses wind energy this has a negligible carbon footprint. 
 
 \end{acknowledgments}
 
 \vspace{5mm}
 \facilities{\tess, \gaia, \kepler, Exoplanet Archive, etc.}
 
-\software{astropy \citep{Astropy-Collaboration:2013,Astropy-Collaboration:2018}}
+\software{
+astropy \citep{Astropy-Collaboration:2013,Astropy-Collaboration:2018},  
+exoplanet,
+lightkurve, 
+starry, 
+celerite2,
+pymc3,
+numpy, 
+scipy, 
+pandas, 
+matplotlib,
+corner, 
+sphinx, 
+}
 
-\appendix
-
-\section{An Appendix}
-
-Words.
 
 \bibliography{atlas}{}
 \bibliographystyle{aasjournal}

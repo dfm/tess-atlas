@@ -23,7 +23,7 @@ Normal Systems
 .. raw:: html
 
    <details>
-   <summary><a>big code</a></summary>
+   <summary><a>Show</a></summary>
 
     .. list-table::
         :widths: 5 15
@@ -47,7 +47,7 @@ Multi-planet Systems
 .. raw:: html
 
    <details>
-   <summary><a>big code</a></summary>
+   <summary><a>Show</a></summary>
 
     .. list-table::
         :widths: 5 15
@@ -71,7 +71,7 @@ Single-transit Systems
 .. raw:: html
 
    <details>
-   <summary><a>big code</a></summary>
+   <summary><a>Show</a></summary>
 
     .. list-table::
         :widths: 5 15
@@ -105,7 +105,7 @@ Normal Systems
 .. raw:: html
 
    <details>
-   <summary><a>big code</a></summary>
+   <summary><a>Show</a></summary>
 
     {% for toi_link in failed_tois['norm'] %}
     - {{ toi_link }}
@@ -121,7 +121,7 @@ Multi-planet Systems
 .. raw:: html
 
    <details>
-   <summary><a>big code</a></summary>
+   <summary><a>Show</a></summary>
 
     {% for toi_link in failed_tois['multi'] %}
     - {{ toi_link }}
@@ -137,7 +137,7 @@ Single-transit Systems
 .. raw:: html
 
    <details>
-   <summary><a>big code</a></summary>
+   <summary><a>Show</a></summary>
 
     {% for toi_link in failed_tois['single'] %}
     - {{ toi_link }}

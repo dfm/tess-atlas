@@ -132,6 +132,7 @@ def plot_phase(
     zoom_y_axis: Optional[bool] = False,
     plot_label: Optional[str] = "",
     num_lc: Optional[int] = 12,
+    low_res: Optional[bool] = False,
 ):
     """Adapted from exoplanet tutorials
     https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
@@ -140,6 +141,13 @@ def plot_phase(
     - inference_data
     - initial_params
     """
+
+    if low_res:
+        figsize = (3.5, 2)
+        dpi = 50
+    else:
+        figsize = (7, 5)
+        dpi = 150
 
     # set some plotting constants
     plt_min, plt_max = -0.3, 0.3
@@ -163,7 +171,7 @@ def plot_phase(
     )
 
     for i in range(tic_entry.planet_count):
-        plt.figure(figsize=(7, 5))
+        plt.figure(figsize=figsize)
 
         ith_flux = lc.flux
 
@@ -295,7 +303,9 @@ def plot_phase(
         fname = PHASE_PLOT.replace(".", f"_TOI{toi}_{i + 1}.")
         if plot_label:
             fname = f"{plot_label}_{fname}"
+        if low_res:
+            fname = fname.replace(".png", "_lowres.png")
 
         fname = os.path.join(tic_entry.outdir, fname)
         logger.debug(f"Saving {fname}")
-        plt.savefig(fname)
+        plt.savefig(fname, dpi=dpi)

@@ -23,16 +23,74 @@ from .labels import (
 )
 
 
-def plot_raw_lightcurve(tic_entry):
+def plot_raw_lightcurve(tic_entry, save=True):
     lc = tic_entry.lightcurve
     ax = lc.raw_lc.scatter(
-        label=f"Raw Data ({len(lc.raw_lc):,} pts)", color="black"
+        label=f"Raw Data ({len(lc.raw_lc):,} pts)",
+        color="black",
     )
     lc.cleaned_lc.scatter(
         ax=ax, label=f"Cleaned Data ({len(lc.cleaned_lc):,} pts)", color="gray"
     )
-    plt.tight_layout()
-    plt.savefig(os.path.join(tic_entry.outdir, DIAGNOSTIC_RAW_LC_PLOT))
+    for i, p in enumerate(tic_entry.candidates):
+        pi = f"[{i}]"
+        t0, tmin, tmax, T = p.t0, p.tmin, p.tmax, p.period
+        s = p.has_data_only_for_single_transit
+        single = "Y" if s else "N"
+        Np = p.num_periods
+        t1 = t0 + T
+        y = 1 - 1e-3 * i
+        k = dict(color=f"C{i}", alpha=0.25)
+        ax.axvline(t0, label=f"$t_0{pi}: {t0:.2f}$", **k)
+        ax.axvline(t1, label=f"$t_1{pi}: {t1:.2f}$", **k)
+        ax.plot(
+            [t0, t1], [y, y], label=f"$T{pi}: {T:.2f}$ days", **k, marker="s"
+        )
+        ax.scatter(
+            [tmin + (i * T) for i in range(Np + 1)],
+            [y] * (Np + 1),
+            **k,
+            marker="o",
+        )
+        ax.axvline(
+            tmin,
+            ls="--",
+            label="$t_{\\rm min}" f"{pi}: {tmin:.2f}$",
+            **k,
+            lw=2.5,
+        )
+        ax.axvline(
+            tmax,
+            ls=":",
+            label="$t_{\\rm max}" f"{pi}: {tmax:.2f}$",
+            **k,
+            lw=4.5,
+        )
+        ax.plot([], [], label=f"Single{pi}: {single} ({Np} periods)", alpha=0)
+        valid = (Np == 0 and s) or (Np > 0 and not s)
+        ax.plot(
+            [],
+            [],
+            label=f"Valid{pi}: {valid}",
+            color="green" if valid else "red",
+        )
+
+    l = plt.legend(
+        loc="upper left",
+        title=f"TOI {tic_entry.toi_number}",
+        fontsize="x-small",
+        frameon=False,
+        bbox_to_anchor=(1.1, 1),
+    )
+    l._legend_box.align = "left"
+    # plt.tight_layout()
+    if save:
+        plt.savefig(
+            os.path.join(tic_entry.outdir, DIAGNOSTIC_RAW_LC_PLOT),
+            bbox_inches="tight",
+        )
+    else:
+        return ax.get_figure()
 
 
 def plot_lightcurve_gp_and_residuals(

@@ -126,8 +126,17 @@ def check_df_for_finites(df):
         raise ValueError(f"The model(testval) has an inf:\n{df}")
 
 
+def check_dict_for_finites(d):
+    for k, v in d.items():
+        if np.isnan(v).any():
+            raise ValueError(f"The testval['{k}'] has a nan:\n{d}")
+
+
 def test_model(model, point=None, show_summary=False):
     """Test a point in the model and assure no nans"""
+    if point is None:
+        point = model.test_point
+    check_dict_for_finites(point)
     with model:
         test_prob = model.check_test_point(point)
         test_prob.name = "log P(test-point)"

@@ -20,15 +20,16 @@ Normal Systems
 
 {{number['norm_done']}}/{{number['norm']}} normal TOIs completed execution.
 
-.. list-table::
-    :widths: 5 15
-    :header-rows: 1
-    :stub-columns: 1
-    {% for toi_link, images in successful_tois['norm'].items() %}
-    * - {{ toi_link }}
-      - {% for image in images %} {{ image }}
+.. collapse:: Show
+    .. list-table::
+        :widths: 5 15
+        :header-rows: 1
+        :stub-columns: 1
+        {% for toi_link, images in successful_tois['norm'].items() %}
+        * - {{ toi_link }}
+          - {% for image in images %} {{ image }}
+            {% endfor %}
         {% endfor %}
-    {% endfor %}
 
 
 Multi-planet Systems
@@ -36,15 +37,16 @@ Multi-planet Systems
 
 {{number['multi_done']}}/{{number['multi']}} multi-planet TOIs completed execution.
 
-.. list-table::
-    :widths: 5 15
-    :header-rows: 1
-    :stub-columns: 1
-    {% for toi_link, images in successful_tois['multi'].items() %}
-    * - {{ toi_link }}
-      - {% for image in images %} {{ image }}
+.. collapse:: Show
+    .. list-table::
+        :widths: 5 15
+        :header-rows: 1
+        :stub-columns: 1
+        {% for toi_link, images in successful_tois['multi'].items() %}
+        * - {{ toi_link }}
+          - {% for image in images %} {{ image }}
+            {% endfor %}
         {% endfor %}
-    {% endfor %}
 
 
 Single-transit Systems
@@ -52,15 +54,16 @@ Single-transit Systems
 
 {{number['single_done']}}/{{number['single']}} single-transit TOIs completed execution.
 
-.. list-table::
-    :widths: 5 15
-    :header-rows: 1
-    :stub-columns: 1
-    {% for toi_link, images in successful_tois['single'].items() %}
-    * - {{ toi_link }}
-      - {% for image in images %} {{ image }}
+.. collapse:: Show
+    .. list-table::
+        :widths: 5 15
+        :header-rows: 1
+        :stub-columns: 1
+        {% for toi_link, images in successful_tois['single'].items() %}
+        * - {{ toi_link }}
+          - {% for image in images %} {{ image }}
+            {% endfor %}
         {% endfor %}
-    {% endfor %}
 
 
 Erroneous fits
@@ -77,18 +80,24 @@ The failed TOIs:
 
 Normal Systems
 ^^^^^^^^^^^^^^^
-{% for toi_link in failed_tois['norm'] %}
-- {{ toi_link }}
-{% endfor %}
+
+.. collapse:: Show
+    {% for toi_link in failed_tois['norm'] %}
+    - {{ toi_link }}
+    {% endfor %}
 
 Multi-planet Systems
 ^^^^^^^^^^^^^^^^^^^^
-{% for toi_link in failed_tois['multi'] %}
-- {{ toi_link }}
-{% endfor %}
+
+.. collapse:: Show
+    {% for toi_link in failed_tois['multi'] %}
+    - {{ toi_link }}
+    {% endfor %}
 
 Single-transit Systems
 ^^^^^^^^^^^^^^^^^^^^^^
-{% for toi_link in failed_tois['single'] %}
-- {{ toi_link }}
-{% endfor %}
+
+.. collapse:: Show
+    {% for toi_link in failed_tois['single'] %}
+    - {{ toi_link }}
+    {% endfor %}

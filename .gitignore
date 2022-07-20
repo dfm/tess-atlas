@@ -17,7 +17,7 @@ notebooks/TEST
 *.egg-info
 src/tess_atlas/template.ipynb
 
-
+tests/toi_*_files
 test_notebooks/
 **/test_notebooks
 tests/test_notebooks/

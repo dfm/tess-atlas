@@ -5,6 +5,8 @@ import numpy as np
 from .data_object import DataObject
 from .lightcurve_data import LightCurveData
 
+BJD = 2457000
+
 
 class PlanetCandidate(DataObject):
     """Plant Candidate obtained by TESS."""
@@ -25,7 +27,7 @@ class PlanetCandidate(DataObject):
         :param np.ndarray time: The list of times for which we have data for
         :param float period: Planet candidate orbital period (in days)
         :param float t0: Epoch (timestamp) of the primary transit in
-            Barycentric Julian Date
+            TESS Barycentric Julian Date (TBJD)
         :param float depth: Planet candidate transit depth, in parts per
             million
         :param float duration: Planet candidate transit duration, in days.
@@ -33,24 +35,29 @@ class PlanetCandidate(DataObject):
         """
         self.toi_id = toi_id
         self.lc = lightcurve  # lc --> lightcurve
-        self.has_data_only_for_single_transit = False
         self.period = period
         self.t0 = t0
         self.depth = depth
         self.duration = duration
         self.snr = snr
+        self.has_data_only_for_single_transit = self.__check_if_single_transit(
+            period
+        )
+
+        if self.has_data_only_for_single_transit:
+            self.period = self.estimate_period_from_lc()
 
     @property
-    def period(self):
-        return self.__period
+    def t0_BJD(self):
+        return self.t0 + BJD
 
-    @period.setter
-    def period(self, p):
-        if (p <= 0.0) or np.isnan(p):
-            self.has_data_only_for_single_transit = True
-            self.__period = self.lc.time.max() - self.lc.time.min()
-        else:
-            self.__period = p
+    def estimate_period_from_lc(self):
+        return self.lc.time.max() - self.lc.time.min()
+
+    def __check_if_single_transit(self, exofop_period):
+        if (exofop_period <= 0.0) or np.isnan(exofop_period):
+            return True
+        return False
 
     @property
     def index(self):
@@ -63,15 +70,16 @@ class PlanetCandidate(DataObject):
             return 0
         lc_tmax = max(self.lc.time)
         n = np.floor(lc_tmax - self.tmin) / self.period
-        if n <= 0:
+        if n <= 1:
             raise ValueError(
-                """Number periods {} is invalid:
+                """Number periods {} is invalid for non-single transit system:
                 (np.floor(lc_tmax - tmin) / period)
                 lc_tmax = {}
                 tmin = {}
                 spoc period = {}
+                toi = {}
                 """.format(
-                    n, lc_tmax, self.tmin, self.period
+                    n, lc_tmax, self.tmin, self.period, self.toi_id
                 )
             )
         return n.astype(int)
@@ -150,10 +158,12 @@ class PlanetCandidate(DataObject):
         if extra:
             data.update(
                 {
+                    "min-max lc": f"{self.lc.time.min():.2f}-{self.lc.time.max():.2f}",
                     "Min-Max Epochs (TBJD)": f"{self.tmin:.2f} - {self.tmax:.2f}",
                     "Period estimation": self.period_estimate,
+                    "Min period": self.period_min,
                     "Num Periods": self.num_periods,
-                    "duration range": f"{self.duration_min} {self.duration_max}",
+                    "duration range": f"{self.duration_min:.3f} {self.duration_max:.3f}",
                 }
             )
         return data
@@ -166,3 +176,12 @@ class PlanetCandidate(DataObject):
         }
         html = "\n".join([f"<li>{k}: {v}</li>" for k, v in d.items()])
         return f"TOI {self.toi_id}: \n" "<ul>\n" f"{html}" "</ul>"
+
+    def __repr__(self):
+        d = self.to_dict(extra=True)
+        d.pop("TOI")
+        d = {
+            k: f"{v:.2f}" if isinstance(v, float) else v for k, v in d.items()
+        }
+        pp = "\n".join([f"- {k}: {v}" for k, v in d.items()])
+        return f"TOI {self.toi_id}: \n{pp}"

@@ -17,6 +17,7 @@ extensions = [
     "sphinx_design",
     "sphinx_book_theme",
     "sphinx_remove_toctrees",
+    "sphinx_toolbox.collapse",
 ]
 # nbsphinx_execute = 'never'
 jupyter_execute_notebooks = "off"

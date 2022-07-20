@@ -7,8 +7,13 @@ from tess_atlas.data.exofop import (
     get_toi_numbers_for_different_categories,
     get_toi_list,
 )
-
 from jinja2 import Template
+
+
+CATEGORISED_TOIS = get_toi_numbers_for_different_categories()
+CATEGORISED_TOIS = {
+    k: df["toi_numbers"].tolist() for k, df in CATEGORISED_TOIS.items()
+}
 
 
 TOI_LINK = Template("`TOI {{toi_int}}  <toi_notebooks/{{toi_fname}}.html>`_")
@@ -53,7 +58,9 @@ def get_phase_plots(notebook_path, notebook_dir):
     toi_str = get_toi_str_from_path(notebook_path)
     phase_regex = os.path.join(notebook_dir, f"toi_{toi_str}_files/phase*.png")
     phase_plots = glob.glob(phase_regex)
-    return [p.split(notebook_dir)[1] for p in phase_plots]
+    if len(phase_plots) > 0:
+        return [p.split(notebook_dir)[1] for p in phase_plots]
+    return []
 
 
 def render_image_data(notebook_path, notebook_dir):
@@ -73,11 +80,10 @@ def split_notebooks(notebook_files, notebook_dir):
 
 
 def generate_number_data(successful_data, failed_data):
-    categorised_tois = get_toi_numbers_for_different_categories()
-    numbers = {k: len(v) for k, v in categorised_tois.items()}
+    numbers = {k: len(v) for k, v in CATEGORISED_TOIS.items()}
     numbers["total"] = len(get_toi_list())
     total_done, total_fail = 0, 0
-    for type in categorised_tois.keys():
+    for type in CATEGORISED_TOIS.keys():
         numbers[f"{type}_done"] = len(successful_data[type].keys()) - 1
         numbers[f"{type}_fail"] = len(failed_data[type])
         total_done += numbers[f"{type}_done"]
@@ -87,12 +93,11 @@ def generate_number_data(successful_data, failed_data):
 
 
 def get_toi_category(notebook_path):
-    categorised_tois = get_toi_numbers_for_different_categories()
     toi_number = get_toi_number(notebook_path)
-    for type in ["single", "multi", "norm"]:
-        if toi_number in categorised_tois[type]:
-            return type
-    return "norm"
+    for toi_type in ["single", "multi", "norm"]:
+        if toi_number in CATEGORISED_TOIS[toi_type]:
+            return toi_type
+    raise ValueError(f"TOI{toi_number} is uncategorised.")
 
 
 def generate_page_data(notebook_regex):
@@ -122,11 +127,10 @@ def generate_page_data(notebook_regex):
     )
     num_fail, num_pass = len(failed_notebooks), len(success_notebooks)
 
-    categorised_tois = get_toi_numbers_for_different_categories()
     successful_data = {
-        k: {"TOI": ["Phase Plot"]} for k in categorised_tois.keys()
+        k: {"TOI": ["Phase Plot"]} for k in CATEGORISED_TOIS.keys()
     }
-    failed_data = {k: [] for k in categorised_tois.keys()}
+    failed_data = {k: [] for k in CATEGORISED_TOIS.keys()}
 
     for notebook_path in success_notebooks:
         toi_data = render_toi_data(notebook_path)

@@ -20,7 +20,11 @@ Normal Systems
 
 {{number['norm_done']}}/{{number['norm']}} normal TOIs completed execution.
 
-.. collapse:: Show
+.. raw:: html
+
+   <details>
+   <summary><a>big code</a></summary>
+
     .. list-table::
         :widths: 5 15
         :header-rows: 1
@@ -31,13 +35,20 @@ Normal Systems
             {% endfor %}
         {% endfor %}
 
+.. raw:: html
+
+   </details>
 
 Multi-planet Systems
 ^^^^^^^^^^^^^^^^^^^^
 
 {{number['multi_done']}}/{{number['multi']}} multi-planet TOIs completed execution.
 
-.. collapse:: Show
+.. raw:: html
+
+   <details>
+   <summary><a>big code</a></summary>
+
     .. list-table::
         :widths: 5 15
         :header-rows: 1
@@ -48,13 +59,20 @@ Multi-planet Systems
             {% endfor %}
         {% endfor %}
 
+.. raw:: html
+
+   </details>
 
 Single-transit Systems
 ^^^^^^^^^^^^^^^^^^^^^^
 
 {{number['single_done']}}/{{number['single']}} single-transit TOIs completed execution.
 
-.. collapse:: Show
+.. raw:: html
+
+   <details>
+   <summary><a>big code</a></summary>
+
     .. list-table::
         :widths: 5 15
         :header-rows: 1
@@ -65,6 +83,9 @@ Single-transit Systems
             {% endfor %}
         {% endfor %}
 
+.. raw:: html
+
+   </details>
 
 Erroneous fits
 ---------------
@@ -81,23 +102,47 @@ The failed TOIs:
 Normal Systems
 ^^^^^^^^^^^^^^^
 
-.. collapse:: Show
+.. raw:: html
+
+   <details>
+   <summary><a>big code</a></summary>
+
     {% for toi_link in failed_tois['norm'] %}
     - {{ toi_link }}
     {% endfor %}
 
+ .. raw:: html
+
+    </details>
+
 Multi-planet Systems
 ^^^^^^^^^^^^^^^^^^^^
 
-.. collapse:: Show
+.. raw:: html
+
+   <details>
+   <summary><a>big code</a></summary>
+
     {% for toi_link in failed_tois['multi'] %}
     - {{ toi_link }}
     {% endfor %}
 
+ .. raw:: html
+
+    </details>
+
 Single-transit Systems
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. collapse:: Show
+.. raw:: html
+
+   <details>
+   <summary><a>big code</a></summary>
+
     {% for toi_link in failed_tois['single'] %}
     - {{ toi_link }}
     {% endfor %}
+
+ .. raw:: html
+
+    </details>

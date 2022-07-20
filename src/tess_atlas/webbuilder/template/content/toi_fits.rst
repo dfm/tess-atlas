@@ -20,7 +20,8 @@ Normal Systems
 
 {{number['norm_done']}}/{{number['norm']}} normal TOIs completed execution.
 
-.. collapse::
+.. collapse:: Show
+
     .. list-table::
         :widths: 5 15
         :header-rows: 1
@@ -38,6 +39,7 @@ Multi-planet Systems
 {{number['multi_done']}}/{{number['multi']}} multi-planet TOIs completed execution.
 
 .. collapse:: Show
+
     .. list-table::
         :widths: 5 15
         :header-rows: 1
@@ -55,6 +57,7 @@ Single-transit Systems
 {{number['single_done']}}/{{number['single']}} single-transit TOIs completed execution.
 
 .. collapse:: Show
+
     .. list-table::
         :widths: 5 15
         :header-rows: 1
@@ -82,6 +85,7 @@ Normal Systems
 ^^^^^^^^^^^^^^^
 
 .. collapse:: Show
+
     {% for toi_link in failed_tois['norm'] %}
     - {{ toi_link }}
     {% endfor %}
@@ -90,6 +94,7 @@ Multi-planet Systems
 ^^^^^^^^^^^^^^^^^^^^
 
 .. collapse:: Show
+
     {% for toi_link in failed_tois['multi'] %}
     - {{ toi_link }}
     {% endfor %}
@@ -98,6 +103,7 @@ Single-transit Systems
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. collapse:: Show
+
     {% for toi_link in failed_tois['single'] %}
     - {{ toi_link }}
     {% endfor %}

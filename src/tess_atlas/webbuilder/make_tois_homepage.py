@@ -20,6 +20,7 @@ TOI_LINK = Template("`TOI {{toi_int}}  <toi_notebooks/{{toi_fname}}.html>`_")
 
 IMAGE = Template(
     """.. figure:: toi_notebooks/{{rel_path}}
+            :scale: 50 %
             :target: toi_notebooks/{{toi_fname}}.html
 
 """

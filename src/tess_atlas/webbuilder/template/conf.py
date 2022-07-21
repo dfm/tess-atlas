@@ -8,6 +8,7 @@ html_favicon = "_static/atlas_logo.png"
 release = "1"
 extensions = [
     "sphinx_togglebutton",
+    "sphinx_tabs.tabs",
     "sphinx_copybutton",
     "myst_nb",
     "jupyter_book",
@@ -17,7 +18,6 @@ extensions = [
     "sphinx_design",
     "sphinx_book_theme",
     "sphinx_remove_toctrees",
-    "sphinx_toolbox.collapse",
 ]
 # nbsphinx_execute = 'never'
 jupyter_execute_notebooks = "off"

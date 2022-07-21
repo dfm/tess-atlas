@@ -1,3 +1,6 @@
+"""
+make_webpages --notebooks <notebookdir> --webdir <webdir>
+"""
 import argparse
 from .page_builder import make_book
 

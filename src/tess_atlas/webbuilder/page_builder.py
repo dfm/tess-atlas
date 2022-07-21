@@ -60,13 +60,13 @@ class PageBuilder:
         self.update_api_files = False
 
     def setup_build_dir(self):
-        outdir_present = os.path.isdir(self.builddir)
-        if outdir_present:
+        if self.rebuild and os.path.exists(self.builddir):
+            shutil.rmtree(self.builddir)
+
+        if os.path.exists(self.builddir):
             log(f"Website being updated at {self.builddir}")
         else:
             log(f"Website being built at {self.builddir}")
-            if self.rebuild:
-                shutil.rmtree(self.builddir)
             os.makedirs(self.builddir, exist_ok=True)
             copy_tree(TEMPLATES_DIR, self.builddir)
             src = os.path.abspath(self.notebook_src)

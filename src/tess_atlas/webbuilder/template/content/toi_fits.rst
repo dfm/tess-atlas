@@ -20,17 +20,16 @@ Normal Systems
 
 {{number['norm_done']}}/{{number['norm']}} normal TOIs completed execution.
 
-.. collapse:: Show
 
-    .. list-table::
-        :widths: 5 15
-        :header-rows: 1
-        :stub-columns: 1
-        {% for toi_link, images in successful_tois['norm'].items() %}
-        * - {{ toi_link }}
-          - {% for image in images %} {{ image }}
-            {% endfor %}
+.. list-table::
+    :widths: 5 15
+    :header-rows: 1
+    :stub-columns: 1
+    {% for toi_link, images in successful_tois['norm'].items() %}
+    * - {{ toi_link }}
+      - {% for image in images %} {{ image }}
         {% endfor %}
+    {% endfor %}
 
 
 Multi-planet Systems
@@ -38,17 +37,16 @@ Multi-planet Systems
 
 {{number['multi_done']}}/{{number['multi']}} multi-planet TOIs completed execution.
 
-.. collapse:: Show
 
-    .. list-table::
-        :widths: 5 15
-        :header-rows: 1
-        :stub-columns: 1
-        {% for toi_link, images in successful_tois['multi'].items() %}
-        * - {{ toi_link }}
-          - {% for image in images %} {{ image }}
-            {% endfor %}
+.. list-table::
+    :widths: 5 15
+    :header-rows: 1
+    :stub-columns: 1
+    {% for toi_link, images in successful_tois['multi'].items() %}
+    * - {{ toi_link }}
+      - {% for image in images %} {{ image }}
         {% endfor %}
+    {% endfor %}
 
 
 Single-transit Systems
@@ -56,18 +54,56 @@ Single-transit Systems
 
 {{number['single_done']}}/{{number['single']}} single-transit TOIs completed execution.
 
-.. collapse:: Show
 
-    .. list-table::
-        :widths: 5 15
-        :header-rows: 1
-        :stub-columns: 1
-        {% for toi_link, images in successful_tois['single'].items() %}
-        * - {{ toi_link }}
-          - {% for image in images %} {{ image }}
-            {% endfor %}
+.. list-table::
+    :widths: 5 15
+    :header-rows: 1
+    :stub-columns: 1
+    {% for toi_link, images in successful_tois['single'].items() %}
+    * - {{ toi_link }}
+      - {% for image in images %} {{ image }}
         {% endfor %}
+    {% endfor %}
 
+
+
+.. tabs::
+
+    .. tab:: Normal Systems
+
+        .. list-table::
+            :widths: 5 15
+            :header-rows: 1
+            :stub-columns: 1
+            {% for toi_link, images in successful_tois['norm'].items() %}
+            * - {{ toi_link }}
+              - {% for image in images %} {{ image }}
+                {% endfor %}
+            {% endfor %}
+
+    .. tab:: Multi-Planet
+
+        .. list-table::
+            :widths: 5 15
+            :header-rows: 1
+            :stub-columns: 1
+            {% for toi_link, images in successful_tois['multi'].items() %}
+            * - {{ toi_link }}
+              - {% for image in images %} {{ image }}
+                {% endfor %}
+            {% endfor %}
+
+    .. tab:: Single-Transit
+
+        .. list-table::
+            :widths: 5 15
+            :header-rows: 1
+            :stub-columns: 1
+            {% for toi_link, images in successful_tois['single'].items() %}
+            * - {{ toi_link }}
+              - {% for image in images %} {{ image }}
+                {% endfor %}
+            {% endfor %}
 
 Erroneous fits
 ---------------
@@ -81,29 +117,23 @@ The failed TOIs:
   list with links to erroneous fits
 
 
-Normal Systems
-^^^^^^^^^^^^^^^
+.. tabs::
 
-.. collapse:: Show
+    .. tab:: Normal Systems
 
-    {% for toi_link in failed_tois['norm'] %}
-    - {{ toi_link }}
-    {% endfor %}
+        {% for toi_link in failed_tois['norm'] %}
+        - {{ toi_link }}
+        {% endfor %}
 
-Multi-planet Systems
-^^^^^^^^^^^^^^^^^^^^
 
-.. collapse:: Show
+    .. tab::  Multi-Planet
 
-    {% for toi_link in failed_tois['multi'] %}
-    - {{ toi_link }}
-    {% endfor %}
+        {% for toi_link in failed_tois['multi'] %}
+        - {{ toi_link }}
+        {% endfor %}
 
-Single-transit Systems
-^^^^^^^^^^^^^^^^^^^^^^
+    .. tab::   Single-Transit
 
-.. collapse:: Show
-
-    {% for toi_link in failed_tois['single'] %}
-    - {{ toi_link }}
-    {% endfor %}
+        {% for toi_link in failed_tois['single'] %}
+        - {{ toi_link }}
+        {% endfor %}

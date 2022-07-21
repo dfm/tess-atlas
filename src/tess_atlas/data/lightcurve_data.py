@@ -186,6 +186,9 @@ def search_for_lightkurve_data(tic):
 
 def download_lightkurve_data(tic, outdir):
     search = search_for_lightkurve_data(tic)
+    # note:
+    # in multi-planet system, doesnt matter which planet's TIC we use
+    # (each planet has its own TIC)
     logger.info(
         f"Downloading {len(search)} observations of light curve data "
         f"(TIC {tic})"

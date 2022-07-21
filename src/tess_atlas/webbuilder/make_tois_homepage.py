@@ -7,30 +7,13 @@ from tess_atlas.data.exofop import (
     get_toi_numbers_for_different_categories,
     get_toi_list,
 )
-from jinja2 import Template
+from .templates import render_page_template, TOI_LINK, IMAGE
 
 
 CATEGORISED_TOIS = get_toi_numbers_for_different_categories()
 CATEGORISED_TOIS = {
     k: df["toi_numbers"].tolist() for k, df in CATEGORISED_TOIS.items()
 }
-
-
-TOI_LINK = Template("`TOI {{toi_int}}  <toi_notebooks/{{toi_fname}}.html>`_")
-
-IMAGE = Template(
-    """.. figure:: toi_notebooks/{{rel_path}}
-            :scale: 50 %
-            :target: toi_notebooks/{{toi_fname}}.html
-
-"""
-)
-
-
-def render_page_template(fname, page_data):
-    with open(fname) as file_:
-        template = Template(file_.read())
-    return template.render(**page_data)
 
 
 def get_toi_str_from_path(path):

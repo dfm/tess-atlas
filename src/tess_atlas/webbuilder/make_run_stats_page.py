@@ -17,6 +17,8 @@ import re
 import pandas as pd
 from tqdm.auto import tqdm
 import numpy as np
+from .templates import render_page_template, TOI_LINK, IMAGE
+from tess_atlas.plotting.runtime_plotter import plot_runtimes
 
 URL = (
     "http://catalog.tess-atlas.cloud.edu.au/content/toi_notebooks/toi_{}.html"
@@ -66,7 +68,8 @@ def parse_logs(notebook_root):
         dict(toi_numbers=toi_nums, log_fn=logs, log_line=log_line)
     )
     count_before = len(df)
-    df.dropna(inplace=True)
+    df = df.dropna()
+    df = df.drop_duplicates(subset="toi_numbers", keep="first")
     count_after = len(df)
     if count_before != count_after:
         print(
@@ -74,6 +77,13 @@ def parse_logs(notebook_root):
         )
     df = df.astype({"toi_numbers": "int32"})
     return df
+
+
+def clean_log_line(log):
+    log = log.strip()
+    ansi_escape = re.compile(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]")
+    log = ansi_escape.sub("", log)
+    return log
 
 
 def get_log_last_line(log_fn):
@@ -85,7 +95,7 @@ def get_log_last_line(log_fn):
         except OSError:
             f.seek(0)
         last_line = f.readline().decode()
-        return last_line
+        return clean_log_line(last_line)
 
 
 def get_toi_number_from_log(log_fn):
@@ -127,32 +137,33 @@ def load_toi_summary_data(notebook_root):
     )
     df["netcdf_present"] = do_tois_have_netcdf(notebook_root, df.toi_numbers)
     df["STATUS"] = get_status(df)
-    df["TOI"] = create_gsheet_url(df)
+    df["TOI"] = create_weburl(df)
     df["category"] = get_category(df)
     df["logs"] = format_logs(df)
-    #     return df[['TOI','STATUS', "category", "duration", "logs"]]
+    df = df.drop_duplicates(subset="toi_numbers", keep="first")
     return df
 
 
 def get_status(df):
     status = []
     for index, toi in df.iterrows():
-        s = "FAIL"
-        if toi.execution_complete:
+        s = "FAIL: no netcdf"
+        #         if toi.execution_complete:
+        #             s = "PASS"
+        if toi.netcdf_present:
             s = "PASS"
         if not toi.phaseplt_present:
             s = "FAIL: no phaseplot"
-        if not toi.netcdf_present:
-            s = "FAIL: no netcdf"
+
         status.append(s)
     return status
 
 
-def create_gsheet_url(df):
-    gsheet_url = []
+def create_weburl(df):
+    url = []
     for index, toi in df.iterrows():
-        gsheet_url.append(f"""=hyperlink("{toi.url}",{toi.toi_numbers})""")
-    return gsheet_url
+        url.append(f"""<a href="{toi.url}">{toi.toi_numbers}</a>""")
+    return url
 
 
 def get_category(df):
@@ -179,9 +190,39 @@ def format_logs(df):
     return logs
 
 
-def make_menu_page(notebook_regex, path_to_menu_page):
-    page_data = generate_page_data(notebook_regex)
-    page_contents = render_page_template(path_to_menu_page, page_data)
+def generate_table_html(dataframe: pd.DataFrame):
+    dataframe["duration[Hr]"] = dataframe["duration"]
+    dataframe = dataframe[
+        ["TOI", "STATUS", "category", "duration[Hr]", "logs"]
+    ]
+    table_html = dataframe.to_html(table_id="table", index=False)
+    table_html = table_html.replace(
+        "dataframe", "table table-striped table-bordered"
+    )
+    table_html = table_html.replace("&lt;", "<")
+    table_html = table_html.replace("&gt;", ">")
+    return
 
-    with open(path_to_menu_page, "w") as f:
+
+def make_stats_page(notebook_root, path_to_stats_page):
+    """
+    notebook_root is the top level dir name of the notebooks
+
+    eg:
+
+    <root>
+    |--log_gen/
+    |--log_pe/
+    |--log_web/
+    |--submit/
+    |--<notebook_dir>
+    """
+    toi_df = load_toi_summary_data(notebook_root)
+    table_html = generate_table_html(toi_df)
+    stats_image_path = path_to_stats_page.replace(".html", ".png")
+    plot_runtimes(toi_df, savepath=stats_image_path)
+    page_data = dict(table_html=table_html, stats_image_path=stats_image_path)
+    page_contents = render_page_template(path_to_stats_page, page_data)
+
+    with open(path_to_stats_page, "w") as f:
         f.write(page_contents)

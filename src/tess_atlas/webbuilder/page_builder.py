@@ -12,6 +12,7 @@ from ..file_management import copy_tree, make_tarfile
 
 from tess_atlas.utils import setup_logger
 from tess_atlas.webbuilder.make_tois_homepage import make_menu_page
+from tess_atlas.webbuilder.make_run_stats_page import make_stats_page
 
 
 logger = setup_logger("page builder")
@@ -20,6 +21,7 @@ DIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATES_DIR = f"{DIR}/template/"
 NOTEBOOKS_DIR = "content/toi_notebooks"
 MENU_PAGE = "content/toi_fits.rst"
+STATS_PAGE = "content/stats.html"
 
 
 def log(t, red=True):
@@ -88,6 +90,10 @@ class PageBuilder:
         make_menu_page(
             notebook_regex=toi_regex,
             path_to_menu_page=os.path.join(self.builddir, MENU_PAGE),
+        )
+        make_stats_page(
+            notebook_root=toi_regex,
+            path_to_stats_page=os.path.join(self.builddir, STATS_PAGE),
         )
 
         # build book

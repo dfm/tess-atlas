@@ -66,45 +66,6 @@ Single-transit Systems
     {% endfor %}
 
 
-
-.. tabs::
-
-    .. tab:: Normal Systems
-
-        .. list-table::
-            :widths: 5 15
-            :header-rows: 1
-            :stub-columns: 1
-            {% for toi_link, images in successful_tois['norm'].items() %}
-            * - {{ toi_link }}
-              - {% for image in images %} {{ image }}
-                {% endfor %}
-            {% endfor %}
-
-    .. tab:: Multi-Planet
-
-        .. list-table::
-            :widths: 5 15
-            :header-rows: 1
-            :stub-columns: 1
-            {% for toi_link, images in successful_tois['multi'].items() %}
-            * - {{ toi_link }}
-              - {% for image in images %} {{ image }}
-                {% endfor %}
-            {% endfor %}
-
-    .. tab:: Single-Transit
-
-        .. list-table::
-            :widths: 5 15
-            :header-rows: 1
-            :stub-columns: 1
-            {% for toi_link, images in successful_tois['single'].items() %}
-            * - {{ toi_link }}
-              - {% for image in images %} {{ image }}
-                {% endfor %}
-            {% endfor %}
-
 Erroneous fits
 ---------------
 The failed TOIs:

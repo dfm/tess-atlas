@@ -223,8 +223,8 @@ def update_local_tic_database():
         db["Lightcurve Availible"] = nan
         cache_len = 0
     db["Lightcurve Availible"] = get_db_lk_status(db)
-    assert db["Lightcurve Availible"].isnull().sum() == 0
     db.to_csv(TIC_CACHE, index=False)
+    assert db["Lightcurve Availible"].isnull().sum() == 0
     print(f"Updated database from {cache_len}-->{len(db)} TOIs")
     return db
 

@@ -79,7 +79,7 @@ def bin_by(x, y, nbins=200, bins=None):
     return df
 
 
-def plot_xy_binned(x, y, yerr, ax, bins):
+def plot_xy_binned(x, y, yerr, ax, bins, ms=1):
     bins = np.linspace(min(x), max(x), bins)
     denom, _ = np.histogram(x, bins)
     num, _ = np.histogram(x, bins, weights=y)
@@ -88,4 +88,6 @@ def plot_xy_binned(x, y, yerr, ax, bins):
     new_x = 0.5 * (bins[1:] + bins[:-1])
     new_y = num / denom
     new_yerr = err / denom
-    ax.errorbar(new_x, new_y, new_yerr, fmt=".k", label="data", zorder=-1000)
+    ax.errorbar(
+        new_x, new_y, new_yerr, fmt=".k", label="data", zorder=-1000, ms=ms
+    )

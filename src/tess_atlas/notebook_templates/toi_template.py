@@ -100,10 +100,10 @@ from tess_atlas.data.inference_data_tools import (
 from tess_atlas.utils import get_notebook_logger
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-os.environ["INTERACTIVE_PLOTS"] = "FALSE"  # "TRUE" for interactive plots
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
     plot_lightcurve,
+    plot_interactive_lightcurve,
     plot_phase,
     plot_posteriors,
     plot_priors,

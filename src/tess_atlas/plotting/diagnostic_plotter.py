@@ -187,7 +187,7 @@ def plot_inference_trace(tic_entry):
         plt.savefig(os.path.join(tic_entry.outdir, DIAGNOSTIC_TRACE_PLOT))
 
 
-def plot_diagnostics(tic_entry, model):
+def plot_diagnostics(tic_entry, model, init_params):
     plot_lightcurve_gp_and_residuals(tic_entry, model)
     matplotlib_plots.plot_phase(
         tic_entry,
@@ -195,4 +195,11 @@ def plot_diagnostics(tic_entry, model):
         tic_entry.inference_data,
         plot_data_ci=True,
         plot_label="data_ci",
+    )
+    matplotlib_plots.plot_phase(
+        tic_entry,
+        model,
+        tic_entry.inference_data,
+        initial_params=init_params,
+        low_res=True,
     )

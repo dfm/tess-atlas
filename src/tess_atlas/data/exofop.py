@@ -1,7 +1,7 @@
 import logging
 import os
 from typing import List
-from math import nan, isnan
+from math import nan
 from collections import OrderedDict
 
 import pandas as pd
@@ -182,19 +182,22 @@ def get_db_lk_status(db):
     # unpack data
     data = db[["TIC ID", "Lightcurve Availible"]].to_dict("list")
     tic, lk_status = data["TIC ID"], data["Lightcurve Availible"]
-    nan_list = [t for t, status in zip(tic, lk_status) if isnan(status)]
+    lk_status = {t: s for t, s in zip(tic, lk_status)}
+    nan_list = [
+        t for t, status in zip(tic, lk_status) if not isinstance(status, bool)
+    ]
 
-    for i, t in enumerate(
-        tqdm(nan_list, desc="Checking TIC for lightcurve data")
-    ):
-        lk_status[i] = is_lightcurve_availible(t)
-
+    print(f"Updating lk status for {len(nan_list)} TOIs")
+    for t in tqdm(nan_list, desc="Checking TIC for lightcurve data"):
+        lk_status[t] = is_lightcurve_availible(t)
+    lk_status = [lk_status[t] for t in tic]
     return lk_status
 
 
 def update_local_tic_database():
     # go online to grab database and cache
     db = pd.read_csv(TIC_DATASOURCE)
+    print(f"TIC database has {len(db)} entries")
     db[["TOI int", "planet count"]] = (
         db["TOI"].astype(str).str.split(".", 1, expand=True)
     )
@@ -203,6 +206,7 @@ def update_local_tic_database():
     db["Single Transit"] = db["Period (days)"] <= 0
 
     if tic_cache_present():
+        print("Updating TIC db")
         # then we add in the cached col of 'Lightcurve Availible'
         cache = pd.read_csv(TIC_CACHE)
         cache_len = len(cache)
@@ -219,6 +223,7 @@ def update_local_tic_database():
         db["Lightcurve Availible"] = nan
         cache_len = 0
     db["Lightcurve Availible"] = get_db_lk_status(db)
+    assert db["Lightcurve Availible"].isnull().sum() == 0
     db.to_csv(TIC_CACHE, index=False)
     print(f"Updated database from {cache_len}-->{len(db)} TOIs")
     return db

@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Module one liner
+"""Execute the load_samples_demo.ipynb and save it in the outdir"""
 
-This module does what....
-
-Example usage:
-
-"""
+# TODO: test this with notebooks
 import logging
 import os
 

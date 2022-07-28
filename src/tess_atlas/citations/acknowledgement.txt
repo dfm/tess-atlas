@@ -1,0 +1,5 @@
+This research made use of the \textsf{TESS-Atlas} and its dependencies
+\citep{exoplanet:joss, exoplanet:zenodo, celerite2:foremanmackey17,
+celerite2:foremanmackey18, exoplanet:agol20, exoplanet:arviz,
+exoplanet:astropy13, exoplanet:astropy18, exoplanet:kipping13,
+exoplanet:luger18, exoplanet:pymc3, exoplanet:theano}.

@@ -105,6 +105,7 @@ if __name__ == "__main__":
                 "data/*.csv",
                 "webbuilder/template/",
                 "slurm_job_generator/templates/*.sh",
+                "citations/*.txt",
             ]
         },
         package_dir={"": "src"},

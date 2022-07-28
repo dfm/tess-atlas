@@ -10,12 +10,12 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 from ..data.lightcurve_data import LightCurveData, residual_rms
-from . import matplotlib_plots
 from .plotting_utils import (
     get_longest_unbroken_section_of_data,
     get_colors,
     get_lc_and_gp_from_inference_object,
 )
+from .phase_plotter import plot_phase
 from .labels import (
     DIAGNOSTIC_LIGHTCURVE_PLOT,
     DIAGNOSTIC_TRACE_PLOT,
@@ -23,14 +23,16 @@ from .labels import (
 )
 
 
-def plot_raw_lightcurve(tic_entry, save=True):
+def plot_raw_lightcurve(tic_entry, save=True, zoom_in=False):
     lc = tic_entry.lightcurve
     ax = lc.raw_lc.scatter(
         label=f"Raw Data ({len(lc.raw_lc):,} pts)",
         color="black",
     )
     lc.cleaned_lc.scatter(
-        ax=ax, label=f"Cleaned Data ({len(lc.cleaned_lc):,} pts)", color="gray"
+        ax=ax,
+        label=f"Cleaned Data ({len(lc.cleaned_lc):,} pts)",
+        color="gray",
     )
     for i, p in enumerate(tic_entry.candidates):
         pi = f"[{i}]"
@@ -39,41 +41,66 @@ def plot_raw_lightcurve(tic_entry, save=True):
         single = "Y" if s else "N"
         Np = p.num_periods
         t1 = t0 + T
-        y = 1 - 1e-3 * i
-        k = dict(color=f"C{i}", alpha=0.25)
-        ax.axvline(t0, label=f"$t_0{pi}: {t0:.2f}$", **k)
-        ax.axvline(t1, label=f"$t_1{pi}: {t1:.2f}$", **k)
-        ax.plot(
-            [t0, t1], [y, y], label=f"$T{pi}: {T:.2f}$ days", **k, marker="s"
-        )
+        y = 1
+        c = dict(color=f"C{i}")
+        ca = dict(alpha=0.5, **c)
+        yrng = dict(ymin=1 - p.depth * 1e-3, ymax=1)
         ax.scatter(
             [tmin + (i * T) for i in range(Np + 1)],
             [y] * (Np + 1),
-            **k,
+            **c,
+            alpha=1,
             marker="o",
+            label=f"N{pi} transits: {Np+1} (single? {single})",
         )
-        ax.axvline(
-            tmin,
+        ax.plot(
+            [t0, t1],
+            [y, y],
+            label=f"$T{pi}: {T:.2f}$ days",
+            **ca,
+            marker="s",
+            mec="k",
+            zorder=10,
+        )
+        ax.scatter(
+            [t0, t1],
+            [yrng["ymin"], yrng["ymin"]],
+            **ca,
+            marker="s",
+            ec="k",
+            zorder=10,
+        )
+        ax.vlines(
+            [t0, t1],
+            **yrng,
+            label=f"$t_0{pi} - t_1{pi}: {t0:.2f}- {t1:.2f}$",
+            **ca,
+        )
+        ax.vlines(
+            [tmin, tmax],
+            **yrng,
             ls="--",
-            label="$t_{\\rm min}" f"{pi}: {tmin:.2f}$",
-            **k,
+            label="$t_{\\rm min}"
+            f"{pi}"
+            " - t_{\\rm max}"
+            f"{pi}: {tmin:.2f}-{tmax:.2f}$",
+            **ca,
             lw=2.5,
         )
-        ax.axvline(
-            tmax,
-            ls=":",
-            label="$t_{\\rm max}" f"{pi}: {tmax:.2f}$",
-            **k,
-            lw=4.5,
+
+    if zoom_in:
+        idx, t = get_longest_unbroken_section_of_data(lc.time)
+        perc_data = int(100 * (len(idx) / len(lc.time)))
+        xrange = (min(t), max(t))
+        if perc_data > 98:
+            minx = lc.time[idx[0]]
+            maxx = lc.time[idx[int(len(idx) / 2)]]
+            xrange = (minx, maxx)
+        ax.set_xlim(*xrange)
+        txt = (
+            f"{perc_data}% Data (full {int(min(lc.time))}-{int(max(lc.time))})"
         )
-        ax.plot([], [], label=f"Single{pi}: {single} ({Np} periods)", alpha=0)
-        valid = (Np == 0 and s) or (Np > 0 and not s)
-        ax.plot(
-            [],
-            [],
-            label=f"Valid{pi}: {valid}",
-            color="green" if valid else "red",
-        )
+        ax.set_title(txt)
 
     l = plt.legend(
         loc="upper left",
@@ -189,14 +216,14 @@ def plot_inference_trace(tic_entry):
 
 def plot_diagnostics(tic_entry, model, init_params):
     plot_lightcurve_gp_and_residuals(tic_entry, model)
-    matplotlib_plots.plot_phase(
+    plot_phase(
         tic_entry,
         model,
         tic_entry.inference_data,
         plot_data_ci=True,
         plot_label="data_ci",
     )
-    matplotlib_plots.plot_phase(
+    plot_phase(
         tic_entry,
         model,
         tic_entry.inference_data,

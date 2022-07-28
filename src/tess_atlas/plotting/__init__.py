@@ -2,18 +2,14 @@ import os
 
 from .corner_plotter import plot_eccentricity_posteriors, plot_posteriors
 from .histogram_plotter import plot_priors
-from . import matplotlib_plots
-from . import plotly_plots
+from .lightcurve_plotter import plot_lightcurve, plot_interactive_lightcurve
+from .phase_plotter import plot_phase
 from .diagnostic_plotter import (
     plot_diagnostics,
     plot_inference_trace,
     plot_raw_lightcurve,
 )
-
-if os.environ.get("INTERACTIVE_PLOTS", default="False") == "TRUE":
-    plot_lightcurve = plotly_plots.plot_lightcurve
-else:
-    plot_lightcurve = matplotlib_plots.plot_lightcurve
-
-plot_phase = matplotlib_plots.plot_phase
-plot_interactive_lightcurve = plotly_plots.plot_lightcurve
+from .population_plotter import (
+    plot_toi_list_radius_vs_period,
+    plot_exofop_vs_atlas_comparison,
+)

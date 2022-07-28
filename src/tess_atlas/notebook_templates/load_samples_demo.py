@@ -7,23 +7,29 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.6.0
+#       jupytext_version: 1.10.3
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
-
 # + [markdown] tags=["def"]
-# # Notebook to demonstrate procedure to load samples
+# # Example Loader
 #
-# For a TESS-atlas version, this notebook
-# 1. Displays the samples files that are stored
-# 2. Loads the stored samples
-# 3. Displays the planet params for each toi
+# Here we demonstrate how to
+# 1. Download a TESS-Atlas TOI fit
+# 2. Load the stored TOIs data (lightcurve, posterior, stellar parameters)
+# 3. Load and make plots of _all_ TOI fits
+#
+# ## Setup
 
-# + pycharm={"name": "#%%\n"} tags=["def"]
+# + pycharm={"name": "#%%\n"} tags=["def", "hide-cell"]
+# %load_ext autoreload
+# %load_ext memory_profiler
+# %load_ext autotime
+# # %load_ext jupyternotify
+# %autoreload 2
 # %matplotlib inline
 
 import glob
@@ -34,14 +40,52 @@ from typing import List
 import pandas as pd
 import tqdm
 
-from tess_atlas.data import TICEntry
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME, notebook_initalisations
+
+from tess_atlas.utils import get_notebook_logger, notebook_initalisations
+from tess_atlas.plotting import (
+    plot_toi_list_radius_vs_period,
+    plot_exofop_vs_atlas_comparison,
+)
+
+OUTDIR = "example_loader_files"
+
 
 notebook_initalisations()
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = get_notebook_logger(OUTDIR)
 
-ATLAS_VERSION = "0.2.0"
-SEARCH_PATH = "./toi_*_files/*.netcdf"
+
+# -
+
+# ## Download a TESS-Atlas fit
+#
+# To download the notebook and results for a TOI (for example TOI 103) you could use the following:
+
+# ! download_toi 103 --outdir .
+
+# This downloads the notebook along with the results in the specified directory. You can now open that notebook up to load the results or rerun the analysis.
+#
+# Alternatively, you can also load the results of a TOI (eg TOI 174) in a notebook that you have open with the following:
+
+from tess_atlas.data import TICEntry
+
+toi_174 = TICEntry.load(174, load_from_catalog=True)
+toi_174
+
+# ## Download all TESS-Atlas fits
+#
+# You may want to download _all_ TOI notebooks and fits. To do this, you can use the following.
+#
+# ```{warning}
+# This can take a longgg time!
+# ```
+#
+
+# ! download_all_tois --outdir tois
+
+# Once you have all the fits you can load them up
+
+# + pycharm={"name": "#%%\n"} tags=["exe"]
+SEARCH_PATH = "./*/toi_*_files/*.netcdf"
 
 
 def get_analysed_toi_sample_filenames() -> pd.DataFrame:
@@ -64,7 +108,6 @@ def get_tic_list_with_loaded_samples(
     return tic_list
 
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
 analysed_tois = get_analysed_toi_sample_filenames()
 analysed_tois
 
@@ -84,3 +127,21 @@ tic_list[0].inference_trace
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 summary_df = pd.concat([tic.get_trace_summary() for tic in tic_list])
 summary_df
+# -
+
+# ## Downloading summary statistics
+#
+# Maybe you dont want all the fits, but just summary statistics for them. These can be accessed with the following:
+
+# +
+from tess_atlas.catalog_stats import get_summary_stats
+
+summary_stats = get_summary_stats()
+summary_stats
+# -
+
+# ## Plots from all the fits
+# Finally, you may want to make some plots with all the results
+
+# +
+# make some plots here

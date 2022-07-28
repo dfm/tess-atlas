@@ -31,7 +31,6 @@ class MatplotlibPlotTest(unittest.TestCase):
         os.chdir(self.orig_dir)
 
     def test_static_phase_plot(self):
-        os.environ["INTERACTIVE_PLOTS"] = "FALSE"
         from tess_atlas.plotting import plot_phase
 
         plot_phase(tic_entry=self.tic_entry)

@@ -21,7 +21,7 @@ tests/toi_*_files
 test_notebooks/
 **/test_notebooks
 tests/test_notebooks/
-/src/tess_atlas/notebook_templates/toi_template.ipynb
+/src/tess_atlas/notebook_templates/*.ipynb
 
 /tests/test_jobgen/
 case_studies

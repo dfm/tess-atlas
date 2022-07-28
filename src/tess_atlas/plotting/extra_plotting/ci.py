@@ -79,7 +79,7 @@ def bin_by(x, y, nbins=200, bins=None):
     return df
 
 
-def plot_xy_binned(x, y, yerr, ax, bins, ms=1):
+def plot_xy_binned(x, y, yerr, ax, bins, ms=6.0):
     bins = np.linspace(min(x), max(x), bins)
     denom, _ = np.histogram(x, bins)
     num, _ = np.histogram(x, bins, weights=y)

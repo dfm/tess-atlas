@@ -40,7 +40,9 @@ def sort_files(files):
 
 def get_phase_plots(notebook_path, notebook_dir):
     toi_str = get_toi_str_from_path(notebook_path)
-    phase_regex = os.path.join(notebook_dir, f"toi_{toi_str}_files/phase*.png")
+    phase_regex = os.path.join(
+        notebook_dir, f"toi_{toi_str}_files/phase*_lowres.png"
+    )
     phase_plots = glob.glob(phase_regex)
     if len(phase_plots) > 0:
         return [p.split(notebook_dir)[1] for p in phase_plots]

@@ -140,12 +140,17 @@ class LightCurveData(DataObject):
     def filter_non_transit_data(
         self,
         candidates: List,
-        day_buffer: Optional[float] = 0.3,
     ):
         """Remove data outside transits (keep 'day-buffer' days near transit)"""
+
+        max_duration = max([c.duration * 2 for c in candidates])
+        day_buffer = max(0.3, max_duration)
+
         transit_mask = self.get_transit_mask(candidates, day_buffer)
         new_len = sum(transit_mask)
-        logger.info(f"Reducing lightcurve from {self.len:,}-->{new_len:,}")
+        logger.info(
+            f"Reducing lightcurve from {self.len:,}-->{new_len:,} [day-buffer = {day_buffer:.1f}]"
+        )
         self.cleaned_lc = self.cleaned_lc[transit_mask]
         formatted_data = self.format_lc_data(self.cleaned_lc)
         self.time = formatted_data["time"]

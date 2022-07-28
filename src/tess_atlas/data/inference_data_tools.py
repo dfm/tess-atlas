@@ -54,11 +54,24 @@ def summary(inference_data, just_planet_params=False) -> pd.DataFrame:
         df["parameter"] = df.index
         df.set_index(["parameter"], inplace=True, append=False, drop=True)
 
-    for i, row in df.iterrows():
-        if row["r_hat"] > 1.01:
-            logger.warning(
-                f"Sampler may not have converged! {i} r-hat: {row['r_hat']}"
-            )
+    RHAT_THRESHOLD = 1.1
+    bogus_params = []
+    for param, row in df.iterrows():
+        if row["r_hat"] >= RHAT_THRESHOLD:
+            bogus_params.append(param)
+
+    if len(bogus_params) > 0:
+        logger.warning(
+            f"Sampler may not have converged! r-hat > {RHAT_THRESHOLD} for {bogus_params}"
+        )
+
+    # TODO
+    """
+    for each b_param in all_params:
+        if median(b_param) > 0.8:
+            logger.warning("b[i] > 0.8 --> may be a grazing system!")
+    """
+
     return df
 
 
@@ -163,7 +176,14 @@ def get_optimized_init_params(
     return_all=False,
     quick=False,
 ):
-    """Get params with maximimal log prob for sampling starting point"""
+    """Get params with maximimal log prob for sampling starting point
+
+    planet_params:  [radius ratio, duration, impact parameter]
+    noise_params: [jitter, GP sigma, GP rho]
+    stellar_params: [f0, limb-darkening]
+    period_params: [period for single, tmax for other]
+
+    """
     logger.info("Optimizing sampling starting point")
     with model:
         cache = []

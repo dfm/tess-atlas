@@ -1,15 +1,14 @@
 import logging
 import os
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
-
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
 from arviz import InferenceData
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 from tess_atlas.data import TICEntry
 from tess_atlas.data.inference_data_tools import get_samples_dataframe
@@ -18,13 +17,11 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from .extra_plotting.ci import plot_ci, plot_xy_binned
 from .labels import (
     FLUX_LABEL,
-    FOLDED_LIGHTCURVE_PLOT,
     LIGHTCURVE_PLOT,
     PHASE_PLOT,
     TIME_LABEL,
     TIME_SINCE_TRANSIT_LABEL,
 )
-from .plotter_backend import PlotterBackend
 from .plotting_utils import (
     get_colors,
     get_lc_and_gp_from_inference_object,
@@ -35,89 +32,6 @@ from .plotting_utils import (
 )
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
-
-
-def plot_lightcurve(
-    tic_entry: TICEntry,
-    model_lightcurves: Optional[np.ndarray] = None,
-    save: Optional[bool] = True,
-    zoom_in: Optional[bool] = False,
-    observation_periods: Optional[np.ndarray] = None,
-) -> plt.Figure:
-    """Plot lightcurve data + transit fits (if provided) in one plot
-
-    model_lightcurves: (lightcurve_num, lightcurve_y_vals, planet_id)
-
-    """
-    # todo truncate region of missing data on axes
-
-    if model_lightcurves is None:
-        model_lightcurves = []
-    else:
-        model_lightcurves = model_lightcurves.T
-
-    if observation_periods is None:
-        observation_periods = []
-
-    colors = get_colors(tic_entry.planet_count)
-    fig, ax = plt.subplots(1, figsize=(7, 5))
-
-    lc = tic_entry.lightcurve
-
-    if zoom_in:
-        idx, _ = get_longest_unbroken_section_of_data(lc.time)
-        perc_data = int(100 * (len(idx) / len(lc.time)))
-        logger.debug(f"{perc_data}% Data Displayed")
-    else:
-        idx = [i for i in range(len(lc.time))]
-
-    ax.scatter(
-        lc.time[idx],
-        lc.flux[idx],
-        color="k",
-        label="Data",
-        s=0.75,
-        alpha=0.5,
-    )
-    ax.set_ylabel(FLUX_LABEL)
-    ax.set_xlabel(TIME_LABEL)
-
-    for i, model_lightcurve in enumerate(model_lightcurves):
-        ax.plot(
-            lc.time[idx],
-            model_lightcurve[idx],
-            label=f"Planet {i} fit",
-            c=colors[i],
-            alpha=0.75,
-        )
-
-    ax.legend(
-        markerscale=5,
-        frameon=False,
-        bbox_to_anchor=(1.05, 1.0),
-        loc="upper left",
-    )
-
-    for i, period in enumerate(observation_periods):
-        c = "gray"
-        if i % 2 == 0:
-            c = "lightgray"
-        for p in period:
-            ax.axvline(
-                p,
-                color=c,
-                ls="--",
-                alpha=0.35,
-                zorder=-100,
-            )
-        ax.axvspan(period[0], period[1], facecolor=c, alpha=0.1)
-
-    fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
-    if save:
-        logger.debug(f"Saving {fname}")
-        fig.savefig(fname)
-    else:
-        return fig
 
 
 def plot_phase(
@@ -143,11 +57,15 @@ def plot_phase(
     """
 
     if low_res:
-        figsize = (3.5, 2)
-        dpi = 50
+        figsize = (3.0, 2.5)
+        dpi = 100
+        default_fs, period_fs, legend_fs = 8, 6, 0
+        ms = 1
     else:
         figsize = (7, 5)
         dpi = 150
+        default_fs, period_fs, legend_fs = 16, 12, 10
+        ms = 6
 
     # set some plotting constants
     plt_min, plt_max = -0.3, 0.3
@@ -217,6 +135,7 @@ def plot_phase(
                 cmap="Greys",
                 label=f"data",
                 s=0.75,
+                alpha=0.75,
             )
             plt.colorbar(axes_cb, ax=plt.gca(), label=TIME_LABEL)
         elif plot_data_ci:
@@ -230,10 +149,7 @@ def plot_phase(
             )
         else:  # default
             plot_xy_binned(
-                *xy_dat,
-                yerr=yerr[idx],
-                ax=plt.gca(),
-                bins=data_bins,
+                *xy_dat, yerr=yerr[idx], ax=plt.gca(), bins=data_bins, ms=ms
             )
 
         # Plot the folded lightcurve model
@@ -249,8 +165,9 @@ def plot_phase(
             plt.plot(
                 init_x,
                 init_y[0],
-                color="tab:red",
+                color=colors[i],
                 label="initial fit",
+                ls="dashed",
             )
             ylim = np.abs(np.min(np.hstack(init_y))) * 1.2
 
@@ -288,13 +205,24 @@ def plot_phase(
             textcoords="offset points",
             ha="left",
             va="bottom",
-            fontsize=12,
+            fontsize=period_fs,
         )
 
-        plt.legend(fontsize=10, loc="lower right")
-        plt.xlabel(TIME_SINCE_TRANSIT_LABEL)
-        plt.ylabel(FLUX_LABEL)
-        plt.title(f"TOI {toi}: Planet {i + 1}")
+        if low_res:
+            plt.xticks(fontsize=default_fs)
+            plt.locator_params(axis="y", nbins=2)
+            plt.gca().yaxis.tick_right()
+            plt.yticks(fontsize=default_fs)
+
+        else:
+            plt.legend(fontsize=legend_fs, loc="lower right")
+        plt.xlabel(TIME_SINCE_TRANSIT_LABEL, fontsize=default_fs)
+        plt.ylabel(FLUX_LABEL, fontsize=default_fs)
+        plt.title(f"TOI {toi}: Planet {i + 1}", fontsize=default_fs)
+
+        if max(x_fold[idx]) < plt_max:
+            plt_min, plt_max = min(x_fold[idx]), max(x_fold[idx])
+
         plt.xlim(plt_min, plt_max)
         if zoom_y_axis:
             plt.ylim(-ylim, ylim)
@@ -309,3 +237,60 @@ def plot_phase(
         fname = os.path.join(tic_entry.outdir, fname)
         logger.debug(f"Saving {fname}")
         plt.savefig(fname, dpi=dpi)
+
+
+def plot_folded_lightcurve(
+    tic_entry: TICEntry, model_lightcurves: Optional[List[float]] = None
+) -> go.Figure:
+    """Subplots of folded lightcurves + transit fits (if provided) for each transit"""
+    if model_lightcurves is None:
+        model_lightcurves = []
+    subplot_titles = [
+        f"Planet {i + 1}: TOI-{c.toi_id}"
+        for i, c in enumerate(tic_entry.candidates)
+    ]
+    fig = make_subplots(
+        rows=tic_entry.planet_count,
+        subplot_titles=subplot_titles,
+        vertical_spacing=0.1,
+    )
+    for i in range(tic_entry.planet_count):
+        lc = tic_entry.lightcurve
+        planet = tic_entry.candidates[i]
+        fig.add_trace(
+            go.Scattergl(
+                x=lc.timefold(t0=planet.tmin, p=planet.period),
+                y=lc.flux,
+                mode="markers",
+                marker=dict(
+                    size=3,
+                    color=lc.time,
+                    showscale=False,
+                    colorbar=dict(title="Days"),
+                ),
+                name=f"Candidate {i + 1} Data",
+            ),
+            row=i + 1,
+            col=1,
+        )
+        fig.update_xaxes(title_text=TIME_LABEL, row=i + 1, col=1)
+        fig.update_yaxes(title_text=FLUX_LABEL, row=i + 1, col=1)
+    for i, model_lightcurve in enumerate(model_lightcurves):
+        lc = tic_entry.lightcurve
+        planet = tic_entry.candidates[i]
+        fig.add_trace(
+            go.Scattergl(
+                x=lc.timefold(t0=planet.tmin, p=planet.period),
+                y=model_lightcurve,
+                mode="markers",
+                name=f"Planet {i + 1}",
+            ),
+            row=i + 1,
+            col=1,
+        )
+    fig.update_layout(height=300 * tic_entry.planet_count)
+    fig.update(layout_coloraxis_showscale=False)
+    fname = os.path.join(tic_entry.outdir, PHASE_PLOT)
+    logger.debug(f"Saving {fname}")
+    fig.write_image(fname)
+    return fig

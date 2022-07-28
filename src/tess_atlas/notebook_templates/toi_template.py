@@ -14,6 +14,13 @@
 #     name: python3
 # ---
 
+# + tags=["exe", "hide-cell"]
+try:
+    import tess_atlas
+except ModuleNotFoundError:
+    # !pip install git+https://github.com/dfm/tess-atlas.git@main
+    import tess_atlas
+
 # + [markdown] tags=["def"]
 # # TESS Atlas fit for TOI {{{TOINUMBER}}}
 #
@@ -24,11 +31,10 @@
 # In this notebook, we do a quicklook fit for the parameters of the TESS Objects of Interest (TOI) in the system number {{{TOINUMBER}}}.
 # To do this fit, we use the [exoplanet](https://exoplanet.dfm.io) library and you can find more information about that project at [exoplanet.dfm.io](https://exoplanet.dfm.io).
 #
-# From here, you can scroll down and take a look at the fit results, or you can:
-#
-# - [open the notebook in Google Colab to run the fit yourself](https://colab.research.google.com/github/dfm/tess-atlas/blob/gh-pages/notebooks/{{{VERSIONNUMBER}}}/toi-{{{TOINUMBER}}}.ipynb),
-# - [view the notebook on GitHub](https://github.com/dfm/tess-atlas/blob/gh-pages/notebooks/{{{VERSIONNUMBER}}}/toi-{{{TOINUMBER}}}.ipynb), or
-# - [download the notebook](https://github.com/dfm/tess-atlas/raw/gh-pages/notebooks/{{{VERSIONNUMBER}}}/toi-{{{TOINUMBER}}}.ipynb).
+# From here, you can
+# - scroll down and take a look at the fit results
+# - open the notebook in Google Colab to run the fit yourself
+# - download the notebook
 #
 #
 #
@@ -50,14 +56,12 @@
 # 3. [Fitting transit parameters](#Fitting-transit-parameters)
 # 4. [Results](#Results)
 # 5. [Citations](#Citations)
-# 6. [Posterior constraints](#Posterior-constraints)
-# 7. [Attribution](#Attribution)
 #
 # ## Getting started
 #
-# To get going, we'll add some _magic_:
+# To get going, we'll add some _magic_, import some packages, and run some setup steps.
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
+# + pycharm={"name": "#%%\n"} tags=["exe", "hide-cell"]
 # %load_ext autoreload
 # %load_ext memory_profiler
 # %load_ext autotime
@@ -65,15 +69,6 @@
 # %autoreload 2
 # %matplotlib inline
 
-# + [markdown] tags=["def"]
-# Then we'll set up the plotting styles and do all of the imports:
-
-# + pycharm={"name": "#%%\n"} tags=["def"]
-from tess_atlas.utils import notebook_initalisations
-
-notebook_initalisations()
-
-# + pycharm={"name": "#%%\n"} tags=["exe"]
 import os
 
 import aesara_theano_fallback.tensor as tt
@@ -98,8 +93,6 @@ from tess_atlas.data.inference_data_tools import (
     get_optimized_init_params,
 )
 from tess_atlas.utils import get_notebook_logger
-
-# + pycharm={"name": "#%%\n"} tags=["exe"]
 from tess_atlas.plotting import (
     plot_eccentricity_posteriors,
     plot_lightcurve,
@@ -111,8 +104,11 @@ from tess_atlas.plotting import (
     plot_inference_trace,
     plot_raw_lightcurve,
 )
+from tess_atlas import citations
+from tess_atlas.utils import notebook_initalisations
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
+notebook_initalisations()
+
 TOI_NUMBER = {{{TOINUMBER}}}
 logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")
 
@@ -136,21 +132,16 @@ logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")
 # Downloading the data (this may take a few minutes):
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry = TICEntry.load(toi=TOI_NUMBER)
-# -
-
-# Some of the TOIs parameters stored on ExoFOP:
-
-# + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry
 # -
 
-# If the amount of lightcurve data availible is large we filter the data to keep data within 0.3 days of the transits.
+# If the amount of lightcurve data availible is large we filter the data to keep only data around transits.
 
 # + tags=["exe"]
 if tic_entry.lightcurve.len > 1e5:
-    tic_entry.lightcurve.filter_non_transit_data(
-        tic_entry.candidates, day_buffer=0.3
-    )
+    tic_entry.lightcurve.filter_non_transit_data(tic_entry.candidates)
+else:
+    logger.info("Using the full lightcurve for analysis.")
 # -
 
 # Plot of the lightcurve:
@@ -160,6 +151,7 @@ if tic_entry.lightcurve.len > 1e5:
 plot_lightcurve(tic_entry)
 # + tags=["exe", "hide-cell"]
 plot_raw_lightcurve(tic_entry)
+plot_raw_lightcurve(tic_entry, zoom_in=True)
 # -
 
 # ## Fitting transit parameters
@@ -194,7 +186,7 @@ plot_raw_lightcurve(tic_entry)
 # * $k_\alpha(t,t';\vec{\theta}))$: a stochastically-driven, damped harmonic oscillator ([SHOTterm])
 #
 #
-# Now that we have defined our transit model, we can implement it in python:
+# Now that we have defined our transit model, we can implement it in python (toggle to show).
 #
 # [Foreman-Mackey et al 2017]: https://arxiv.org/pdf/1703.09710.pdf
 # [Kipping 2013]: https://arxiv.org/abs/1308.0009
@@ -375,7 +367,8 @@ test_model(planet_transit_model)
 
 # -
 
-# We can now optimize the model sampling parameters before initialising the sampler.
+# ### Optimizing the initial point for sampling
+# We help out the sampler we try to find an optimized set of initial parameters to begin sampling from.
 
 # + tags=["exe"]
 if tic_entry.optimized_params is None:
@@ -386,7 +379,7 @@ else:
 test_model(planet_transit_model, init_params, show_summary=True)
 # -
 
-# Now we can plot our initial model and priors:
+# Below are plots of our initial model and priors.
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 initial_lc_models = (
@@ -417,7 +410,7 @@ if prior_samples:
 
 #
 # ### Sampling
-# With the model and priors defined, we can begin sampling
+# With the model and priors defined, we can begin sampling.
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
 def run_inference(model) -> InferenceData:
@@ -441,7 +434,7 @@ else:
 inference_data
 # -
 
-# Lets save the posteriors and sampling metadata for future use, and take a look at summary statistics
+# The `inference_data` object contains the posteriors and sampling metadata. Let's save it for future use, and take a look at summary statistics. Note: the _trace plot_ from sampling is hidden below.
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 tic_entry.save_data(inference_data=inference_data)
@@ -451,13 +444,13 @@ plot_inference_trace(tic_entry)
 # -
 
 # ## Results
-# Below are plots of the posterior probability distributuions:
+#
+#
+# ### Posterior plots
+# Below are plots of the posterior probability distributions and the best-fitting light-curve model.
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 plot_posteriors(tic_entry, inference_data, initial_params=init_params)
-# -
-# We can also plot the best-fitting light-curve model
-
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 # %%memit
 plot_phase(
@@ -468,7 +461,7 @@ plot_phase(
 )
 # -
 
-# ### Post-processing: Eccentricity
+# ### Eccentricity post-processing
 #
 # As discussed above, we fit this model assuming a circular orbit which speeds things up for a few reasons:
 # 1) `e=0` allows simpler orbital dynamics which are more computationally efficient (no need to solve Kepler's equation numerically)
@@ -501,29 +494,31 @@ else:
         "Stellar data not present for TIC. Skipping eccentricity calculations."
     )
 # -
-# Finally, we also store some diagnostic plots.
+# ### Diagnostics
+# Finally, we also generate some diagnostic plots.
 
 # + pycharm={"name": "#%%\n"} tags=["exe", "hide-cell"]
-plot_diagnostics(tic_entry, planet_transit_model)
+plot_diagnostics(tic_entry, planet_transit_model, init_params)
 # -
 # ## Citations
 #
-
-# + pycharm={"name": "#%%\n"} tags=["exe"]
-with planet_transit_model:
-    txt, bib = xo.citations.get_citations_for_model()
-print(txt)
+# We hope this has been helpful! The TESS-Atlas was built using exoplanet, PyMC3, lightkurve, starry, celerite2, ExoFOP, and Sphinx.
+#
+# We would greatly appreciate you citing this work and its dependencies.
+#
+# ### LaTeX acknowledgement and bibliography
 
 # + pycharm={"name": "#%%\n"} tags=["exe", "output_scroll"]
-print("\n".join(bib.splitlines()) + "\n...")
+from tess_atlas import citations
+
+citations.print_acknowledgements()
+
+# + pycharm={"name": "#%%\n"} tags=["exe", "output_scroll"]
+citations.print_bibliography()
 # -
 
-# ### Packages used:
+# ### Packages used
 #
 
 # + pycharm={"name": "#%%\n"} tags=["exe", "output_scroll"]
-import pkg_resources
-
-dists = [str(d).replace(" ", "==") for d in pkg_resources.working_set]
-for i in dists:
-    print(i)
+citations.print_packages()

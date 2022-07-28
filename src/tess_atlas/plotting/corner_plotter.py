@@ -94,11 +94,19 @@ def plot_posteriors(
     tic_entry: TICEntry, inference_data, initial_params: Optional[Dict] = {}
 ) -> None:
     """Plots 1 posterior corner plot for each planet"""
-    plot_params = ["r", "b", "tmin", "tmax", "p", "dur"]
-    single_transit_params = ["log_r", "b", "tmin", "dur"]
+    plot_params = [
+        "p",
+        "b",
+        "r",
+        "dur",
+        "tmin",
+        "tmax",
+    ]
+    single_transit_params = ["log_p", "b", "log_r", "dur", "tmin"]
 
     if initial_params:
         initial_params["log_r"] = np.log(initial_params["r"])
+        initial_params["log_p"] = np.log(initial_params["p"])
 
     posterior_samples = get_samples_dataframe(inference_data)
 
@@ -109,6 +117,7 @@ def plot_posteriors(
             params = single_transit_params.copy()
         planet_params = [f"{p}[{n}]" for p in params]
         posterior_samples[f"log_r[{n}]"] = np.log(posterior_samples[f"r[{n}]"])
+        posterior_samples[f"log_p[{n}]"] = np.log(posterior_samples[f"p[{n}]"])
         planet_n_samples = posterior_samples[planet_params]
         extras = dict(
             range=get_range(planet_n_samples, planet_params),
@@ -117,7 +126,6 @@ def plot_posteriors(
             color=colors[n],
         )
         if initial_params:
-
             truths = reformat_trues(initial_params, params, n)
             if not np.isnan(truths).any():
                 extras["truths"] = truths

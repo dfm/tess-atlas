@@ -1,7 +1,6 @@
 # PLOT FILE NAMES
 LIGHTCURVE_PLOT = "flux_vs_time.png"
 PHASE_PLOT = "phase_plot.png"
-FOLDED_LIGHTCURVE_PLOT = "folded_flux_vs_time.png"
 POSTERIOR_PLOT = "posteriors.png"
 ECCENTRICITY_PLOT = "eccentricity_posteriors.png"
 PRIOR_PLOT = "priors.png"

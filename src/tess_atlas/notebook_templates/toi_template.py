@@ -16,10 +16,12 @@
 
 # + tags=["exe", "hide-cell"]
 try:
-    import tess_atlas
+    from tess_atlas.utils import notebook_initalisations
 except ModuleNotFoundError:
     # !pip install git+https://github.com/dfm/tess-atlas.git@main
-    import tess_atlas
+    from tess_atlas.utils import notebook_initalisations
+
+notebook_initalisations()
 
 # + [markdown] tags=["def"]
 # # TESS Atlas fit for TOI {{{TOINUMBER}}}
@@ -105,9 +107,6 @@ from tess_atlas.plotting import (
     plot_raw_lightcurve,
 )
 from tess_atlas import citations
-from tess_atlas.utils import notebook_initalisations
-
-notebook_initalisations()
 
 TOI_NUMBER = {{{TOINUMBER}}}
 logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")

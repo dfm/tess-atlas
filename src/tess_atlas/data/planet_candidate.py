@@ -60,7 +60,7 @@ class PlanetCandidate(DataObject):
             period
         )
         self.classification = classification
-        self.comments = comments
+        self.comment = comment
         self.pipeline = pipeline
 
         if self.has_data_only_for_single_transit:
@@ -177,7 +177,8 @@ class PlanetCandidate(DataObject):
             lightcurve=lightcurve,
             snr=toi_data["Planet SNR"],
             classification=toi_data["TESS Disposition"],
-            comments=toi_data["Comments"],
+            comment=toi_data["Comments"],
+            pipeline=toi_data["Source"],
         )
         return cls(**unpack_data)
 
@@ -192,12 +193,15 @@ class PlanetCandidate(DataObject):
     def to_dict(self, extra=False):
         data = {
             "TOI": self.toi_id,
+            "Classification": self.classification,
             "Period (days)": self.period,
             "Epoch (TBJD)": self.t0,
             "Depth (ppt)": self.depth,
             "Duration (days)": self.duration,
             "Planet SNR": self.snr,
             "Single Transit": self.has_data_only_for_single_transit,
+            "PE Pipeline": self.pipeline,
+            "Comments": self.comment,
         }
         if extra:
             data.update(

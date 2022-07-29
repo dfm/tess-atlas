@@ -392,12 +392,11 @@ initial_lc_models = (
 plot_lightcurve(tic_entry, initial_lc_models)
 
 # + tags=["exe"]
-plot_phase(
-    tic_entry,
-    planet_transit_model,
-    initial_params=init_params,
-    plot_all_datapoints=True,
+params = dict(
+    tic_entry=tic_entry, model=planet_transit_model, initial_params=init_params
 )
+plot_phase(**params, thumbnail=True)
+plot_phase(**params, plot_all_datapoints=True)
 
 # + tags=["exe"]
 prior_samples = sample_prior(planet_transit_model)

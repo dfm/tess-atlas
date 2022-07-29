@@ -239,6 +239,8 @@ def plot_phase(
         fname = os.path.join(tic_entry.outdir, fname)
         logger.debug(f"Saving {fname}")
         plt.savefig(fname, **savekwg)
+        if thumbnail:
+            plt.close()
 
 
 def plot_folded_lightcurve(

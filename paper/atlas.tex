@@ -23,9 +23,10 @@
 
 \begin{abstract}
 We present the first \tess\ Atlas, a transiting exoplanet parameter estimate catalog generated from 2-minute cadence \tess\ data during 2018 through 2022 (Sectors 1 to 54).
-This contains posterior estimates for \red{\numAnalysed} \tess\ Objects of Interest, including \red{\numAnalysedMulti} multi-planet candidate systems and \red{\numAnalysedSingle} candidates with data for only a single transit. 
-Our analysis utilises the No-U-Turns Markov chain Monte Carlo algorithm to sample the parameter space with a circular transit model implemented in \exoplanet. 
-To enable follow-up as our understanding of the underlying populations evolves, we provide posterior samples from our analyses and Jupyter notebooks to reproduce the analyses for each exoplanet candidate.
+This catalog contains posterior estimates for \red{\numAnalysed} \tess\ Objects of Interest, including \red{\numAnalysedMulti} multi-planet candidate systems and \red{\numAnalysedSingle} candidates with data for only a single transit.
+Our analysis utilises the No-U-Turns Markov chain Monte Carlo algorithm to sample the parameter space with a circular transit model implemented in \exoplanet.
+We compare the parameters from this catalog with those documented in ExoFOP.
+We provide posterior samples from our analyses and Jupyter notebooks to reproduce the analyses for each exoplanet candidate.
 \end{abstract}
 
 % info on sectors: https://heasarc.gsfc.nasa.gov/docs/tess/sector.html
@@ -39,28 +40,49 @@ To enable follow-up as our understanding of the underlying populations evolves, 
 
 \section{Introduction} \label{sec:intro}
 
-In July 2020, NASA’s Transiting Exoplanet Survey Satellite \citep{Ricker:2015:JATIS} completed its two-year Primary Mission to search for transiting exoplanets around nearby bright stars. 
-\tess\ recorded 2-minute cadence observations for $\sim200,000$ pre-selected stars that were processed by the \tess\ Science Processing Operations Center \citep{Jenkins:2016:SPIE} pipeline. 
-Additionally, \tess\ also recorded measurements of its entire field of view in 10 and 30-minute sampled full-frame images (FFIs), enabling the flux measurements of tens of millions of stars. 
-Between 2, 10 and 30-minute observations, the \tess\ Primary Mission and the ongoing extended missions have identified over \red{$\numTessCandidates$} planet candidates, \red{$\numTessPlanets$} of which have been confirmed as planets \citep{Stassun:2018:AJ, Stassun:2019:AJ, Guerrero:2021:ApJS, Guerrero:2021:AAS}. 
-Furthermore, \tess\ data have provided numerous non-exoplanet candidates disclosing new information on eclipsing binaries (e.g., ), and tidally interacting systems (e.g., ), exomoons (e.g., ), comets (e.g., ),  exocoments (e.g., ), supernovae (e.g., ), and more (see [review] for more). \alltodo{get citations}.
+In July 2020, NASA’s Transiting Exoplanet Survey Satellite \citep{Ricker:2015:JATIS} completed its two-year Primary Mission to search for transiting exoplanets around nearby bright stars.
+\tess\ recorded 2-minute cadence observations for $\sim200,000$ pre-selected stars that were processed by the \tess\ Science Processing Operations Center \citep{Jenkins:2016:SPIE} pipeline.
+Additionally, \tess\ also recorded measurements of its entire field of view in 10 and 30-minute sampled full-frame images (FFIs), enabling the flux measurements of tens of millions of stars.
+Between 2, 10 and 30-minute observations, the \tess\ Primary Mission and the ongoing extended missions have identified over \red{$\numTessCandidates$} planet candidates, \red{$\numTessPlanets$} of which have been confirmed as planets \citep{Stassun:2018:AJ, Stassun:2019:AJ, Guerrero:2021:ApJS, Guerrero:2021:AAS}.
+These candiates were found with two \tess\ Science office pipelines: the Science Processing Operations Center (SPOC) pipeline for the 2-minute cadence data, and the Quick Look Pipeline (QLP) for the 10 and 30-minute cadence data \citep{Guerrero:2021:ApJS}.
+Some additional candidates were promoted with the help of community lead pipelines \citep{Guerrero:2021:ApJS}.
+Furthermore, these pipelines were able to identify numerous non-exoplanet candidates in the \tess\ data disclosing new information on eclipsing binaries (e.g., ), tidally interacting systems (e.g., ), exomoons (e.g., ), comets (e.g., ),  exocoments (e.g., ), supernovae (e.g., ), and more (see [review] for more). \alltodo{get citations}.
 
-In this work we provide a comprehensive catalog of transiting exoplanet posterior estimates for the \red{\numAnalysed} \tess\ Objects of Interest (TOIs) with 2-minute cadence observations from 2018 through 2022. 
-The posterior distributions provide robust uncertainties for the circular transit model's planet orbital timing parameters, stellar limb darkening, stellar density, mean flux and detector-noise parameters. 
+
+The SPOC pipeline provides parameter estimates for candidates by using Mandel Agol (2002)'s geometric transit model, including a nonlinear limb-darkening model Claret Bloemen (2011).  the fitted parameters are determined with the iterative Levenberg-Marquardt (LM) algorithm (Levenberg 1944; Marquardt 1963).
+
+
+TOIs which appear in several sectors accumulate more observations, which improve the determinations of period, epoch, and other parameters. The TOI catalog is therefore updated with parameters from the longest baseline of data for each TOI, with a preference for SPOC postage stamp data, largely due to its two-minute cadence and review process as the pipeline of record.
+
+Given the different detrending and detection methods employed by the two different pipelines, we do not ex- pect the two pipelines to always detect the same signals in the same data. Of the 230 TOIs SPOC detected in Sectors 6-1318 with Tmag < 10.5 host stars, the QLP BLS detected 206. The QLP AstroNet triage (see Sec- tion 6.2) excluded 58 of these in automatic triage and visual triage rejected an additional 29 TCEs, giving a total of 119 TOIs detected by both SPOC and QLP.
+
+Even though SPOC/TPS and QLP/BLS are not designed to search for single-transit events, they are occasionally detected when the transit happens to line up with either spurious noise events or to a data gap in the phase-folded light curves examined by TPS/BLS. We do include these sin- gle transit candidates in the TOI catalog, with the or- bital period parameter removed before release. If there is another transit of the candidate in a later sector, we update the TOI in the catalog with the correct period.
+
+In this work we provide a catalog of transiting exoplanet posterior estimates for the \red{\numAnalysed} \tess\ Objects of Interest (TOIs) with 2-minute cadence observations from 2018 through 2022.
+The posterior distributions provide robust uncertainties for the circular transit model's planet orbital timing parameters, stellar limb darkening, stellar density, mean flux and detector-noise parameters.
 The posterior distributions can allow future researchers to study the planet population in detail and assess the reliability of the most Earth-like candidates, \alltodo{list more things that can be done}.
 
-The remainder of the paper is organised as follows: Section~\ref{sec:method} describes our transit light curve model and the Bayesian framework we use to estimate parameters of exoplanet systems from the observed data. 
+The remainder of the paper is organised as follows. Section~\ref{sec:method} describes our transit light curve model and the Bayesian framework we use to estimate parameters of exoplanet systems from the observed data.
 The analysis results are summarised in Section~\ref{sec:results}.
 The catalog, released data, and software to reproduce the results are described in Section~\ref{sec:data} and are available online as supplementary materials (\atlasUrl).
 Finally, we provide concluding remarks in Section~\ref{sec:conclusion}.
 
+
 \section{Method} \label{sec:method}
+
+
+Targets are assigned consecutive TOI IDs. Multi- planet systems are assigned suffixes (.01, .02, etc.) mir- roring the suffixes assigned for the TCE. TEV automat- ically generates a comma-separated values (CSV) file with all necessary parameters for each TOI from the vetted TOI list. Each TOI comes with a table of pa- rameters, a DV summary page, and a full DV report.
+
+TOI parameters reflect the best possible analysis available at the time of vetting.
+We use this (same way SPOC uses the initial estimates from the previous stage)
+
+
 
 \alltodo{TOI selection, lightcurve preprocessing, eccentricity posterior postprocessing}
 
 \subsection{Transit light curve model}
 
-There are many options for parameterisation of a transit, but we choose to model these transits as circular, non-interacting Keplerian orbits around their host star, parameterised by their observables. 
+There are many options for parameterisation of a transit, but we choose to model these transits as circular, non-interacting Keplerian orbits around their host star, parameterised by their observables.
 We approximate the host star's stellar limb darkening profile using \citet{Kipping:2013:MNRAS}'s quadratic limb darkening law.
 Finally, we compute the exoplanet's resultant quadratic limb-darkened transit lightcurve using an analytical model implemented in \starry.
 The stellar variables in this model are parameterised by
@@ -183,29 +205,39 @@ Likelihood, GP, Priors, \celerite, pymc3 sampling
 
 \section{Results}\label{sec:results}
 
+
+
 \subsection{Systems with multiple planets}
 Some words about these systems
 
 \subsection{Planets with data for one transit}
-Some stuff about single transit systems 
+Some stuff about single transit systems
 
 
 \section{Data and software availability}\label{sec:data}
-We provide software to reproduce the analyses and results at \atlasUrl. 
-The website contains one Jupyter notebook for each TOI, demonstrating the end-to-end analysis of a TOI. 
+
+he DV module produces a one-page PDF summary report for each TCE, a PDF full report, and a PDF mini report for each target. The full report for each target with TCEs includes the results of all the tests along with diagnostic figures and run time warnings and errors. The mini-report for each target with TCEs combines the one-page summary along with the most informative diagnostic tests and graphics from the full report. An example one-page summary is shown in Figure 2. The DV module also produces a FITS file of the time series it analyzes as well as those presented in the diagnostic plots, and an XML file with numerical model fit and diagnostic test results (Tenenbaum  Jenkins 2018).
+
+We provide software to reproduce the analyses and results at \atlasUrl.
+The website contains one Jupyter notebook for each TOI, demonstrating the end-to-end analysis of a TOI.
 The notebooks contain software to download and clean light curve data, implementations of the transit-model and priors for inference, the \pymc sampling stage, and a posterior post-processing step.
-The website also documents the method to download our Bayesian parameter inference posterior samples, load them and make various plots.  
+The website also documents the method to download our Bayesian parameter inference posterior samples, load them and make various plots.
 
 \section{Discussion}\label{sec:conclusion}
-We present for the first time a catalog of Bayesian posterior samples for the 2-minute cadence TOIs from 2018-2022. 
-Some words about results. 
+We present for the first time a catalog of Bayesian posterior samples for the 2-minute cadence TOIs from 2018-2022.
+Some words about results.
 Some stuff about difficulty sampling grazing systems.
-Errors when SPOC estimates are off. 
+Errors when SPOC estimates are off.
 We expect the remainder of the \tess\ extended mission will complete by September 2023, at which point an updated catalog will be produced.
+
+Vetters can identify false positive TCEs by a few tell- tale signs: a visible secondary eclipse which cannot phys- ically be planetary in nature; a mismatch between odd and even transit depths caused by a stellar binary at twice the indicated period; a shift of the centroid to another nearby star; and increasing transit depth with aperture size, indicative that a signal is from an object nearby on the sky and not the suspected target star.
+
+Lots of manual vetting requiured to promote TCE to TOI. In the future this work can help with that process.
+
 
 \begin{acknowledgments}
 
-We would like to thank xyz. 
+We would like to thank xyz.
 Ozgrav, Flatiron, NECTAR, ADACS, David Liptai
 Work was started during `online.tess.science`
 
@@ -215,7 +247,7 @@ This research has made use of the NASA Exoplanet Archive, which is operated by t
 
 This work made use of the \tess\ catalog on ExoFOP
 
-Total compute time for this work \red{\cpuHrs} \alltodo{get more accurate compute time (this is an overestimate)}. CO$_2$ emission amount for this work would be XX, however as OzStar uses wind energy this has a negligible carbon footprint. 
+Total compute time for this work \red{\cpuHrs} \alltodo{get more accurate compute time (this is an overestimate)}. CO$_2$ emission amount for this work would be XX, however as OzStar uses wind energy this has a negligible carbon footprint.
 
 \end{acknowledgments}
 
@@ -223,18 +255,18 @@ Total compute time for this work \red{\cpuHrs} \alltodo{get more accurate comput
 \facilities{\tess, \gaia, \kepler, Exoplanet Archive, etc.}
 
 \software{
-astropy \citep{Astropy-Collaboration:2013,Astropy-Collaboration:2018},  
+astropy \citep{Astropy-Collaboration:2013,Astropy-Collaboration:2018},
 exoplanet,
-lightkurve, 
-starry, 
+lightkurve,
+starry,
 celerite2,
 pymc3,
-numpy, 
-scipy, 
-pandas, 
+numpy,
+scipy,
+pandas,
 matplotlib,
-corner, 
-sphinx, 
+corner,
+sphinx,
 }
 
 

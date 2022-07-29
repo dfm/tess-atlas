@@ -23,8 +23,8 @@ from tess_atlas.plotting.runtime_plotter import plot_runtimes
 
 URL_BASE = "http://catalog.tess-atlas.cloud.edu.au/content/toi_notebooks"
 NOTEBOOK_URL = URL_BASE + "/toi_{}.html"
-IMG_URL = URL_BASE + "/toi_{}_files/phase_plot_TOI{}_1_lowres.png"
-PHASE_IMG = "phase_plot_TOI{}_1_lowres.png"
+IMG_URL = URL_BASE + "/toi_{}_files/phase_plot_TOI{}_1_thumbnail.png"
+PHASE_IMG = "phase_plot_TOI{}_1_thumbnail.png"
 LINK = """<a href="{url}">{txt}</a>"""
 NETCDF_REGEX = "*/toi_*_files/*.netcdf"
 PHASE_REGEX = "*/toi_*_files/phase*_1_lowres.png"

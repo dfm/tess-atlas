@@ -46,7 +46,7 @@ def plot_phase(
     zoom_y_axis: Optional[bool] = False,
     plot_label: Optional[str] = "",
     num_lc: Optional[int] = 12,
-    low_res: Optional[bool] = False,
+    thumbnail: Optional[bool] = False,
 ):
     """Adapted from exoplanet tutorials
     https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
@@ -56,16 +56,19 @@ def plot_phase(
     - initial_params
     """
 
-    if low_res:
-        figsize = (3.0, 2.5)
-        dpi = 100
-        default_fs, period_fs, legend_fs = 8, 6, 0
-        ms = 1
+    if thumbnail:
+        figsize = (2.0, 1.5)
+        data_bins = 80
+        default_fs, period_fs, legend_fs = 0, 0, 0
+        ms = 2.5
+        savekwg = dict(
+            transparent=True, dpi=80, bbox_inches="tight", pad_inches=0
+        )
     else:
         figsize = (7, 5)
-        dpi = 150
         default_fs, period_fs, legend_fs = 16, 12, 10
         ms = 6
+        savekwg = dict(transparent=False, dpi=150)
 
     # set some plotting constants
     plt_min, plt_max = -0.3, 0.3
@@ -197,7 +200,7 @@ def plot_phase(
         # Annotate the plot with the planet's period
         unc = f"+/- {p_std:.4f}" if p_std else ""
         txt = f"period = {p_mean:.4f} {unc} d"
-        plt.annotate(
+        ann = plt.annotate(
             txt,
             (0, 0),
             xycoords="axes fraction",
@@ -208,17 +211,16 @@ def plot_phase(
             fontsize=period_fs,
         )
 
-        if low_res:
-            plt.xticks(fontsize=default_fs)
-            plt.locator_params(axis="y", nbins=2)
-            plt.gca().yaxis.tick_right()
-            plt.yticks(fontsize=default_fs)
-
+        if thumbnail:
+            plt.axis("off")
+            ann.remove()
+            plt.margins(x=0, y=0, tight=True)
+            plt.axis("tight")
         else:
             plt.legend(fontsize=legend_fs, loc="lower right")
-        plt.xlabel(TIME_SINCE_TRANSIT_LABEL, fontsize=default_fs)
-        plt.ylabel(FLUX_LABEL, fontsize=default_fs)
-        plt.title(f"TOI {toi}: Planet {i + 1}", fontsize=default_fs)
+            plt.xlabel(TIME_SINCE_TRANSIT_LABEL, fontsize=default_fs)
+            plt.ylabel(FLUX_LABEL, fontsize=default_fs)
+            plt.title(f"TOI {toi}: Planet {i + 1}", fontsize=default_fs)
 
         if max(x_fold[idx]) < plt_max:
             plt_min, plt_max = min(x_fold[idx]), max(x_fold[idx])
@@ -231,12 +233,12 @@ def plot_phase(
         fname = PHASE_PLOT.replace(".", f"_TOI{toi}_{i + 1}.")
         if plot_label:
             fname = f"{plot_label}_{fname}"
-        if low_res:
-            fname = fname.replace(".png", "_lowres.png")
+        if thumbnail:
+            fname = fname.replace(".png", "_thumbnail.png")
 
         fname = os.path.join(tic_entry.outdir, fname)
         logger.debug(f"Saving {fname}")
-        plt.savefig(fname, dpi=dpi)
+        plt.savefig(fname, **savekwg)
 
 
 def plot_folded_lightcurve(

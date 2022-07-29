@@ -228,5 +228,5 @@ def plot_diagnostics(tic_entry, model, init_params):
         model,
         tic_entry.inference_data,
         initial_params=init_params,
-        low_res=True,
+        thumbnail=True,
     )

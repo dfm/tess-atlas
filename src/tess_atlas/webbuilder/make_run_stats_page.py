@@ -11,6 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import glob
 from tess_atlas.data.exofop import get_tic_database, filter_db_without_lk
+from tess_atlas.data.planet_candidate import CLASS_SHORTHAND
 import pandas as pd
 import os
 import re
@@ -20,9 +21,13 @@ import numpy as np
 from .templates import render_page_template, TOI_LINK, IMAGE
 from tess_atlas.plotting.runtime_plotter import plot_runtimes
 
-URL = (
-    "http://catalog.tess-atlas.cloud.edu.au/content/toi_notebooks/toi_{}.html"
-)
+URL_BASE = "http://catalog.tess-atlas.cloud.edu.au/content/toi_notebooks"
+NOTEBOOK_URL = URL_BASE + "/toi_{}.html"
+IMG_URL = URL_BASE + "/toi_{}_files/phase_plot_TOI{}_1_lowres.png"
+PHASE_IMG = "phase_plot_TOI{}_1_lowres.png"
+LINK = """<a href="{url}">{txt}</a>"""
+NETCDF_REGEX = "*/toi_*_files/*.netcdf"
+PHASE_REGEX = "*/toi_*_files/phase*_1_lowres.png"
 
 
 def toi_num(f):
@@ -31,13 +36,13 @@ def toi_num(f):
 
 
 def do_tois_have_netcdf(notebook_root, all_tois):
-    files = glob.glob(f"{notebook_root}/*/toi_*_files/*.netcdf")
+    files = glob.glob(f"{notebook_root}/{NETCDF_REGEX}")
     tois = [toi_num(f) for f in files]
     return [True if i in tois else False for i in all_tois]
 
 
 def do_tois_have_phase_plot(notebook_root, all_tois):
-    files = glob.glob(f"{notebook_root}/*/toi_*_files/phase*_1.png")
+    files = glob.glob(f"{notebook_root}/{PHASE_REGEX}")
     tois = [toi_num(f) for f in files]
     return [True if i in tois else False for i in all_tois]
 
@@ -110,10 +115,13 @@ def get_toi_number_from_log(log_fn):
             return np.nan
 
 
-def get_toi_categories():
+def get_classification(short_classes):
+    return [CLASS_SHORTHAND.get(sc, sc) for sc in short_classes]
+
+
+def get_exofop_data():
     tic_db = get_tic_database()
-    tic_db = filter_db_without_lk(tic_db, remove=True)
-    tic_db = tic_db[["TOI int", "Multiplanet System", "Single Transit"]]
+    tic_db = filter_db_without_lk(tic_db, remove=True).copy()
     tic_db["Normal System"] = (~tic_db["Single Transit"]) & (
         ~tic_db["Multiplanet System"]
     )
@@ -125,9 +133,9 @@ def load_toi_summary_data(notebook_root):
     df = pd.read_csv(f"{notebook_root}/tois.csv")["toi_numbers"]
     run_stats = load_run_stats(notebook_root)
     log_df = parse_logs(notebook_root)
-    categories = get_toi_categories()
+    exofop = get_exofop_data()
     df = pd.merge(df, run_stats, how="left", on="toi_numbers")
-    df = pd.merge(df, categories, how="left", on="toi_numbers")
+    df = pd.merge(df, exofop, how="left", on="toi_numbers")
     df = pd.merge(df, log_df, how="left", on="toi_numbers")
     df["url"] = [URL.format(i) for i in df.toi_numbers]
     df["execution_complete"] = df["execution_complete"].fillna(False)
@@ -138,8 +146,10 @@ def load_toi_summary_data(notebook_root):
     df["netcdf_present"] = do_tois_have_netcdf(notebook_root, df.toi_numbers)
     df["STATUS"] = get_status(df)
     df["TOI"] = create_weburl(df)
-    df["category"] = get_category(df)
-    df["logs"] = format_logs(df)
+    df["Category"] = get_category(df)
+    df["Logs"] = format_logs(df)
+    df["Phase Plot"] = create_phase_plot_urls(df)
+    df["Classification"] = get_classification(df["TESS Disposition"])
     df = df.drop_duplicates(subset="toi_numbers", keep="first")
     return df
 
@@ -148,22 +158,30 @@ def get_status(df):
     status = []
     for index, toi in df.iterrows():
         s = "FAIL: no netcdf"
-        #         if toi.execution_complete:
-        #             s = "PASS"
         if toi.netcdf_present:
             s = "PASS"
         if not toi.phaseplt_present:
             s = "FAIL: no phaseplot"
-
         status.append(s)
     return status
 
 
 def create_weburl(df):
-    url = []
+    url = [""] * len(df)
     for index, toi in df.iterrows():
-        url.append(f"""<a href="{toi.url}">{toi.toi_numbers}</a>""")
+        url[index] = LINK.format(url=toi.url, txt=toi.toi_numbers)
     return url
+
+
+def create_phase_plot_urls(df):
+    html = """<img src="{}" alt="{}" width="80px" >"""
+    urls = [""] * len(df)
+    for i, toi in df.iterrows():
+        t = toi.toi_numbers
+        img = IMG_URL.format(t, PHASE_IMG.format(t))
+        txt = html.format(img, f"TOI{t} Phaseplot")
+        urls[i] = LINK.format(url=toi.url, txt=txt)
+    return urls
 
 
 def get_category(df):
@@ -191,9 +209,17 @@ def format_logs(df):
 
 
 def generate_table_html(dataframe: pd.DataFrame):
-    dataframe["duration[Hr]"] = dataframe["duration"]
+    dataframe["Duration[Hr]"] = dataframe["duration"]
     dataframe = dataframe[
-        ["TOI", "STATUS", "category", "duration[Hr]", "logs"]
+        [
+            "TOI",
+            "STATUS",
+            "Classification",
+            "Category",
+            "Duration[Hr]",
+            "Phase Plot",
+            "Logs",
+        ]
     ]
     table_html = dataframe.to_html(table_id="table", index=False)
     table_html = table_html.replace(

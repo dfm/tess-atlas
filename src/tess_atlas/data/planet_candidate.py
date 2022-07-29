@@ -7,6 +7,17 @@ from .lightcurve_data import LightCurveData
 
 BJD = 2457000
 
+CLASS_SHORTHAND = dict(
+    CP="Confirmed Planet",
+    EB="Eclipsing Binary",
+    IS="Instrument Noise",
+    KP="Known Planet",
+    O="O",
+    PC="Planet Candidate",
+    V="Stellar Variability",
+    U="Undecided",
+)
+
 
 class PlanetCandidate(DataObject):
     """Plant Candidate obtained by TESS."""
@@ -20,6 +31,9 @@ class PlanetCandidate(DataObject):
         duration: float,
         snr: float,
         lightcurve: LightCurveData,
+        classification: str,
+        comment: str,
+        pipeline: str,
     ):
         """
         :param float toi_id: The toi number X.Y where the Y represents the
@@ -32,6 +46,8 @@ class PlanetCandidate(DataObject):
             million
         :param float duration: Planet candidate transit duration, in days.
         :param float snr: Planet SNR.
+        :param str classification: Planet classification after group vetting
+        :param str comments: Planet community comments on exofop
         """
         self.toi_id = toi_id
         self.lc = lightcurve  # lc --> lightcurve
@@ -43,9 +59,35 @@ class PlanetCandidate(DataObject):
         self.has_data_only_for_single_transit = self.__check_if_single_transit(
             period
         )
+        self.classification = classification
+        self.comments = comments
+        self.pipeline = pipeline
 
         if self.has_data_only_for_single_transit:
             self.period = self.estimate_period_from_lc()
+
+    @property
+    def pipeline(self) -> str:
+        return self.__pipeline
+
+    @pipeline.setter
+    def pipeline(self, pipeline):
+        if "spoc".casefold() in pipeline.casefold():
+            self.__pipeline = "SPOC"
+        elif "qlp".casefold() in pipeline.casefold():
+            self.__pipeline = "QLP"
+        else:
+            self.__pipeline = pipeline.casefold()
+
+    @property
+    def classification(self) -> str:
+        return self.__classification
+
+    @classification.setter
+    def classification(self, classification):
+        self.__classification = CLASS_SHORTHAND.get(
+            classification, classification
+        )
 
     @property
     def t0_BJD(self):
@@ -134,6 +176,8 @@ class PlanetCandidate(DataObject):
             duration=toi_data["Duration (hours)"] / 24.0,  # convert to days,
             lightcurve=lightcurve,
             snr=toi_data["Planet SNR"],
+            classification=toi_data["TESS Disposition"],
+            comments=toi_data["Comments"],
         )
         return cls(**unpack_data)
 

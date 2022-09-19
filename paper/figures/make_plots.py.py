@@ -310,14 +310,14 @@ def make_radius_comparions_plot():
     x1,  x2 = summary_df.atlas_radius, summary_df["Planet Radius (R_Earth)"]
     scatter_comparison(axes[0], x1, x2)
     plot_residual_hist(axes[1], x1, x2 , bins=np.linspace(-1,1,25))
-    axes[0].set_ylabel(r'$R_{\rm ExoFOP} [R_{\rm \Earth}]$')
-    axes[0].set_xlabel(r'$R_{\rm Atlas} [R_{\rm \Earth}]$')
+    axes[0].set_ylabel(r'$R_{\rm ExoFOP}\ [R_{\rm \Earth}]$')
+    axes[0].set_xlabel(r'$R_{\rm Atlas}\ [R_{\rm \Earth}]$')
     axes[1].set_xlabel(r'$R_{\rm Atlas}/R_{\rm ExoFOP} - 1$')
     axes[1].set_ylabel('Density')
     axes[0].set_xticks([1,10,100])
     axes[0].set_yticks([1,10,100])
     fig.tight_layout()
-    fig.savefig("radius_error.png", dpi=300)
+    fig.savefig("radius_error.png", dpi=300, transparent=False, facecolor='white')
 
 
 def make_period_radius_comparison_plot():
@@ -328,13 +328,10 @@ def make_period_radius_comparison_plot():
     add_solar_sys_planet_radii_lines(ax[1])
     plot_radii_hist(ax[0])
     add_solar_sys_planet_radii_lines(ax[0])
-    fig.savefig("radius_period_plot.png", dpi=300)
+    fig.savefig("radius_period_plot.png", dpi=300, transparent=False,facecolor='white',)
     return fig
 
 
     
 fig = make_period_radius_comparison_plot()
 make_radius_comparions_plot()
-# -
-
-set(summary_df['TESS Disposition'].unique())

@@ -9,7 +9,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.10.3
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
@@ -145,3 +145,154 @@ summary_stats
 
 # +
 # make some plots here
+## SEE PAPER FIGURES DIR
+
+
+# -
+
+# # CODE TO GENERATE SUMMARY STATS (shouldnt be here)!!!
+# here temporarily so I dont lose the code.
+# Ideally should be placed somewhere else
+#
+# Also, this should be done automatically after TOIs run
+#
+#
+
+# +
+"""
+VERY MESSY CODE ATM -- shouldnt be in this notebook but in its _own_ module
+
+Finds all idata objects from pymc3
+Reads them and extracts summary info
+Saves summary info in a JSON and CSV for future plotting
+"""
+
+
+from arviz import InferenceData
+import arviz as az
+import pandas as pd
+from glob import glob
+from tqdm.auto import tqdm
+import re
+import warnings
+import json
+
+
+R_earth = 6378100
+R_sun = 695700000
+
+warnings.filterwarnings("ignore")
+
+
+EXOFOP = "https://exofop.ipac.caltech.edu/tess/"
+TIC_DATASOURCE = EXOFOP + "download_toi.php?sort=toi&output=csv"
+
+
+def get_exopfop_db():
+    db = pd.read_csv(TIC_DATASOURCE)
+    print(f"TIC database has {len(db)} entries")
+    db[["TOI int", "planet count"]] = (
+        db["TOI"].astype(str).str.split(".", 1, expand=True)
+    )
+    db = db.astype({"TOI int": "int", "planet count": "int"})
+    db["Multiplanet System"] = db["TOI int"].duplicated(keep=False)
+    db["Single Transit"] = db["Period (days)"] <= 0
+    return db
+
+
+def get_idata_summary(fname):
+    inference_data = az.from_netcdf(fname)
+    df = az.summary(inference_data, filter_vars="like")
+
+    #     df = (
+    #             df.transpose()
+    #             .filter(regex=r"(.*p\[.*)|(.*r\[.*)")
+    #             .transpose()
+    #         )
+    df = df[["mean", "sd", "r_hat"]]
+    return df.T.to_dict()
+
+
+def get_pd_summary(fname):
+    df = pd.read_csv(fname)
+    df = df.describe()
+    df = df.filter(regex=r"(.*p\[.*)|(.*r\[.*)").transpose()
+    df["sd"] = df["std"]
+    df = df[["mean", "sd"]]
+    return df.T.to_dict()
+
+
+def toi_num(f):
+    toi_str = re.search(r"toi_(.*\d)", f).group()
+    return int(toi_str.split("_")[1])
+
+
+def get_populoation_summary(summary_info):
+    toi_id, p_means, r_means, p_sds, r_sds, rhat_oks = [], [], [], [], [], []
+    for toi_num, toi_dat in summary_info.items():
+
+        # get rhat info for TOI
+        rhat_ok = True
+        for param_dat in toi_dat.values():
+            if param_dat["r_hat"] > 1.1:
+                rhat_ok = False
+
+        # store each TOI planet's info
+        p_id = 0
+        while f"r[{p_id}]" in toi_dat:
+            toi_id.append(float(f"{toi_num}.{p_id+1:002d}"))
+            p_means.append(toi_dat[f"p[{p_id}]"]["mean"])
+            p_sds.append(toi_dat[f"p[{p_id}]"]["sd"])
+            r_means.append(toi_dat[f"r[{p_id}]"]["mean"])
+            r_sds.append(toi_dat[f"r[{p_id}]"]["sd"])
+            rhat_oks.append(rhat_ok)
+            p_id += 1
+
+    return pd.DataFrame(
+        dict(
+            TOI=toi_id,
+            p_mean=p_means,
+            p_sd=p_sds,
+            r_mean=r_means,
+            r_sd=r_sds,
+            rhat_ok=rhat_oks,
+        )
+    )
+
+
+def process_all_toi_results():
+    root = "july12_cat/0.2.1.dev64+gc7fa3a0/toi_*_files"
+    samp_fns = glob(f"{root}/samples.csv")
+    idata_fns = glob(f"{root}/inference_data.netcdf")
+
+    print("All results:")
+    print(idata_fns)
+
+    # open and summarise _all_ toi results
+    summary_info = {}
+    for idata_fn in tqdm(idata_fns, desc="Summarising TOI results"):
+        summary_info[toi_num(data_fn)] = get_idata_summary(idata_fn)
+
+    with open("summary_stats.json", "w") as outfile:
+        json.dump(summary_info, outfile)
+
+    print(f"One TOI summary: {get_pd_summary(samp_fns[0]).T.to_dict()}")
+    print("Converting summary to dataframe")
+    df = get_populoation_summary(summary_info)
+
+    # download EXOFOP stats
+    exofop = get_exopfop_db()
+    exofop.to_csv("exofop.csv", index=False)
+    exofop = pd.read_csv("exofop.csv")
+
+    # combine exofop results with our results
+    combined = pd.merge(right=df, left=exofop, on="TOI", how="outer")
+    combined["exo_r"] = (R_earth * combined["Planet Radius (R_Earth)"]) / (
+        R_sun * combined["Stellar Radius (R_Sun)"]
+    )
+    combined.to_csv("combined_res.csv", index=False)
+    print("Result summary stored in combined_res.csv")
+    return combined
+
+
+process_all_toi_results()

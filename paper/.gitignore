@@ -6,5 +6,6 @@ atlas.pdf
 *.fls
 *.synctex.gz
 *.fdb_latexmk
-figures/*_exec.ipynb
+figures/data/*.ipynb
+figures/*.ipynb
 gitlinks.tex

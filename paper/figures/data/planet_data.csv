@@ -1,0 +1,8 @@
+name,distance,mass,radius,period,symbol
+Mercury,0.38,0.0553,0.383,87.97,"$\Mercury$"
+Venus,0.723,0.815,0.949,224.70,"$\Venus$"
+Earth,1.0,1.0,1.0,365.26,"$\Earth$"
+Mars,1.524,0.107,0.532,686.98,"$\Mars$"
+Jupiter,5.203,317.8,11.21,4332.82,"$\Jupiter$"
+Saturn,9.58,95.2,9.45,10755.70,"$\Saturn$"
+Neptune,30,17.1,3.88,60190.03,"$\Neptune$"

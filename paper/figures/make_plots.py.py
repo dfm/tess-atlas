@@ -317,7 +317,7 @@ def make_radius_comparions_plot():
     axes[0].set_xticks([1,10,100])
     axes[0].set_yticks([1,10,100])
     fig.tight_layout()
-    fig.savefig("radius_error.png", dpi=300, transparent=False, facecolor='white')
+    fig.savefig("radius_error.png", dpi=300, transparent=False, facecolor='white', bbox_inches='tight', )
 
 
 def make_period_radius_comparison_plot():
@@ -328,7 +328,7 @@ def make_period_radius_comparison_plot():
     add_solar_sys_planet_radii_lines(ax[1])
     plot_radii_hist(ax[0])
     add_solar_sys_planet_radii_lines(ax[0])
-    fig.savefig("radius_period_plot.png", dpi=300, transparent=False,facecolor='white',)
+    fig.savefig("radius_period_plot.png", dpi=300, transparent=False,facecolor='white',bbox_inches='tight', )
     return fig
 
 

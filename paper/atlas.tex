@@ -1,22 +1,23 @@
 % \documentclass[linenumbers,floatfix,ApJL,twocolumn]{aastex631}
 \documentclass[floatfix,ApJL,twocolumn]{aastex631}
 
-\input{dfmstyle}
-\input{dfmsymbols}
+\input{style}
+\input{symbols}
 \input{custom_commands}
 
 \shorttitle{The \tess\ Atlas}
-\shortauthors{the authors}
+
 
 \begin{document}
 
 \title{The \tess\ Atlas: an open source catalog of TESS transit fits}
 
-% ADS bibliography link
-% https://ui.adsabs.harvard.edu/user/libraries/_DyLS4HbTY-eJIMBiFUdxw
+\input{authors}
 
-\author{Author list TBD}
-% \input{authors}
+
+
+
+
 
 
 
@@ -236,6 +237,7 @@ planet candidates in the planet radius–period space, and compare them with nea
 
 
 
+
 \subsection{Systems with multiple planets}
 Some words about these systems
 
@@ -264,7 +266,32 @@ Vetters can identify false positive TCEs by a few tell- tale signs: a visible se
 Lots of manual vetting requiured to promote TCE to TOI. In the future this work can help with that process.
 
 
-\begin{acknowledgments}
+%%%%%%%%%%%%%%%%%%%%
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{figures/radius_period_plot.png}
+  \caption{\textbf{Main caption:} stuff }
+  \label{fig:}
+\end{figure}
+
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{figures/radius_error.png}
+  \caption{\textbf{Main caption:} stuff }
+  \label{fig:}
+\end{figure}
+
+\begin{figure}
+    \gridline{\fig{figures/phase_plot_TOI174_1.png}{0.95\linewidth}{}}
+    \gridline{\fig{figures/phase_plot_TOI174_4.png}{0.95\linewidth}{}}
+    \caption{Inverted pyramid figure of six individual }
+    \label{fig:}
+\end{figure}
+
+
+
+
+\section*{Acknowledgments}{
 
 We would like to thank xyz.
 Ozgrav, Flatiron, NECTAR, ADACS, David Liptai
@@ -278,7 +305,7 @@ This work made use of the \tess\ catalog on ExoFOP
 
 Total compute time for this work \red{\cpuHrs} \alltodo{get more accurate compute time (this is an overestimate)}. CO$_2$ emission amount for this work would be XX, however as OzStar uses wind energy this has a negligible carbon footprint.
 
-\end{acknowledgments}
+}
 
 \vspace{5mm}
 \facilities{\tess, \gaia, \kepler, Exoplanet Archive, etc.}
@@ -299,10 +326,12 @@ sphinx,
 }
 
 
+% ADS bibliography link
+% https://ui.adsabs.harvard.edu/user/libraries/_DyLS4HbTY-eJIMBiFUdxw
 \bibliography{atlas}{}
 \bibliographystyle{aasjournal}
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
 
 \section{Transit model parameterisation details}\label{apdx:model_details}

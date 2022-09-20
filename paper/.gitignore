@@ -9,3 +9,4 @@ atlas.pdf
 figures/data/*.ipynb
 figures/*.ipynb
 gitlinks.tex
+*.synctex.gz

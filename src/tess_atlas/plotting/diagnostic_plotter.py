@@ -131,6 +131,9 @@ def plot_lightcurve_gp_and_residuals(
     lcs, gp_model, _ = get_lc_and_gp_from_inference_object(
         model, tic_entry.inference_data, n=num_lc
     )
+    raw_lc = tic_entry.lightcurve.raw_lc
+    raw_t, raw_y = raw_lc.time.value, 1e3 * (raw_lc.flux.value - 1)
+
     if zoom_in:
         idx, _ = get_longest_unbroken_section_of_data(t)
     else:
@@ -139,7 +142,8 @@ def plot_lightcurve_gp_and_residuals(
     fig, axes = plt.subplots(3, 1, figsize=(10, 7), sharex=True)
 
     ax = axes[0]
-    ax.plot(t[idx], y[idx], "k", label="data")
+    ax.scatter(raw_t, raw_y, c="gray", label="raw data", s=1, alpha=0.5)
+    ax.scatter(t[idx], y[idx], c="k", label="data", s=1)
     net_lc = np.zeros(len(t))
     for i in range(tic_entry.planet_count):
         lc = np.median(lcs[..., i], axis=0)
@@ -148,15 +152,15 @@ def plot_lightcurve_gp_and_residuals(
         ax.plot(
             t[idx],
             lc[idx],
-            label=f"Planet {i} (SNR {snr:.2f})",
+            label=f"Planet {i+1} (SNR {snr:.2f})",
             color=colors[i],
         )
 
     ax.legend(fontsize=10, loc=3)
-    ax.set_ylabel("relative flux")
+    ax.set_ylabel("flux")
 
     ax = axes[1]
-    ax.plot(t[idx], y[idx] - net_lc[idx], "k", label="data-lc")
+    ax.scatter(t[idx], y[idx] - net_lc[idx], c="k", label="data-lc", s=1)
     ax.plot(t[idx], gp_model[idx], color="gray", label="gp model")
     ax.legend(fontsize=10, loc=3)
     ax.set_ylabel("de-trended flux")
@@ -170,7 +174,7 @@ def plot_lightcurve_gp_and_residuals(
     mask = np.abs(resid) < rms_threshold
     total_outliers = np.sum(~mask)
 
-    ax.plot(t[idx], resid[idx], "k", label=f"residuals")
+    ax.scatter(t[idx], resid[idx], c="k", label=f"residuals", s=1)
     ax.plot(
         t[~mask],
         resid[~mask],
@@ -199,6 +203,7 @@ def plot_lightcurve_gp_and_residuals(
     if zoom_in:
         perc_data = int(100 * (len(idx) / len(t)))
         fig.suptitle(f"{perc_data}% Data Displayed")
+    fig.subplots_adjust(hspace=0, wspace=0)
     fig.savefig(os.path.join(tic_entry.outdir, DIAGNOSTIC_LIGHTCURVE_PLOT))
 
 

@@ -484,7 +484,7 @@ star
 if star.density_data_present:
     ecc_samples = calculate_eccentricity_weights(tic_entry, inference_data)
     ecc_samples.to_csv(
-        os.path.join(tic_entry.outdir, "eccentricity_samples.csv")
+        os.path.join(tic_entry.outdir, "eccentricity_samples.csv", index=False)
     )
     plot_eccentricity_posteriors(tic_entry, ecc_samples)
 else:

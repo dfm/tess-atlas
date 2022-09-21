@@ -10,7 +10,8 @@ import math
 from scipy.interpolate import interp1d
 import re
 
-from matplotlib.ticker import ScalarFormatter
+from matplotlib import rcParams
+from matplotlib.ticker import ScalarFormatter, MaxNLocator, NullLocator
 
 from tess_atlas.data.inference_data_tools import (
     get_posterior_samples,
@@ -27,6 +28,7 @@ logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 UNREADABLE_MINUS = str("\u2212")
 READABLE_MINUS = str("\u002D")
+BACKSLASH = str("\u005c")
 
 
 def fold_lightcurve_models(lc, lc_models, t0s, periods, plt_min, plt_max):
@@ -98,61 +100,105 @@ def format_label_string_with_offset(ax, axis="both"):
     """Format the label string with the exponent from the ScalarFormatter"""
     ax.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
     ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
-    ax.ticklabel_format(axis=axis, style="sci", scilimits=[-4, 4])
+    ax.ticklabel_format(axis=axis, style="sci", scilimits=[-2, 2])
 
-    axes_instances = []
+    axes_instances, axis_type = [], []
     if axis in ["x", "both"]:
+        axis_type.append("x")
         axes_instances.append(ax.xaxis)
     if axis in ["y", "both"]:
+        axis_type.append("y")
         axes_instances.append(ax.yaxis)
 
-    for ax in axes_instances:
-        ax.major.formatter._useMathText = False
-        ax.major.formatter._useOffset = True
+    for axi, axt in zip(axes_instances, axis_type):
+        axi.major.formatter._useMathText = False
+        axi.major.formatter._useOffset = True
 
+        fs = rcParams["ytick.labelsize"]
         plt.draw()  # Update the text
-        offset_text = ax.get_offset_text().get_text()
-        label = ax.get_label().get_text()
-        ax.offsetText.set_visible(False)
-        ax.set_label_text(update_label(label, offset_text))
+        offset_text = axi.get_offset_text().get_text()
+        label = axi.get_label().get_text()
+        new_label, new_offset = update_label(label, offset_text)
+        axi.offsetText.set_visible(False)
+        kwg = dict(
+            xycoords="axes fraction", annotation_clip=False, fontsize=fs
+        )
+        if axt == "x":
+            ax.annotate(new_offset, xy=(1, 0), ha="right", va="bottom", **kwg)
+        if axt == "y":
+            ax.annotate(
+                new_offset,
+                xy=(0.03, 1),
+                rotation=90,
+                ha="left",
+                va="top",
+                **kwg,
+            )
+        new_label = new_label.replace(BACKSLASH + BACKSLASH, BACKSLASH)
+        axi.set_label_text(new_label)
 
 
-def parse_matplotlib_sf(v: str) -> float:
+def parse_matplotlib_sf(v: str) -> Tuple[str, str]:
+    """
+    eg:
+    $\times\mathdefault{10^{−3}}\mathdefault{+2.9790000000 \times 10^{1}}$
+    --> "\times 10^{−3}", "+29.7"
+    $\times\mathdefault{10^{−2}}\mathdefault{}$
+    --> "\times 10^{−2}", ""
+    """
 
     if UNREADABLE_MINUS in v:
         v = v.replace(UNREADABLE_MINUS, READABLE_MINUS)
 
-    match_number = re.compile("-?\ *[0-9]+\.?[0-9]*(?:[Ee]\ *-?\ *[0-9]+)?")
-    vals = [float(x) for x in re.findall(match_number, v)]
-
-    offset = vals[-1]
-    multiplyer = vals[0] if len(vals) > 1 else ""
-    # sign = '-' if offset < 0 else "+"
-
-    if multiplyer:
-        multiplyer = f"{multiplyer:.0e}x "
-
-    if offset > 100:
-        offset = f"{int(offset):+}"
+    v = v.strip("$")
+    v = v.replace(r"\times\mathdefault", r"\times")
+    v = v.replace(r"}\mathdefault", "};")
+    v = v.split(";")
+    multiplyer = v[0]  # latex code
+    offset = v[1]
+    offset = offset.replace(r"\times", "*").replace("^", "**")
+    offset = offset.replace(r"{", "(").replace(r"}", ")")
+    offset = eval(offset)
+    if isinstance(offset, float):
+        if offset > 100:
+            offset = f"{int(offset):+}"
+        else:
+            offset = f"{offset:+.2f}"
+            if offset[-2] == "00":
+                offset = offset[:-3]
     else:
-        offset = f"{offset:+.2f}"
+        offset = ""
 
     return offset, multiplyer
 
 
 def update_label(old_label, offset_text):
     if offset_text == "":
-        return old_label
+        return old_label, ""
 
+    offset, multiplyer = parse_matplotlib_sf(offset_text)
     try:
         units = old_label[old_label.index("[") + 1 : old_label.rindex("]")]
     except ValueError:
         units = ""
-    label = old_label.replace("[{}]".format(units), "")
+    old_label = old_label.replace("$", "")
+    label = old_label.replace(f"[{units}]", "")
+    label = label.strip("\n")
+    units = units.strip("\n")
 
-    offset, multiplyer = parse_matplotlib_sf(offset_text)
+    brac_str = ""
+    if len(offset) > 0:
+        brac_str = f"{offset} "
+    if len(units) > 0:
+        brac_str = f"{brac_str} {units}"
+    brac_str = brac_str.strip()
+    brac_str = brac_str.replace(" ", "\, ")
+    if len(brac_str) > 0:
+        brac_str = f"\, [{brac_str}]"
 
-    return f"{multiplyer}{label} [{offset} {units}]"
+    new_label = f"${label}{brac_str}$"
+    new_multiplyer_offset = f"${multiplyer}$"
+    return new_label, new_multiplyer_offset
 
 
 def get_one_dimensional_median_and_error_bar(
@@ -187,8 +233,21 @@ def get_one_dimensional_median_and_error_bar(
     minus = median - quants[0]
 
     fmt = "{{0:{0}}}".format(fmt).format
-    tmplate = r"${{{0}}}_{{-{1}}}^{{+{2}}}$"
-    return tmplate.format(fmt(median), fmt(minus), fmt(plus))
+    unc = ""
+    bigger = max(plus, minus)
+    if (minus >= 0.01) and (plus >= 0.01):
+        unc = "_{-" + f"{fmt(minus)}" + "}" + "^{+" + f"{fmt(plus)}" + "}"
+    elif (minus >= 0.01) or (plus >= 0.01):
+        unc = r"\pm " + fmt(bigger)
+    else:
+        expo = int(np.floor(np.log10(bigger)))
+        unc = r"\pm 10^{" + str(expo) + "}"
+
+    med = fmt(median)
+    test_v = np.abs(float(med))
+    if math.isclose(test_v, 0):
+        med = "0.00"
+    return f"${med}{unc}$"
 
 
 def get_range(data, params: List[str]) -> List[List[int]]:

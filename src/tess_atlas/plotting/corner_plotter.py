@@ -9,6 +9,7 @@ import pandas as pd
 from tess_atlas.data import TICEntry
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from tess_atlas.data.inference_data_tools import get_samples_dataframe
+from matplotlib.ticker import ScalarFormatter, MaxNLocator, NullLocator
 
 from .labels import ECCENTRICITY_PLOT, LATEX, POSTERIOR_PLOT, PRIOR_PLOT
 from .plotting_utils import (
@@ -28,8 +29,8 @@ def plot_corner(data, extras):
     kwargs = dict(
         smooth=0.9,
         label_kwargs=dict(fontsize=20),
-        labelpad=0.1,
-        title_kwargs=dict(fontsize=20),
+        labelpad=-0.04,
+        title_kwargs=dict(fontsize=20, pad=10),
         color="#0072C1",
         truth_color="tab:red",
         quantiles=[0.16, 0.84],
@@ -46,17 +47,24 @@ def plot_corner(data, extras):
 
     fig = corner.corner(data, **kwargs)
     add_quantile_titles(fig, kwargs)
+    format_ticks(fig)
     format_tick_offset(fig, kwargs)
+    # _add_ax_num_on_corner_for_debugging(fig)
 
     return fig
+
+
+def _add_ax_num_on_corner_for_debugging(fig):
+    for i, ax in enumerate(fig.get_axes()):
+        ax.annotate(
+            f"{i}", (0.5, 0.5), xycoords=("axes fraction"), fontsize=30
+        )
 
 
 def format_tick_offset(fig, kwargs):
     axes = fig.get_axes()
     num_col = int(np.sqrt(len(axes) + 1))
-    x_axes_to_format = [
-        i + (num_col - 1) * num_col for i in range(num_col - 1)
-    ]
+    x_axes_to_format = [i + (num_col - 1) * num_col for i in range(num_col)]
     y_axes_to_format = [i * num_col for i in range(1, num_col)]
     both_to_format = (num_col - 1) * num_col
     for i in x_axes_to_format:
@@ -66,6 +74,27 @@ def format_tick_offset(fig, kwargs):
         format_label_string_with_offset(axes[i], "y")
         axes[i].set_xticklabels([])
     format_label_string_with_offset(axes[both_to_format], "both")
+
+
+def format_ticks(fig, max_n_ticks=2):
+    axes = fig.get_axes()
+    nax = len(axes)
+    num_row = num_col = int(np.sqrt(nax))
+    hist1ds = [i + num_col * i for i in range(num_col)]
+    hist2ds = []
+    for i in range(num_row):
+        for j in range(i * num_col, hist1ds[i]):
+            hist2ds.append(j)
+
+    for hist1d_id in hist1ds:
+        ax = axes[hist1d_id]
+        ax.xaxis.set_major_locator(MaxNLocator(max_n_ticks, prune="both"))
+        ax.yaxis.set_major_locator(NullLocator())
+
+    for hist2d_id in hist2ds:
+        ax = axes[hist2d_id]
+        ax.xaxis.set_major_locator(MaxNLocator(max_n_ticks, prune="both"))
+        ax.yaxis.set_major_locator(MaxNLocator(max_n_ticks, prune="both"))
 
 
 def add_quantile_titles(fig, kwargs):
@@ -91,10 +120,15 @@ def reformat_trues(p: Dict, keys: List[str], val_id: int) -> np.array:
 
 @exception_catcher
 def plot_posteriors(
-    tic_entry: TICEntry, inference_data, initial_params: Optional[Dict] = {}
+    tic_entry: TICEntry,
+    inference_data,
+    initial_params: Optional[Dict] = {},
+    plot_params=[],
+    title=True,
+    fname="",
 ) -> None:
     """Plots 1 posterior corner plot for each planet"""
-    plot_params = [
+    valid_params = [
         "p",
         "b",
         "r",
@@ -102,6 +136,12 @@ def plot_posteriors(
         "tmin",
         "tmax",
     ]
+
+    if len(plot_params) == 0:
+        plot_params = valid_params
+    else:
+        plot_params = [p for p in plot_params if p in valid_params]
+
     single_transit_params = ["log_p", "b", "log_r", "dur", "tmin"]
 
     if initial_params:
@@ -110,6 +150,10 @@ def plot_posteriors(
 
     posterior_samples = get_samples_dataframe(inference_data)
 
+    if len(fname) == 0:
+        fname = os.path.join(
+            tic_entry.outdir, f"planet_{'{}'}_{POSTERIOR_PLOT}"
+        )
     colors = get_colors(tic_entry.planet_count)
     for n in range(tic_entry.planet_count):
         params = plot_params.copy()
@@ -130,10 +174,10 @@ def plot_posteriors(
             if not np.isnan(truths).any():
                 extras["truths"] = truths
         fig = plot_corner(planet_n_samples.values, extras=extras)
-        plt.suptitle(f"TOI {tic_entry.toi_number}\nPlanet {n+1} Posterior")
-        fname = os.path.join(tic_entry.outdir, f"planet_{n}_{POSTERIOR_PLOT}")
-        logger.debug(f"Saving {fname}")
-        fig.savefig(fname, bbox_inches="tight")
+        if title:
+            plt.suptitle(f"TOI {tic_entry.toi_number}\nPlanet {n+1} Posterior")
+        logger.debug(f"Saving {fname.format(n+1)}")
+        fig.savefig(fname.format(n + 1), bbox_inches="tight")
 
 
 @exception_catcher
@@ -165,10 +209,14 @@ def plot_priors(
 
 @exception_catcher
 def plot_eccentricity_posteriors(
-    tic_entry: TICEntry, ecc_samples: pd.DataFrame
+    tic_entry: TICEntry, ecc_samples: pd.DataFrame, title=True, fname=""
 ) -> None:
     params = ["e", "omega"]
     colors = get_colors(tic_entry.planet_count)
+    if len(fname) == 0:
+        fname = os.path.join(
+            tic_entry.outdir, f"planet_{'{}'}_{ECCENTRICITY_PLOT}"
+        )
     for n in range(tic_entry.planet_count):
         planet_params = [f"{p}[{n}]" for p in params]
         planet_n_samples = ecc_samples[planet_params]
@@ -182,9 +230,7 @@ def plot_eccentricity_posteriors(
                 color=colors[n],
             ),
         )
-        plt.suptitle(f"Planet {n}", x=0.85, y=0.85, va="top", ha="right")
-        fname = os.path.join(
-            tic_entry.outdir, f"planet_{n}_{ECCENTRICITY_PLOT}"
-        )
-        logger.debug(f"Saving {fname}")
-        fig.savefig(fname, bbox_inches="tight")
+        if title:
+            plt.suptitle(f"Planet {n}", x=0.85, y=0.85, va="top", ha="right")
+        logger.debug(f"Saving {fname.format(n+1)}")
+        fig.savefig(fname.format(n + 1), bbox_inches="tight")

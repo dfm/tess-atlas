@@ -29,16 +29,17 @@ TIME_LABEL = "Time [days]"
 TIME_SINCE_TRANSIT_LABEL = "Time since transit [days]"
 FLUX_LABEL = "Relative Flux [ppt]"
 
+
 # PARAM MATH LATEX LABELS
 LATEX = {
     IMPACT_PARAM: r"$b$",
     MEAN_FLUX: r"$f_0$",
-    ORBITAL_PERIOD: r"$P$ [days]",
+    ORBITAL_PERIOD: r"$P [{\rm days}]$",
     TIME_START: r"$t_{\rm min}$ [BJD]",
     TIME_END: r"$t_{\rm max}$ [BJD]",
     f"{LIMB_DARKENING_PARAM}_1": r"$u_1$",
     f"{LIMB_DARKENING_PARAM}_2": r"$u_2$",
-    DURATION: r"duration [days]",
+    DURATION: r"$\tau\, [{\rm days}]$",
     RADIUS_RATIO: r"$R_{\rm p}/ R_{\star}$",
     LC_JITTER: r"$\rm{jitter}$",
     GP_SIGMA: r"$\rm{GP} \sigma$",

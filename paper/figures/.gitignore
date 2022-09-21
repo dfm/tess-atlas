@@ -1,0 +1,7 @@
+**/toi_*_files
+*.png
+! radius_error.png
+! radius_period_plot.png
+! toi_174_phase.png
+! planet_3_posterior.png
+! ecc_3_posterior.png

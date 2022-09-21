@@ -156,6 +156,7 @@ class LightCurveData(DataObject):
         self.time = formatted_data["time"]
         self.flux = formatted_data["flux"]
         self.flux_err = formatted_data["flux_err"]
+        self.len = len(self.time)
 
     def get_transit_mask(
         self,
@@ -215,3 +216,16 @@ def download_lightkurve_data(tic, outdir):
 
 def residual_rms(resid):
     return np.sqrt(np.median((resid - np.median(resid)) ** 2))
+
+
+def check_transit_mask(tic_entry):
+    candidates = tic_entry.candidates
+    max_duration = max([c.duration * 2 for c in candidates])
+    day_buffer = max(0.3, max_duration)
+    transit_mask = tic_entry.lightcurve.get_transit_mask(
+        candidates, day_buffer
+    )
+    t = tic_entry.lightcurve.time
+    y = tic_entry.lightcurve.flux
+    plt.plot(t, y)
+    plt.plot(t, transit_mask * min(y))

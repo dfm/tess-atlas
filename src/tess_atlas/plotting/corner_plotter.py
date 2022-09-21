@@ -24,7 +24,7 @@ from .plotting_utils import (
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
-# @exception_catcher
+@exception_catcher
 def plot_corner(data, extras):
     kwargs = dict(
         smooth=0.9,
@@ -118,7 +118,7 @@ def reformat_trues(p: Dict, keys: List[str], val_id: int) -> np.array:
     return np.array([p[k][val_id] for k in keys])
 
 
-# @exception_catcher
+@exception_catcher
 def plot_posteriors(
     tic_entry: TICEntry,
     inference_data,

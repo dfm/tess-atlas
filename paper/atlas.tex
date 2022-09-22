@@ -18,18 +18,13 @@
 
 
 
-
-
-
-
-
 \begin{abstract}
 % The Transiting Exoplanet Survey Satellite \tess\ has enabled the discovery of more than five-thousand exoplanet candidates, out of which only a few hundred have been confirmed.
 % Exoplanet confirmation requires vetting of candidates by ruling out false positives and follow-up observations and analyses.
 We present the \tess\ Atlas, a catalog of candidate exoplanet parameter estimates, from two-minute cadence \tess\  data, to assist the vetting process and follow-up analyses.
 This catalog contains posterior estimates for \red{\numAnalysed} \tess\ Objects of Interest, including \red{\numAnalysedMulti} multi-planet candidate systems and \red{\numAnalysedSingle} candidates having data for a single transit.
 Our analysis utilises the No-U-Turns Markov chain Monte Carlo algorithm to sample the parameter space with a circular transit model implemented in \exoplanet.
-\avi{The \tess\ Atlas esitimates are differnt from the ExoFop}.
+\avi{The \tess\ Atlas estimates are different from the ExoFop}.
 We provide posterior samples from our analyses and \jupyter notebooks to reproduce the analyses for each exoplanet candidate.
 \end{abstract}
 
@@ -44,42 +39,25 @@ We provide posterior samples from our analyses and \jupyter notebooks to reprodu
 
 \section{Introduction} \label{sec:intro}
 
-
-% intro version 1
-In March 2022, NASA's exoplanet archive surpassed five-thousand confirmed exoplanets, a milestone made possible by data from several observatories, including the Transiting Exoplanet Survey Satellite TESS.
-The confirmed exoplanets suggest a diverse population, many of which are within their star's habitable zone.
-Furthermore, the search for exoplanets has revealed new information on eclipsing binaries, tidally interacting systems,  comets and exocomets, variable stars, supernovae, and even black holes.
-This list of exoplanets may be dramatically increased once the six-thousand exoplanets awaiting validation are processed, more than half of which are candidates detected in TESS data.
-
-% GENERIC TESS INTRO
-\textcolor{olive}{[
-\textuit{INTRO VERSION 2:}
-NASA's Transiting Exoplanet Survey Satellite \tess\ \citep{Ricker:2015:JATIS} concluded its two-year Primary Mission to search for transiting exoplanets orbiting nearby bright stars in July 2020.
-During this time, the \tess\ Science Processing Operations Center pipeline SPOC \citep{Jenkins:2016:SPIE}  recorded data with a 2-minute cadence for about $200,000$ pre-selected stars.
-Additionally, \tess\ captured full-frame images of its entire field of view over 10- and 30-minute intervals, enabling flux measurements of several million stars.
-Between 2, 10 and 30-minute observations, the \tess\ Primary Mission and the ongoing extended missions have identified over \red{$\numTessCandidates$} planet candidates, \red{$\numTessPlanets$} of which have been confirmed as planets \citep{Stassun:2018:AJ, Stassun:2019:AJ, Guerrero:2021:ApJS, Guerrero:2021:AAS}. Furthermore, \tess\ data have revealed new information on eclipsing binaries~\citep{ Guo:2020:MNRAS, Powell:2021:AJ}, tidally interacting systems~\citet{Holoien:2019:ApJ}, comets and exocomets~\citep{Farnham:2019:ApJL, Zieba:2019:A&A, Kuznyetsova:2020:OAP, Woods:2021:PASP, Pavlenko:2021:KPCB}),  variable stars~\citet{Antoci:2019:MNRAS, Handler:2020:NatAs}, supernovae~\cite{Vallely:2021:MNRAS, Fausnaugh:2021:ApJ}, and even black holes~\cite{Jayasinghe:2021:MNRAS}.
-]}
-
-
+In March 2022, NASA's exoplanet archive~\citep{Akeson:2013:PASP}\footnote{\href{https://exoplanetarchive.ipac.caltech.edu/}{https://exoplanetarchive.ipac.caltech.edu/}} surpassed five thousand confirmed exoplanets, a milestone made possible by data from several observatories, including the Transiting Exoplanet Survey Satellite TESS~\citep{Ricker:2015:JATIS}.
+The confirmed exoplanets exhibit a wide range of masses, compositions, and radii.
+Some of these planets are also located within their planetary systems' habitable zone.
+Furthermore, the population of these exoplanets has fuelled research into planetary system architecture, planetary formation and evolution, and updated exoplanet occurrence rates.
+These analyses will be more informative with a bigger sample of exoplanets and more precise estimates of the planet's characteristics.
+This list of ~5000 exoplanets may be dramatically increased once the 6000 exoplanets awaiting validation are processed, more than half of which are candidates detected in TESS data.
 The majority of TESS exoplanet candidates were discovered using the photometric transit method.
 Unfortunately, systematic effects (e.g. ) and non-planetary astrophysical sources (e.g. stellar granulation and eclipsing binaries) can mimic exoplanet transits.
-Hence, to validate these candidates, it is necessary to eliminate false-positives and, if possible, conduct additional observations.
+Hence, to validate these candidates, it is necessary to eliminate false positives and, if possible, conduct additional observations. 
 
-Obtaining higher precision planet parameter estimates will assist us in the vetting process.
-
-More exoplanets will help answer various questionss
+Targets are assigned consecutive TOI IDs. Multi- planet systems are assigned suffixes (.01, .02, etc.) mir- roring the suffixes assigned for the TCE. TEV automat- ically generates a comma-separated values (CSV) file with all necessary parameters for each TOI from the vetted TOI list. Each TOI has a table of pa- rameters, a DV summary page, and a full DV report.
 
 
+This motivates constructing a homogeneous method of \tess\ Atlas, a catalog of transiting exoplanet posterior estimates for the \red{\numAnalysed} \tess\ Objects of Interest (TOIs) with two-minute cadence observations from 2018 through 2022.
+The catalog of posteriors, summary statistics, and software to reproduce the analyses are provided at \atlasUrl.
+The website contains a \jupyter notebook for each TOI, documenting the end-to-end analysis of each TOI.
+The notebooks contain software to download and clean light curve data, the transit model and priors for inference implementations, the \pymc sampling stage, and a posterior post-processing step.
+The website also documents the method to download our Bayesian parameter inference posterior samples, load them and make various plots.
 
-\alltodo{As search pipelines improve there will be even more candidates and detections}
-
-\alltodo{para on what having more exoplanet info will do}
-
-\alltodo{talk about inference, detection}
-\alltodo{link up with our Bayesian model of noise etc}
-In this work we provide a comprehensive catalog of transiting exoplanet posterior estimates for the \red{\numAnalysed} \tess\ Objects of Interest (TOIs) with 2-minute cadence observations from 2018 through 2022.
-The posterior distributions provide robust uncertainties for the circular transit model's planet orbital timing parameters, stellar limb darkening, stellar density, mean flux and detector-noise parameters.
-The posterior distributions can allow future researchers to study the planet population in detail and assess the reliability of the most Earth-like candidates, \alltodo{list more things that can be done}.
 
 We provide software to reproduce the analyses and results at \atlasUrl.
 The website contains one Jupyter notebook for each TOI, demonstrating the end-to-end analysis of a TOI.
@@ -94,42 +72,36 @@ Finally, we provide concluding remarks in Section~\ref{sec:conclusion}.
 
 \section{Method} \label{sec:method}
 
+In this section, we outline the procedures to analyse each TOI and generate the \tessAtlas. 
+
+
+\subsection{Target selection and setup }
+
+\begin{figure*}
+    \includegraphics[width=\linewidth]{figures/raw_data_toi_103.png}
+    \caption{\textbf{Light curve data for TOI-103 (from 1030-1450 BKJD):} The raw light curve data for TOI 103 is plotted in gray points, with \exofop\ best transit model parameter fit plotted on top in blue. The black points are obtained by filtering the raw data using the \exofop\ transit parameter estimates as described in the text. Code to reproduce this plot can be found on GitHub. \avi{TBH, maybe we should allow for more data?? What is the point of such wide priors if this is so tight. We should either base the cuts on the tmin and tmax priors, or make the tmin and tmax priors narrower.}}
+    \label{fig:}
+\end{figure*}
+
+
+We obtain planetary parameters for \numTessCandidates TOIs with two-minute cadence data (as of Sept 2022) from the Exoplanet Follow-up Observing Program for TESS (ExoFOP-TESS) catalog.
+This catalog reflects the best possible analysis available at the time of vetting.
+Using \lightkurve\ we download the light curves for these TOIs generated by the TESS Science Processing Operations Center pipeline (Twicken et al. 2016; Jenkins 2020, SPOC), and stored ins the Mikulski Archive for Space Telescopes (\mast) at the Space Telescope Science Institute.
+
+As a pre-processing step, low-frequency outliers are filtered from the light curve by removing data points with a root-mean-square (RMS) value above five when subtracted to a \scipy’s Savitzky-Golay filter (with a window length of 11 and sigma of 100) version of the light curve. 
+Furthermore, we assume that the \exofop\ period and phase of the orbit are well measured and fit only the data nearby the anticipated transit times (with a buffer of buffer $\pm2\tau$ around the transit times) and disregard the remaining light curve data. 
+A plot of the raw \mast light curve data obtained for {TOI 103}, along with the filtered data based on the transit time provided by \exofop\ is shown in Figure~\ref{fig:raw}.
+Finally, if available, estimates for each TOIs host star's mass, radius and stellar density are downloaded from \mast. 
 
 
 
+\subsection{Transit Model}
 
-% Revisiting the Kepler field with TESS: Improved ephemerides using
-% TESS 2min data
-% https://arxiv.org/pdf/2103.03259.pdf
-%NEMESIS: EXOPLANET TRANSIT SURVEY OF NEARBY M-DWARFS IN TESS FFIS I
-% https://arxiv.org/pdf/2103.05647.pdf
-
-
-
-\alltodo{TOI selection, lightcurve preprocessing, eccentricity posterior postprocessing}
-
-
-
-\paragraph{Target selection and setup }
-
-
-
-Targets are assigned consecutive TOI IDs. Multi- planet systems are assigned suffixes (.01, .02, etc.) mir- roring the suffixes assigned for the TCE. TEV automat- ically generates a comma-separated values (CSV) file with all necessary parameters for each TOI from the vetted TOI list. Each TOI comes with a table of pa- rameters, a DV summary page, and a full DV report.
-
-TOI parameters reflect the best possible analysis available at the time of vetting.
-We use this (same way SPOC uses the initial estimates from the previous stage)
-
-
-We download the list of TESS objects of interest with two minute cadence data.
-We generate a notebook for the TOI -- this notebook contains the software to download the data create the transit model, run parameter estimation and generate plots.
-
-We run a download step -- this uses lightkurve to download data.
-We clean the lightkurve by removing outlisers sigma outside a certain value
-We then delete data outside the suggested transit times $\pm$ 2 * transit duration.
-
-
-\paragraph{Transit Model}
-We model exoplanet transits as circular (non-interacting) Keplerian orbits around their host star, using \exoplanet~\citep{Foreman-Mackey:2021:JOSS}. Each of the $n$ exoplanets in the system are parameterised by the planets'
+We model exoplanet transits as circular (non-interacting) Keplerian orbits around their host star, using \exoplanet~\citep{Foreman-Mackey:2021:JOSS}. 
+Circular orbits permit the use of computationally efficient, analytical orbital dynamics calculations.
+Additionally, circular orbits avoid degeneracies between eccentricity $e$, the argument of periastron $\omega$, impact parameter $b$, and planet radius $R_p$. 
+Furthermore, the eccentricity can also be computed in post-processing, as described by \citet{Dawson:2012:ApJ}.
+Each of the $n$ exoplanets in a system is parameterised by the planets'
 \begin{enumerate}
   \item \emph{two reference transit times}, one near the beginning of the observations, $t_{\rm min}[n]$, and one near the end, $t_{\rm max}[n]$, both measured in \tess\ BJD,
   \item \emph{the transit duration} $\tau[n]$, measured in hours,
@@ -137,97 +109,68 @@ We model exoplanet transits as circular (non-interacting) Keplerian orbits aroun
   \item \emph{the radius ratio} $k[n]=R_{\rm p}[n] / R_\star$, of the planet radius $R_{\rm p}[n]$ divided by the stellar radius $R_\star$, and
   \item \emph{the approximate transit depth} $\delta[n]$, measured in parts-per-thousand.
 \end{enumerate}
-In the case that a planet has only a single transit in the data, the second reference time $t_{\rm max}[n]$ is substituted with the planet's orbital period $P[n]$.
-The host star's limb darkening profile is approximated using \citet{Kipping:2013:MNRAS}'s quadratic limb darkening law \citep{Claret:2000:A&A, Mandel:2002:ApJL}, parameterised in \starry~\citep{Luger:2019:AJ} by the baseline relative flux of the light curve $f_0$,
-the mean stellar density $\rho_\star$,
-and two quadratic limb-darkening parameters $u_1, u_2$.
+In the case that a planet has only a single transit in the data, the second reference time $t_{\rm max}[n]$ is substituted with the planet's orbital period $P[n]$
+The host star's limb darkening profile is approximated using \citet{Kipping:2013:MNRAS}'s quadratic limb darkening law \citep{Claret:2000:A&A, Mandel:2002:ApJL}, parameterised in \starry~\citep{Luger:2019:AJ} by the baseline relative flux of the light curve $f_0$ and two quadratic limb-darkening parameters $u_1, u_2$.
 Finally, stellar variability (from e.g. asteroseismic oscillation of the star)  is modelled with a \celerite~\citep{Foreman-Mackey:2017:ascl} Gaussian Process (GP), with a stochastically driven damped harmonic oscillator kernel in linear combination with a jitter term, to capture misspecified error bars and model misspecification.
-The GP requires three parameters: the quality factor $Q_{\rm GP}$, the undamped period of the oscillator $\rho_{\rm GP}$, the standard deviation of the process $\sigma_{\rm GP}$.
-More details of this transit parameterisation are presented in Appendix~\ref{apdx:model_details}.
+The GP requires three parameters: the quality factor $Q_{\rm GP}$, the undamped period of the oscillator $\rho_{\rm GP}$, and the standard deviation of the process $\sigma_{\rm GP}$. 
+More details of this transit parameterisation are presented in Appendix~\ref{apdx:model_details}. 
+Implementation details for the various model components are available on the \exoplanet\ documentation website. 
 
+\subsection{Inference Framework}
 
+Uninformative priors are set for the stellar limb darkening, mean flux, and noise parameters. 
+While the transiting exoplanet parameter priors are centred around the \exofop\ estimates, the priors are given wide ranges to allow adequate parameter space exploration.
+A full list of the priors used is presented in Table~\ref{}. 
+Note that we use a joint prior on radius ratio and impact parameter, implemented in \exoplanet's \textsc{ImpactParameter}, that produces flat marginal priors for both parameters. 
 
+The posterior sampler's starting point is initialised at a high likelihood point by utilising \exoplanet's non-linear optimisation framework provided.
+After initial optimisation, the posterior distribution is sampled using a Hamiltonian Monte Carlo (HMC) No U-Turn Sampler with \pymc~\citep{}.
+The sampler is run on two chains for 4,000 steps with a burn-in of 2,000 steps.
+We pass the two chains to \arviz\ to compute rank normalised $\hat{R}$ diagnostic statistic~\cite{Vehtari:2019:arXiv} and flag analyses with $\hat{R}>1.01$ to have convergence issues. 
 
-\paragraph{Bayesian Inference Framework}
+For successful analyses, we conduct a post-processing step to compute the orbital eccentricity and argument of periapsis for each transiting planet. 
+The transit light curve observables such as the transit duration depend degenerately on the eccentricity and hosts star's density~\citep{Dawson:2012:ApJ}. 
+So, using our measurements of transit observables, we can approximate the stellar density and an independent measurement of stellar density to reweight posterior samples 
+ Therefore, if the transit is fit using stellar density (or duration, in this case) as one of the parameters, it is possible to make an independent measurement of the stellar density, and in turn, infer the eccentricity of the orbit as a post-processing step. The details of this eccentricity calculation method are described in Dawson n Johnson (2012).
 
-To estimate the posterior distribution on each fitted
-parameter, we use a MCMC approach similar to the
-procedure outlined in Ford (2005) and implemented i
+\subsection{Analysis execution and website generation}
 
-We use the  noise models, and set the priors on the stellar parameters to be uniform in $T_{\rm eff}$ and uniform in the mass-radius relation with Gaussian priors on the parallax, stellar radius, and stellar density from the Gaia DR2 catalog.  For the transiting exoplanet, we set uniform priors on the period, mid-transit time, and transit duration.  We set uniform priors on the planet-to-star radius ratio and log($e$), and set uniform priors on the stellar inclination and the argument of periastron.  We set uniform priors on the log($\sigma_{\rm wn}$) and log($\sigma_{\rm cn}$) parameters.  For the posterior sampling, we use the NUTS| sampler, and run the sampler for 5000 steps with a burn-in of 1000 steps.  We use the
-
-To define our prior distributions for the orbital period, we use a log-normal distribution with a mean value set to the TLS-detected period, and a
-standard deviation set to the TLS period error. For the prior
-distributions used for the mid-transit time, we use a normal
-distribution, with the mean value set to the TLS transit time,
-and the standard deviation set to the TLS transit duration. For
-our prior distribution of planet-to-star radius ratio, we use a
-% uniform distribution ranging from 0.01 to RP/RS + σRP/RS.
-% To calculate the uncertainty for the planet-to-star radius ratio,
-% σRP/RS, we query the TIC to obtain the stellar radius a
-
-n
-Rowe et al. (2014). Our algorithm uses a Gibbs sampler to shuffle the value of parameters for each step of
-the MCMC procedure with a control set of parameters
-to approximate the scale and orientation for the jumping
-distribution of correlated parameters as outlined in Gregory (2011). Our method allows the MCMC approach to
-efficiently sample parameter space even with highly correlated model parameters. We generated Markov Chains
-with lengths of 100 000 for each PC. T
-
-
-
-
-In this study we use a limb-darkened, circular, Keplerian transit model, as described in Section~\ref{sec:model}.
-The likelihood function
-
-The standard likelihood function used to analyse gravitational-wave transients is defined in, e.g. Finn (1992) and Romano \& Cornish (2017), where both the data and the model are expressed in the frequency domain. This likelihood has stationary Gaussian noise, which is a good approximation in most cases (e.g. Berry et al. 2015; Abbott et al. 2017a, 2019a) unless one of the instruments is affected by a glitch (Pankow et al. 2018; Powell 2018). We assume the noise power spectral density (PSD) is independent of the model parameters and therefore ignore the normalization term, yielding
-
-
-
-This was achieved
-by cutting out short-duration windows around each expected transit
-(2 days either side of the transit, unless the planet period was $\geq2$
-days) and finding the best-fit of the transit model within that interval.
-For consistency only the transit time and mean flux were allowed to
-vary in this step, both of which were set as wide Normal distributions
-centred on the values found from the chi-squared fit. To begin with,
-three iterations of exoplanet’s inbuilt optimize routine were used
-to hone in on the true transit times, before PyMC3 (Salvatier et al.
-2016) was used to fit the final planet model to each individual Kepler
-transit. This was achieved using a two-chain Markov-Chain Monte
-Carlo (MCMC) analysis with 1000 tuning steps and 5000 draws
-for each object. Longer chains were tested briefly, but increasing
-the length further for these relatively simple fits was not found to
-change the results significantly. Convergence was assessed using
-the Gelman-Rubin statistic and a visual examination of the trace.
-Statistically significant values for the final time and error for each
-individual transit were then found from the mean and standard
-deviation of the MCMC trace.
-
-%
-%
-%GPs are stochastic models consisting of a mean function
-%$\mu_\vec{\theta}(\vec{x})$ and a covariance, autocorrelation, or ``kernel''
-%function $K$ parameterized by
-%$\vec{\theta}$ and $\vec{\alpha}$ respectively.
-%Under this model, the log-likelihood function $\mathcal{L}
-%(\vec{\theta},\,\vec{\alpha})$ with a dataset
-%
-%\begin{align}\eqlabel{gp-likelihood}
-%\ln \mathcal{L} (\vec{\theta},\,\vec{\alpha})
-%&= -\frac{1}{2} r(\vec{\theta})^{T}\, K(\vec{\alpha})^{-1}\, r(\vec{\theta}) \nonumber \\
-%   -\frac{1}{2} \log \det K(\vec{\alpha})
-%
-%\end{align}
-
-
-
-\paragraph{Website generation}
-Generate webpages using notebooks
-
+All the analysis steps for a TOI, from data retrieval to post-processing, are implemented in a `template' python script that can be converted into a \jupyter notebook with \jupytext~toiTemplateLink~\cite{}.
+After duplicating the template for each TOI, we insert the TOI number in the notebooks and execute them in parallel with `nbconvert'. 
+Once analysis is complete, we use \jupyterbook, a package built upon \sphinx\ and \nbconvert\   to convert the pre-processed notebooks with the various plots, into `html' webpages, which are then deployed online on the \tessAtlas\ website. 
+Additionally, the raw data used for analysis (the light curve data and \exofop\ estimates) and the analysis data products (the HMC chains and reweighted posteriors) are uploaded and made publicly accessible. 
 
 
 \section{Results}\label{sec:results}
+
+
+
+\begin{figure*}
+    \gridline{
+        \fig{figures/planet_3_posterior.png}{0.5\linewidth}{}
+        \fig{figures/ecc_3_posterior.png}{0.3\linewidth}{}
+    }
+    \caption{\textbf{Main caption:} stuff }
+    \label{fig:}
+\end{figure*}
+
+
+\begin{figure}
+    \includegraphics[width=0.9\linewidth]{paper/figures/toi_174_phase.png}
+    \caption{\textbf{Main caption:} stuff }
+    \label{fig:}
+\end{figure}
+
+
+Our analysis of individual planets show posterior and phase plots
+
+
+Our bulk table of parameter estimates.
+
+
+
+
+
 
 
 To provide context for our planet candidates in regard to
@@ -236,23 +179,22 @@ planet candidates in the planet radius–period space, and compare them with nea
 
 
 
+\begin{figure}
+  \includegraphics[width=\linewidth]{figures/radius_period_plot.png}
+  \caption{\textbf{Main caption:} stuff }
+  \label{fig:}
+\end{figure}
 
 
-\subsection{Systems with multiple planets}
-Some words about these systems
+\begin{figure}
+  \includegraphics[width=\linewidth]{figures/radius_error.png}
+  \caption{\textbf{Main caption:} . The black line shows the one- to-one correspondence. As expected, there is good agreement between the two methods although the MCMC values are systematically smaller than those found by DV. The largest disagreement is typically for KOIs with large fit values for impact parameter. }
+  \label{fig:}
+\end{figure}
 
-\subsection{Planets with data for one transit}
-Some stuff about single transit systems
 
 
-\section{Data and software availability}\label{sec:data}
 
-he DV module produces a one-page PDF summary report for each TCE, a PDF full report, and a PDF mini report for each target. The full report for each target with TCEs includes the results of all the tests along with diagnostic figures and run time warnings and errors. The mini-report for each target with TCEs combines the one-page summary along with the most informative diagnostic tests and graphics from the full report. An example one-page summary is shown in Figure 2. The DV module also produces a FITS file of the time series it analyzes as well as those presented in the diagnostic plots, and an XML file with numerical model fit and diagnostic test results (Tenenbaum  Jenkins 2018).
-
-We provide software to reproduce the analyses and results at \atlasUrl.
-The website contains one Jupyter notebook for each TOI, demonstrating the end-to-end analysis of a TOI.
-The notebooks contain software to download and clean light curve data, implementations of the transit-model and priors for inference, the \pymc sampling stage, and a posterior post-processing step.
-The website also documents the method to download our Bayesian parameter inference posterior samples, load them and make various plots.
 
 \section{Discussion}\label{sec:conclusion}
 We present for the first time a catalog of Bayesian posterior samples for the 2-minute cadence TOIs from 2018-2022.
@@ -266,28 +208,23 @@ Vetters can identify false positive TCEs by a few tell- tale signs: a visible se
 Lots of manual vetting requiured to promote TCE to TOI. In the future this work can help with that process.
 
 
+\section{Data and software availability}\label{sec:data}
+Software to carry out this analysis on github.
+
+Data for analysis obtained from exofop, MAST. 
+
+Our analysis data products are availible on the website.
+
+Can be downloaded from the website.
+
+Alternatively, if a user installs the `tess-atlas` python package, they can use the command line interface to download the data and notebooks.
+
+download toi to get one analysis
+download population summary
+download all fits
+
+
 %%%%%%%%%%%%%%%%%%%%
-
-\begin{figure}
-  \includegraphics[width=\linewidth]{figures/radius_period_plot.png}
-  \caption{\textbf{Main caption:} stuff }
-  \label{fig:}
-\end{figure}
-
-
-\begin{figure}
-  \includegraphics[width=\linewidth]{figures/radius_error.png}
-  \caption{\textbf{Main caption:} stuff }
-  \label{fig:}
-\end{figure}
-
-\begin{figure}
-    \gridline{\fig{figures/phase_plot_TOI174_1.png}{0.95\linewidth}{}}
-    \gridline{\fig{figures/phase_plot_TOI174_4.png}{0.95\linewidth}{}}
-    \caption{Inverted pyramid figure of six individual }
-    \label{fig:}
-\end{figure}
-
 
 
 
@@ -297,7 +234,7 @@ We would like to thank xyz.
 Ozgrav, Flatiron, NECTAR, ADACS, David Liptai
 Work was started during `online.tess.science`
 
-This work has made use of the TIC through the TESS Science Office’s target selection working group (architects K. Stassun, J. Pepper, N. De Lee, M. Paegert, R. Oelkers).
+This work has used the TIC through the TESS Science Office’s target selection working group (architects K. Stassun, J. Pepper, N. De Lee, M. Paegert, R. Oelkers).
 
 This research has made use of the NASA Exoplanet Archive, which is operated by the California Institute of Technology, under contract with the National Aeronautics and Space Administration under the Exoplanet Exploration Program.
 

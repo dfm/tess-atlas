@@ -1,5 +1,10 @@
+\newif\ifdraft
+\drafttrue % switch to false in non-draft version (thereby hiding the todos)
+\newcommand{\inDraftVersion}[1]{\ifdraft #1\fi} 
+
+
 % TODOs
-\newcommand{\todo}[3]{{\color{#2}\emph{#1}: #3}}
+\newcommand{\todo}[3]{\inDraftVersion{{\color{#2}\emph{#1}: #3}}}
 \newcommand{\dfmtodo}[1]{\todo{DFM}{red}{#1}}
 \newcommand{\avi}[1]{\todo{Avi}{red}{#1}}
 \newcommand{\alltodo}[1]{\todo{TODO}{red}{#1}}
@@ -38,7 +43,8 @@
 % \newcommand{\oscaption}[2]{\caption{#2 \codelink{#1}}}
 
 
-
+% \makeatletter
+\newcommand{\github}[1]{\href{#1}{\textcolor{gray}{\faGithubSquare}}}
 
 
 

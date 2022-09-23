@@ -3,6 +3,7 @@
 
 \input{style}
 \input{symbols}
+\input{links}
 \input{custom_commands}
 
 \shorttitle{The \tess\ Atlas}
@@ -10,7 +11,7 @@
 
 \begin{document}
 
-\title{The \tess\ Atlas: an open source catalog of TESS transit fits}
+\title{The \tess\ Atlas: an open source living catalog of TESS transit fits}
 
 \input{authors}
 
@@ -21,7 +22,7 @@
 \begin{abstract}
 % The Transiting Exoplanet Survey Satellite \tess\ has enabled the discovery of more than five-thousand exoplanet candidates, out of which only a few hundred have been confirmed.
 % Exoplanet confirmation requires vetting of candidates by ruling out false positives and follow-up observations and analyses.
-We present the \tess\ Atlas, a catalog of candidate exoplanet parameter estimates, from two-minute cadence \tess\  data, to assist the vetting process and follow-up analyses.
+We present the \tess\ Atlas, a living catalog of candidate exoplanet parameter estimates, from two-minute cadence \tess\  data, to assist the vetting process and follow-up analyses.
 This catalog contains posterior estimates for \red{\numAnalysed} \tess\ Objects of Interest, including \red{\numAnalysedMulti} multi-planet candidate systems and \red{\numAnalysedSingle} candidates having data for a single transit.
 Our analysis utilises the No-U-Turns Markov chain Monte Carlo algorithm to sample the parameter space with a circular transit model implemented in \exoplanet.
 \avi{The \tess\ Atlas estimates are different from the ExoFop}.
@@ -49,12 +50,12 @@ The majority of TESS exoplanet candidates were discovered using the photometric 
 Unfortunately, systematic effects (e.g. ) and non-planetary astrophysical sources (e.g. stellar granulation and eclipsing binaries) can mimic exoplanet transits.
 Hence, to validate these candidates, it is necessary to eliminate false positives and, if possible, conduct additional observations. 
 
-Targets are assigned consecutive TOI IDs. Multi- planet systems are assigned suffixes (.01, .02, etc.) mir- roring the suffixes assigned for the TCE. TEV automat- ically generates a comma-separated values (CSV) file with all necessary parameters for each TOI from the vetted TOI list. Each TOI has a table of pa- rameters, a DV summary page, and a full DV report.
+% Targets are assigned consecutive TOI IDs. Multi- planet systems are assigned suffixes (.01, .02, etc.) mir- roring the suffixes assigned for the TCE. TEV automat- ically generates a comma-separated values (CSV) file with all necessary parameters for each TOI from the vetted TOI list. Each TOI has a table of pa- rameters, a DV summary page, and a full DV report.
 
 
 This motivates constructing a homogeneous method of \tess\ Atlas, a catalog of transiting exoplanet posterior estimates for the \red{\numAnalysed} \tess\ Objects of Interest (TOIs) with two-minute cadence observations from 2018 through 2022.
 The catalog of posteriors, summary statistics, and software to reproduce the analyses are provided at \atlasUrl.
-The website contains a \jupyter notebook for each TOI, documenting the end-to-end analysis of each TOI.
+The website contains a \jupyter\ notebook for each TOI, documenting the end-to-end analysis of each TOI.
 The notebooks contain software to download and clean light curve data, the transit model and priors for inference implementations, the \pymc sampling stage, and a posterior post-processing step.
 The website also documents the method to download our Bayesian parameter inference posterior samples, load them and make various plots.
 
@@ -79,116 +80,174 @@ In this section, we outline the procedures to analyse each TOI and generate the 
 
 \begin{figure*}
     \includegraphics[width=\linewidth]{figures/raw_data_toi_103.png}
-    \caption{\textbf{Light curve data for TOI-103 (from 1030-1450 BKJD):} The raw light curve data for TOI 103 is plotted in gray points, with \exofop\ best transit model parameter fit plotted on top in blue. The black points are obtained by filtering the raw data using the \exofop\ transit parameter estimates as described in the text. Code to reproduce this plot can be found on GitHub. \avi{TBH, maybe we should allow for more data?? What is the point of such wide priors if this is so tight. We should either base the cuts on the tmin and tmax priors, or make the tmin and tmax priors narrower.}}
+    \caption{\textbf{Light curve data for TOI-103 (from 1030-1450 BKJD):} The raw light curve data for TOI 103 is plotted in gray points, with \exofop\ best transit model parameter fit plotted on top in blue. The black points are obtained by filtering the raw data using the \exofop\ transit parameter estimates as described in the text. Code to reproduce this plot is on GitHub~\paperPlotsLink.}
     \label{fig:}
 \end{figure*}
 
+We obtain planetary parameters for \numTessCandidates TOIs with two-minute cadence data (as of Sept 2022) from the Exoplanet Follow-up Observing Program for TESS (\exofop) catalog.
+This catalog reflects the best possible analysis when vetting the TOIs~\citep{Guerrero:2021:ApJS,}.
+Any TOIs without a period measurement, or a period equal to zero, are flagged as single-transit systems. 
+Using \lightkurve\ we download the TOI light curves generated by the TESS Science Processing Operations Center pipeline~\citep{Jenkins:2016:SPIE, Jenkins:2021:tsc2}, and stored in the Mikulski Archive for Space Telescopes (\mast).
 
-We obtain planetary parameters for \numTessCandidates TOIs with two-minute cadence data (as of Sept 2022) from the Exoplanet Follow-up Observing Program for TESS (ExoFOP-TESS) catalog.
-This catalog reflects the best possible analysis available at the time of vetting.
-Using \lightkurve\ we download the light curves for these TOIs generated by the TESS Science Processing Operations Center pipeline (Twicken et al. 2016; Jenkins 2020, SPOC), and stored ins the Mikulski Archive for Space Telescopes (\mast) at the Space Telescope Science Institute.
-
-As a pre-processing step, low-frequency outliers are filtered from the light curve by removing data points with a root-mean-square (RMS) value above five when subtracted to a \scipy’s Savitzky-Golay filter (with a window length of 11 and sigma of 100) version of the light curve. 
-Furthermore, we assume that the \exofop\ period and phase of the orbit are well measured and fit only the data nearby the anticipated transit times (with a buffer of buffer $\pm2\tau$ around the transit times) and disregard the remaining light curve data. 
-A plot of the raw \mast light curve data obtained for {TOI 103}, along with the filtered data based on the transit time provided by \exofop\ is shown in Figure~\ref{fig:raw}.
+As a pre-processing step, we filter out low-frequency outliers from the light curve by removing data points with a root-mean-square (RMS) value above five when subtracted to a \scipy’s Savitzky-Golay filter (with a window length of 11 and sigma of 100) version of the light curve. 
+If the amount of data for a light curve is larger than $100,000$ datapoints an additional filtering step is applied. 
+Assuming that the \exofop\ orbital period and phase are accurate, data outside the anticipated transit times (with a buffer of two times the expected transit duration) are discarded for large light curves.
+A plot of {TOI 103}'s raw and filtered light curves, along with \exofop\'s transit model are displayed in Figure~\ref{fig:raw}.
 Finally, if available, estimates for each TOIs host star's mass, radius and stellar density are downloaded from \mast. 
 
 
 
 \subsection{Transit Model}
 
+The host star's limb darkening profile is approximated using \citet{Kipping:2013:MNRAS}'s quadratic limb darkening law \citep{Claret:2000:A&A, Mandel:2002:ApJL}, parameterised in \starry~\citep{Luger:2019:AJ} by the baseline relative flux of the light curve $f_0$ and two quadratic limb-darkening parameters $u_1, u_2$.
+The stellar variability (from e.g. asteroseismic oscillation of the star) is modelled with a \celerite~\citep{Foreman-Mackey:2017:ascl} Gaussian Process (GP), with a stochastically driven damped harmonic oscillator kernel in linear combination with a jitter term $J$, to capture misspecified error bars and model misspecification.
+The GP requires three parameters: the quality factor $Q_{\rm GP}$, the undamped period of the oscillator $\rho_{\rm GP}$, and the standard deviation of the process $\sigma_{\rm GP}$. 
 We model exoplanet transits as circular (non-interacting) Keplerian orbits around their host star, using \exoplanet~\citep{Foreman-Mackey:2021:JOSS}. 
 Circular orbits permit the use of computationally efficient, analytical orbital dynamics calculations.
 Additionally, circular orbits avoid degeneracies between eccentricity $e$, the argument of periastron $\omega$, impact parameter $b$, and planet radius $R_p$. 
 Furthermore, the eccentricity can also be computed in post-processing, as described by \citet{Dawson:2012:ApJ}.
 Each of the $n$ exoplanets in a system is parameterised by the planets'
-\begin{enumerate}
-  \item \emph{two reference transit times}, one near the beginning of the observations, $t_{\rm min}[n]$, and one near the end, $t_{\rm max}[n]$, both measured in \tess\ BJD,
-  \item \emph{the transit duration} $\tau[n]$, measured in hours,
-  \item \emph{the impact parameter} of the orbit, $b[n]$, constrained to be $|b| \le 1$,
-  \item \emph{the radius ratio} $k[n]=R_{\rm p}[n] / R_\star$, of the planet radius $R_{\rm p}[n]$ divided by the stellar radius $R_\star$, and
-  \item \emph{the approximate transit depth} $\delta[n]$, measured in parts-per-thousand.
-\end{enumerate}
-In the case that a planet has only a single transit in the data, the second reference time $t_{\rm max}[n]$ is substituted with the planet's orbital period $P[n]$
-The host star's limb darkening profile is approximated using \citet{Kipping:2013:MNRAS}'s quadratic limb darkening law \citep{Claret:2000:A&A, Mandel:2002:ApJL}, parameterised in \starry~\citep{Luger:2019:AJ} by the baseline relative flux of the light curve $f_0$ and two quadratic limb-darkening parameters $u_1, u_2$.
-Finally, stellar variability (from e.g. asteroseismic oscillation of the star)  is modelled with a \celerite~\citep{Foreman-Mackey:2017:ascl} Gaussian Process (GP), with a stochastically driven damped harmonic oscillator kernel in linear combination with a jitter term, to capture misspecified error bars and model misspecification.
-The GP requires three parameters: the quality factor $Q_{\rm GP}$, the undamped period of the oscillator $\rho_{\rm GP}$, and the standard deviation of the process $\sigma_{\rm GP}$. 
-More details of this transit parameterisation are presented in Appendix~\ref{apdx:model_details}. 
-Implementation details for the various model components are available on the \exoplanet\ documentation website. 
+\begin{itemize}
+  \item \emph{two reference transit times}, one near the beginning of the observations, $\tmin[n]$, and one near the end, $\tmax[n]$, both measured in \tess\ BJD,
+  \item \emph{the orbital period}, $P[n]$, measured in days,
+  \item \emph{the number of periods}, $N_P[n]$, in the TESS observational baseline,
+  \item \emph{the transit duration}, $\tau[n]$, measured in hours,
+  \item \emph{the orbital impact parameter}, $b[n]$, constrained to be $|b| \le 1$,
+  \item \emph{the approximate transit depth}, $\delta[n]$, measured in parts-per-thousand, and
+  \item \emph{the radius ratio} $R_{\rm p}[n] / R_\star$, of the planet radius $R_{\rm p}[n]$ divided by the stellar radius $R_\star$.
+\end{itemize}
+Not all of the above parameters are required to model a transiting exoplanet. 
+The choice of transiting exoplanet parameters utilised is discussed in the following section.
+
+% Implementation details for the various model components are available on the \exoplanet\ documentation website\footnote{\exoplanetDocs}. 
 
 \subsection{Inference Framework}
 
-Uninformative priors are set for the stellar limb darkening, mean flux, and noise parameters. 
-While the transiting exoplanet parameter priors are centred around the \exofop\ estimates, the priors are given wide ranges to allow adequate parameter space exploration.
-A full list of the priors used is presented in Table~\ref{}. 
-Note that we use a joint prior on radius ratio and impact parameter, implemented in \exoplanet's \textsc{ImpactParameter}, that produces flat marginal priors for both parameters. 
+Uninformative priors are set for the stellar limb darkening (using the \citet{Kipping:2013:MNRAS} parameterisation), mean flux, and noise parameters.
+The quality factor $Q_{\rm GP}$ prior is fixed to a delta function at zero point three.
 
-The posterior sampler's starting point is initialised at a high likelihood point by utilising \exoplanet's non-linear optimisation framework provided.
-After initial optimisation, the posterior distribution is sampled using a Hamiltonian Monte Carlo (HMC) No U-Turn Sampler with \pymc~\citep{}.
+The transiting exoplanet parameter priors are centred around \exofop\ estimates.
+As transiting planet’s phase and period are tightly constrained, we enforce a delta prior to the number of periods $N_P[n]$ between the two references times $\tmin[n]$ and $\tmax[n]$.
+The reference time priors are centred near the anticipated transit times and allowed a wide range of up to ten times the \exofop\ transit duration. 
+The orbital period can later be calculated for each planet as 
+\begin{equation}
+  P[n] =  (\tmax[n] - \tmin[n]) / N_P[n]\, .
+\end{equation}
+
+If a planet only transits once in data recorded for a duration of time $t$, the prior on the second reference time $\tmax[n]$ is substituted with a prior on the planet's orbital period $P[n]$. 
+As the orbital period for a single-transit planet is challenging to measure, a wide Pareto prior is placed on the period, with the minimum period $P_{\rm min}$ equal to
+\begin{equation}
+P_{\rm min}[n] = \rm{max} \left\{ \begin{array}{cl}
+\tmin[n] - {\rm min}(t)\\
+{\rm max}(t) - \tmin[n]
+\end{array} \right. \, .
+\end{equation} 
+This prior provides more support for shorter periods.
+
+Instead of setting a prior on the transit depth, we use the small planet approximation, 
+\begin{equation}
+    R_{\rm p}[n]/R_{\star} = \sqrt{\delta[n]}\, ,
+\end{equation}
+and set a log normal prior on radius ratio, centred at the \exofop\ radius ratio measurement.
+The log normal radius ratio prior provides more support for systems with smaller ratios.
+Finally, the impact parameter prior is uniform, conditioned on the radius ratio.
+A full list of the priors is presented in Table~\ref{tab:priors}. 
+
+\input{tables/priors.tex}
+
+We initialise the posterior sampler's at a high likelihood point, obtained by using \exoplanet's non-linear optimisation framework.
+Following initial optimisation, the posterior distribution is sampled with \pymc's Hamiltonian Monte Carlo (HMC) No U-Turn Sampler~\citep{Betancourt:2017:arXiv, Hoffman:2011:arXiv,Salvatier:2016:ascl}.
 The sampler is run on two chains for 4,000 steps with a burn-in of 2,000 steps.
-We pass the two chains to \arviz\ to compute rank normalised $\hat{R}$ diagnostic statistic~\cite{Vehtari:2019:arXiv} and flag analyses with $\hat{R}>1.01$ to have convergence issues. 
+We pass the chains to \arviz\ and compute the rank normalised $\hat{R}$ diagnostic statistic~\cite{Vehtari:2019:arXiv}.
+Analyses with $\hat{R}>1.01$ are flagged to have convergence issues. 
+Due to our model parameterization this often occurs for grazing transits when $b\sim1$~\cite{Gilbert:2022:AJ}.
 
-For successful analyses, we conduct a post-processing step to compute the orbital eccentricity and argument of periapsis for each transiting planet. 
-The transit light curve observables such as the transit duration depend degenerately on the eccentricity and hosts star's density~\citep{Dawson:2012:ApJ}. 
-So, using our measurements of transit observables, we can approximate the stellar density and an independent measurement of stellar density to reweight posterior samples 
- Therefore, if the transit is fit using stellar density (or duration, in this case) as one of the parameters, it is possible to make an independent measurement of the stellar density, and in turn, infer the eccentricity of the orbit as a post-processing step. The details of this eccentricity calculation method are described in Dawson n Johnson (2012).
+
+\subsection{Eccentricity post processing}
+
+For successful analyses, we conduct a post-processing step to compute the orbital eccentricity, $e$, and argument of periapsis, $\omega$, for each transiting planet. 
+First, we use our measurements of transit observables to compute the implied stellar density (under the assumption of circular orbits), $\rho_{\rm circ}$. 
+The expression for $\rho_{\rm circ}$ is derived in Appendix~\ref{apdx:stellar_density}.
+Note that $\rho_{\rm circ}$ is not the same as the actual stellar density, $\rho_{\star}$, and is unique for each planet in an $n$-planet system \citep[see, for example,][]{Dawson:2012:ApJ, Kipping:2012:MNRAS}.
+Following \citet{Dawson:2012:ApJ}, we use $\rho_{\rm circ}$ with a cataloged value of $\rho_\star$ (obtained from \mast) to generate weights. 
+These are used to re-weight uniformly drawn $e$ and $\omega$ to get weighted posterior samples. 
 
 \subsection{Analysis execution and website generation}
 
-All the analysis steps for a TOI, from data retrieval to post-processing, are implemented in a `template' python script that can be converted into a \jupyter notebook with \jupytext~toiTemplateLink~\cite{}.
-After duplicating the template for each TOI, we insert the TOI number in the notebooks and execute them in parallel with `nbconvert'. 
-Once analysis is complete, we use \jupyterbook, a package built upon \sphinx\ and \nbconvert\   to convert the pre-processed notebooks with the various plots, into `html' webpages, which are then deployed online on the \tessAtlas\ website. 
-Additionally, the raw data used for analysis (the light curve data and \exofop\ estimates) and the analysis data products (the HMC chains and reweighted posteriors) are uploaded and made publicly accessible. 
-
-
-\section{Results}\label{sec:results}
-
+The analysis steps for a TOI, from data retrieval to post-processing, are implemented in a `template' \jupyter notebook \footnote{\toiTemplateLink}.
+After duplicating the template for each TOI, we insert the TOI number in the notebooks and execute them in parallel with \nbconvert. 
+Once execution is complete, we use \jupyterbook, a package built upon \sphinx\ to convert the pre-processed notebooks into web-pages.
+These pages are deployed to the \tessAtlas\ website~\footnote{\atlasUrl},  along with the \jupyter\ notebooks, the raw data (the light curve data and \exofop\ estimates) and the analysis outputs (the HMC chains and re-weighted posteriors). 
 
 
 \begin{figure*}
     \gridline{
         \fig{figures/planet_3_posterior.png}{0.5\linewidth}{}
-        \fig{figures/ecc_3_posterior.png}{0.3\linewidth}{}
+        \fig{figures/ecc_3_posterior.png}{0.25\linewidth}{}
     }
-    \caption{\textbf{Main caption:} stuff }
-    \label{fig:}
+    \caption{\textbf{TOI 174.03 Posteriors:} (Left) posteriors for the radius ratio $R_{\rm p}/R_\star$, impact parameter $b$, orbital period $P$ and transit duration $\tau$. (Right) re-weighted posteriors for eccentricity $e$ and the argument of periastron $\omega$. 
+    The shaded regions depict the 1,2,3-$\sigma$ contours and the dashed lines in the 1D histograms are the 90\% credible intervals. 
+    The numbers reported on top the of 1D histograms are the median values of the posteriors with the 90\% CI uncertainty.
+    The overplotted red line indicates the transit parameters stored on \exofop. 
+    Source code for this plot is provided in GitHub~\paperPlotsLink.}
+    \label{fig:posteriors}
 \end{figure*}
 
 
 \begin{figure}
     \includegraphics[width=0.9\linewidth]{paper/figures/toi_174_phase.png}
-    \caption{\textbf{Main caption:} stuff }
-    \label{fig:}
+    \caption{\textbf{TOI 174 phase-folded light curve plots:} Each panel displays the phase-folded light curves of the five TOI 174.01-0.5 planets. 
+    The light curve data points (black) have been binned to reduce visual clutter.
+    The colorful shaded curves are the 
+    }
+    \label{fig:phase}
 \end{figure}
 
 
-Our analysis of individual planets show posterior and phase plots
+These pages also include various plots at different stages of the analysis. 
+For example, consider Figures~\ref{fig:corner}-\ref{fig:phase}.
+These plots may help in future XX.
 
 
-Our bulk table of parameter estimates.
+Finally, after the analysis for all TOIs complete, we also extract summary statistics, such as the median posterior parameters values and uncertainties on the parameters for all the TOIs. 
+This is compied and also providedd on the TESS atlas website.
 
 
 
 
 
 
+\section{Results}\label{sec:results}
 
-To provide context for our planet candidates in regard to
-planet demographics and the radius valley, we display our
+
+We analysed XX TOIs. 
+From these, YY analyses succeeded (the remaining analyses did not properly converge). 
+The analysed systems contain XX systems with multiple planets, and XX planets with data for only a single transit. 
+
+
+
+
+Our analysis of individual planets show posterior and phase plots match up. 
+See the posterior and phase plots shoiw how the eofop analysos matchh.
+
+Planet demographics: 
+error for radius, explain plots.
+
+Finally, show radius histogram, discuss radius valley, we display our
 planet candidates in the planet radius–period space, and compare them with nearby candidates from the TOI and DIAmante catalogs, together with additional confirmed transiting planets observed in
 
 
 
 \begin{figure}
   \includegraphics[width=\linewidth]{figures/radius_period_plot.png}
-  \caption{\textbf{Main caption:} stuff }
+  \caption{\textbf{Exoplanet population radius distribution:} stuff }
   \label{fig:}
 \end{figure}
 
 
 \begin{figure}
   \includegraphics[width=\linewidth]{figures/radius_error.png}
-  \caption{\textbf{Main caption:} . The black line shows the one- to-one correspondence. As expected, there is good agreement between the two methods although the MCMC values are systematically smaller than those found by DV. The largest disagreement is typically for KOIs with large fit values for impact parameter. }
+  \caption{\textbf{Comparing :} . The black line shows the one- to-one correspondence. As expected, there is good agreement between the two methods although the MCMC values are systematically smaller than those found by DV. The largest disagreement is typically for KOIs with large fit values for impact parameter. }
   \label{fig:}
 \end{figure}
 
@@ -208,6 +267,11 @@ Vetters can identify false positive TCEs by a few tell- tale signs: a visible se
 Lots of manual vetting requiured to promote TCE to TOI. In the future this work can help with that process.
 
 
+Although in practice most applications will use the best available stellar characterization to place at least a modestly in- formative prior on rho star (and, indirectly, on T and e via the photoeccentric effect), for our present experiment we are more concerned with the sampler behavior (i.e. whether MCMC chains are well behaved) rather than the poste- rior inferences.
+
+We should use the grazing transit umbrella method 
+
+
 \section{Data and software availability}\label{sec:data}
 Software to carry out this analysis on github.
 
@@ -223,6 +287,8 @@ download toi to get one analysis
 download population summary
 download all fits
 
+
+Demo both python interface to load stuff andd the CLI interface to download stuff.
 
 %%%%%%%%%%%%%%%%%%%%
 
@@ -248,12 +314,12 @@ Total compute time for this work \red{\cpuHrs} \alltodo{get more accurate comput
 \facilities{\tess, \gaia, \kepler, Exoplanet Archive, etc.}
 
 \software{
-astropy \citep{Astropy-Collaboration:2013,Astropy-Collaboration:2018},
+astropy~\citep{Astropy-Collaboration:2013,Astropy-Collaboration:2018},
 exoplanet,
 lightkurve,
 starry,
 celerite2,
-pymc3,
+pymc3~\cite{Salvatier:2016:ascl},
 numpy,
 scipy,
 pandas,
@@ -271,64 +337,26 @@ sphinx,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
 
-\section{Transit model parameterisation details}\label{apdx:model_details}
-
-\paragraph{Transit depth}
-The small planet approximation of the transit depth, $\delta=k^2$, is useful as it is directly invertible (conditioned on the limb darkening parameters and impact parameter).
-However, the parameterisation restricts the model to non-grazing transits with impact parameter $|b| \le 1$.
-Accepting this restriction, we can compute the approximate transit depth for a limb darkened light curve by assuming that the intensity of the star is uniform under the disk of the planet.
-For quadratic limb darkening, the intensity profile is
-\begin{equation}
-  I(r) = 1 - u_1\,[1 - \mu(r)] - u_2\,[1 - \mu(r)]^2
+\section{Computing the implied stellar density}\label{apdx:stellar_density}
+For a circular orbit, the transit duration is \citep{Winn:2010:arXiv}
+\begin{equation}~\label{eq:tau}
+  \tau = \frac{P}{\pi}\,\sin^{-1}\left( \frac{\sqrt{(1 + (R_{p}/R_{\star})^2) - b^2}}{a\,\sin i} \right) \quad. \,
 \end{equation}
-where $\mu(r) = \sqrt{1 - r^2}$.
-The ratio of the occulted flux to the total stellar flux when the transit is deepest ($r = b$) is \citep[the same results are discussed by][]{Mandel:2002,Csizmadia:2013, Agol:2020:AJ}
-\begin{eqnarray}
-  \delta &\approx& \frac{\int_0^k\,2\,\pi\,r\,I(b)\dd r}{\int_0^1\,2\,\pi\,r\,I(r)\dd r} \nonumber\\
-  &=& \frac{k^2\,\left(1 - u_1\,[1 - \mu(b)] - u_2\,[1 - \mu(b)]^2\right)}{1 - u_1/3 - u_2/6}\quad.
-\end{eqnarray}
-Therefore, since $k$ must be positive, we have a one-to-one transformation between $\delta$ and $k$ conditioned on impact parameter $|b| \le 1$ and the limb darkening coefficients.
-It is also important to include the Jacobian factor so that fitting in $\delta$ doesn't introduce a strange prior on $r$.
-In this case, the relevant factor is
-\begin{equation}
-  \left|\frac{\dd k}{\dd \delta}\right| = \left|\frac{1 - u_1/3 - u_2/6}{2\,k\,\left(1 - u_1\,[1 - \mu(b)] - u_2\,[1 - \mu(b)]^2\right)}\right| \quad.
+where $a$ is the semi-major axis in units of $R_\star$. 
+Rearranging Eq~\ref{eq:tau} in terms of $a$, we find that
+\begin{equation}~\label{eq:a1}
+  a^2\,\sin^2 i\,\sin^2\left(\frac{\pi\,\tau}{P}\right) = (1 + (R_{p}/R_{\star})^2) - b^2 \quad.
 \end{equation}
-
-
-\paragraph{Transit times}
-To expedite the analysis, we assume that the \exofop\ period and phase of the orbit are sufficiently accurate to fit only the data nearby the anticipated transit times (with some buffer, $\pm2\tau$) and disregard the remaining data.
-This implies that the number of periods $N_P$ in the TESS observational baseline is exact and the transits must occur within the data cutouts.
-This can be difficult to enforce---especially for low signal-to-noise transits.
-A good approximation can be achieved by fitting for two reference transit times, $t_{\rm min}$ and $t_{\rm max}$, with a fixed number of periods, $N_P$, between them, instead of a single reference time and the period.
-Then the implied period can be computed as $P = (t_{\rm max} - t_{\rm min}) / N_P$.
-Importantly this does not change the prior on $P$ and $t_0$ since the Jacobian is a constant $1/N_P$.
-
-
-\paragraph{Transit duration}
-The transit duration $\tau$ is better constrained than the orbit's semi-major axis, $a$ the so it can be better as a fit parameter.
-For a circular orbit, the transit duration is \citep{Winn:2010}
+Since $\cos^2 i = b^2 / a^2$, Eq~\ref{eq:a1} can be simplified
 \begin{equation}
-  \tau = \frac{P}{\pi}\,\sin^{-1}\left( \frac{\sqrt{(1 + k^2) - b^2}}{a\,\sin i} \right) \quad.
-\end{equation}
-Rearranging this, we find
-\begin{equation}
-  a^2\,\sin^2 i\,\sin^2\left(\frac{\pi\,\tau}{P}\right) = (1 + k^2) - b^2 \quad.
-\end{equation}
-Then, using the fact that $\cos^2 i = b^2 / a^2$, we find
-\begin{equation}
-  a^2 = \frac{(1 + k)^2 - b^2\,\cos^2\phi}{\sin^2\phi}
+  a^2 = \frac{(1 + R_{p}/R_{\star})^2 - b^2\,\cos^2\phi}{\sin^2\phi}
 \end{equation}
 for $\phi = \pi\,\tau / P$.
-And the Jacobian is
-\begin{eqnarray}
-  \frac{\dd a}{\dd \tau} &=& \frac{\pi\,\cos \phi}{a\,P\,\sin^3 \phi}\,\left[b^2 - (1 + k)^2\right] \quad.
-\end{eqnarray}
 
-Finally, from the period and semi-major axis, we can compute the implied stellar density (under this assumption of a circular orbit)
+Finally, under the assumption of a circular orbit, we can compute the implied stellar density $\rho_\mathrm{circ}$ with the period and semi-major axis
 \begin{equation}
   \rho_\mathrm{circ} = \frac{3\,\pi\,a^3}{G\,P^2} \quad.
 \end{equation}
-It is important to note that this is not necessarily the same as the actual stellar density and that, in a multi-planet system, this implied density won't be the same for each planet \citep[see, for example,][]{Dawson:2012, Kipping:2012}.
 
 
 

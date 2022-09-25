@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+title: TESS Atlas
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Avi
+    family-names: Vajpeyi
+    email: avi.vajpeyi@monash.edu
+    affiliation: >-
+      School of Physics and Astronomy, Monash
+      University, Clayton VIC 3800, Australia
+    orcid: 'https://orcid.org/0000-0002-4146-1132'
+  - given-names: Daniel
+    family-names: Foreman-Mackey
+    email: foreman.mackey@gmail.com
+    affiliation: >-
+      Center for Computational Astrophysics, Flatiron
+      Institute, New York, NY 10010, USA
+    orcid: 'https://orcid.org/0000-0002-9328-5652'
+identifiers:
+  - type: url
+    value: 'http://catalog.tess-atlas.cloud.edu.au/'
+    description: The online catalog from this work.
+repository-code: 'https://github.com/dfm/tess-atlas'
+url: 'http://catalog.tess-atlas.cloud.edu.au/'
+repository-artifact: 'https://pypi.org/project/tess-atlas/'
+abstract: >-
+  Source code for the TESS Atlas, a living catalog of
+  candidate exoplanet parameter estimates, from
+  two-minute cadence TESS data, to assist in the
+  vetting process and follow-up analyses. 
+keywords:
+  - exoplanets
+  - Bayesian Inference
+  - PyMC3
+  - MCMC
+  - catalog
+license: MIT

@@ -1,5 +1,6 @@
 \newif\ifdraft
 \drafttrue % switch to false in non-draft version (thereby hiding the todos)
+\draftfalse
 \newcommand{\inDraftVersion}[1]{\ifdraft #1\fi} 
 
 
@@ -11,25 +12,11 @@
 \newcommand{\citeme}{{\color{red}(citation needed)}}
 
 
-\newcommand{\red}{\textcolor{red}}
+\newcommand{\red}{\inDraftVersion{\textcolor{red}}}
 \newcommand{\textuit}[1]{\textit{\underline{#1}}}
 
 
-
-%% Numbers
-% https://exoplanetarchive.ipac.caltech.edu/docs/counts_detail.html
-% https://exoplanetarchive.ipac.caltech.edu/index.html
-
-\newcommand{\numConfirmedPlanets}{5,090} % 
-\newcommand{\numCandidatesRemaining}{6,959}
-
-\newcommand{\numTessCandidates}{5,488} % 
-\newcommand{\numTessPlanets}{227}
-\newcommand{\numAnalysed}{2,833}
-\newcommand{\numAnalysedMulti}{151}
-\newcommand{\numAnalysedSingle}{68}
-\newcommand{\cpuHrs}{$\sim80,000\ \rm{Hrs}$}
-
+\newcommand{\TOI}[1]{{TOI~#1}}
 %% links
 
 % % % from: https://github.com/rodluger/corTeX

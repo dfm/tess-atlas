@@ -157,12 +157,14 @@ class PlanetCandidate(DataObject):
 
     @property
     def duration_max(self):
+        """max( 10 * duration, 0.1 days )"""
         if self.has_data_only_for_single_transit:
             return 1.0
         return max(10 * self.duration, 0.1)
 
     @property
     def duration_min(self):
+        """min( 10% duration,  4 min ) [4 min == 2 * cadence]"""
         return min(0.1 * self.duration, 2 * self.lc.cadence)
 
     @classmethod

@@ -18,6 +18,7 @@ jobs:
         with:
           working_directory: ./paper
           root_file: atlas.tex
+          extra_system_packages: fontawesome5
 
       - name: Move pdf
         run: |

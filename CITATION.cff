@@ -30,7 +30,7 @@ abstract: >-
   Source code for the TESS Atlas, a living catalog of
   candidate exoplanet parameter estimates, from
   two-minute cadence TESS data, to assist in the
-  vetting process and follow-up analyses. 
+  vetting process and follow-up analyses.
 keywords:
   - exoplanets
   - Bayesian Inference

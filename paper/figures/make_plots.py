@@ -56,18 +56,25 @@ PLANET_COLORS = dict(
 DOWNLOAD_COMMAND = '''wget "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+*+from+pscomppars&format=csv" -O "data/confirmed_planets.csv"'''
 
 
-def load_summary(only_valid_rhats=True):
+def load_summary(filter_weird_systems=True):
     """Loads the TESS Atlas summary stats for each analysed TOI (this also contains ExoFOP values for TOIs)"""
     df = pd.read_csv("data/atlas_pe_summary.csv")
     r_earth_to_sun = (R_earth / R_sun).value 
     r_earth_to_sun = R_earth.value 
     df["atlas_radius"] = df['r_mean'] * df["Stellar Radius (R_Sun)"] * 100
-    if only_valid_rhats:
+    if filter_weird_systems: # this helps clean up the population radius-histogram
+        # remove any single transit systems 
+        df= df[df['Single Transit']==False]
+        
+        # remove bad r-hat systems
         df= df[df['rhat_ok']==True]
-    df = df[df["p_mean"]  < 10**3]
-    err_p = np.abs(df["p_mean"].values - df["Period (days)"].values) < 0.2
-    
-    df = df[err_p]
+        
+        # remove carzy large periods 
+        df = df[df["p_mean"]  < 10**3]
+        
+        # remove events really far from the cataloged period 
+        err_p = np.abs(df["p_mean"].values - df["Period (days)"].values) < 0.2
+        df = df[err_p]
     return df
 
 
@@ -289,15 +296,48 @@ def scatter_comparison(ax, x1, x2,):
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda y, _: "{:g}".format(y)))
 
 
+    
+    
 def plot_residual_hist(ax, x1, x2, bins=np.linspace(-0.30,0.30,50), use_abs=False):
     diff = (x1/x2) -1
     if use_abs:
         diff = np.abs(diff)
     cts, _, _ = ax.hist(diff, density=True, histtype='step', bins=bins, lw=3, color=CATALOG_COLORS["atlas"])
-    ax.vlines(0, ymin=0, ymax=max(cts)*1.2, color='k', lw=1.5)
+    ydets = dict(ymin=0, ymax=max(cts)*1.2)
+    ax.vlines(0, **ydets, color='k', lw=1.5)
     ax.set_xlim(min(bins), max(bins))
     ax.set_ylim(0, max(cts)*1.2)
     ax.set_yticks([])
+    quants_to_compute = np.array([0.16, 0.5,  0.84])
+    quants = np.percentile(diff, quants_to_compute * 100)
+    ax.vlines([quants[0], quants[2]], **ydets, color=CATALOG_COLORS["atlas"], ls="--")
+    print(quants)
+    print(np.std(diff))
+
+
+
+def make_radius_comparions_plot():
+    # clean data
+    summary_df = load_summary()
+    keep = np.abs(summary_df.r_mean - summary_df.exo_r) < 0.5
+    summary_df = summary_df[keep]
+    summary_df = summary_df[summary_df.atlas_radius  < 100]
+    summary_df = summary_df[summary_df.p_mean  < 100]
+    summary_df = summary_df[summary_df["Period (days)"]  < 100]
+
+    fig, axes = plt.subplots(1,2, figsize=(10, 5))
+    x1,  x2 = summary_df.atlas_radius, summary_df["Planet Radius (R_Earth)"]
+    scatter_comparison(axes[0], x1, x2)
+    plot_residual_hist(axes[1], x1, x2 , bins=np.linspace(-1,1,25))
+    
+    axes[0].set_ylabel(r'$R_{\rm ExoFOP}\ [R_{\rm \Earth}]$')
+    axes[0].set_xlabel(r'$R_{\rm Atlas}\ [R_{\rm \Earth}]$')
+    axes[1].set_xlabel(r'$R_{\rm Atlas}/R_{\rm ExoFOP} - 1$')
+    axes[1].set_ylabel('Density')
+    axes[0].set_xticks([1,10,100])
+    axes[0].set_yticks([1,10,100])
+    fig.tight_layout()
+    fig.savefig("radius_error.png", transparent=False, facecolor='white', bbox_inches='tight', )
 
     
 def make_radius_comparions_plot():
@@ -312,7 +352,7 @@ def make_radius_comparions_plot():
     fig, axes = plt.subplots(1,2, figsize=(10, 5))
     x1,  x2 = summary_df.atlas_radius, summary_df["Planet Radius (R_Earth)"]
     scatter_comparison(axes[0], x1, x2)
-    plot_residual_hist(axes[1], x1, x2 , bins=np.linspace(-1,1,25))
+    plot_residual_hist(axes[1], x1, x2 , bins=np.linspace(-1,1,50))
     axes[0].set_ylabel(r'$R_{\rm ExoFOP}\ [R_{\rm \Earth}]$')
     axes[0].set_xlabel(r'$R_{\rm Atlas}\ [R_{\rm \Earth}]$')
     axes[1].set_xlabel(r'$R_{\rm Atlas}/R_{\rm ExoFOP} - 1$')
@@ -338,9 +378,101 @@ def make_period_radius_comparison_plot():
     
 fig = make_period_radius_comparison_plot()
 make_radius_comparions_plot()
+
+
+# +
+
+def plot_residual_hist(ax, x1, x2, bins=np.linspace(-0.30,0.30,50), use_abs=False):
+    diff = (x1/x2) -1
+    if use_abs:
+        diff = np.abs(diff)
+    diff = diff[~np.isnan(diff)]
+    cts, _, _ = ax.hist(diff, density=True, histtype='step', bins=bins, lw=3, color=CATALOG_COLORS["atlas"])
+    ydets = dict(ymin=0, ymax=max(cts)*1.2)
+    ax.vlines(0, **ydets, color='k', lw=1.5)
+    ax.set_xlim(min(bins), max(bins))
+    ax.set_ylim(0, max(cts)*1.2)
+    ax.set_yticks([])
+#     quants_to_compute = np.array([0.16,  0.5, 0.84])
+#     quants = np.percentile(diff, quants_to_compute * 100)
+    sigma = np.std(diff)
+    sigmas = [sigma, sigma*2, sigma*3]
+    ax.vlines(sigmas, **ydets, color=CATALOG_COLORS["atlas"], ls="--")
+#     print(quants)
+    for i, s in enumerate(sigmas):
+        print(f"Percent above {i+1}-sigma {s:.1}: {len(diff[diff>s]) / len(diff) * 100:.1f}")
+
+
+
+
+def make_radius_comparions_plot():
+    # clean data
+    summary_df = load_summary()
+    keep = np.abs(summary_df.r_mean - summary_df.exo_r) < 0.5
+    summary_df = summary_df[keep]
+    summary_df = summary_df[summary_df.atlas_radius  < 100]
+    summary_df = summary_df[summary_df.p_mean  < 100]
+    summary_df = summary_df[summary_df["Period (days)"]  < 100]
+
+    fig, axes = plt.subplots(1,2, figsize=(10, 5))
+    x1,  x2 = summary_df.atlas_radius, summary_df["Planet Radius (R_Earth)"]
+    scatter_comparison(axes[0], x1, x2)
+    plot_residual_hist(axes[1], x1, x2 , bins=np.geomspace(0.05,1,40), use_abs=True)
+    axes[1].set_xscale('log')
+    
+    axes[0].set_ylabel(r'$R_{\rm ExoFOP}\ [R_{\rm \Earth}]$')
+    axes[0].set_xlabel(r'$R_{\rm Atlas}\ [R_{\rm \Earth}]$')
+    axes[1].set_xlabel(r'$\|R_{\rm Atlas}/R_{\rm ExoFOP} - 1\|$')
+    axes[1].xaxis.set_major_formatter(ticker.FuncFormatter(lambda y, _: "{:g}".format(y)))
+    axes[1].set_ylabel('Density')
+    axes[0].set_xticks([1,10,100])
+    axes[0].set_yticks([1,10,100])
+    fig.tight_layout()
+    fig.savefig("radius_error.png", transparent=False, facecolor='white', bbox_inches='tight', )
+
+
+
+
+make_radius_comparions_plot()
+
+
+
+summary_df = load_summary()
+keep = np.abs(summary_df.r_mean - summary_df.exo_r) < 0.5
+summary_df = summary_df[keep]
+summary_df = summary_df[summary_df.atlas_radius  < 100]
+summary_df = summary_df[summary_df.p_mean  < 100]
+summary_df = summary_df[summary_df["Period (days)"]  < 100]
+x1,  x2 = summary_df.p_mean, summary_df["Period (days)"]
+fig, axes = plt.subplots(1,1, figsize=(5, 5))
+plot_residual_hist(axes, x1, x2 , bins=np.geomspace(0.000001,0.002,40), use_abs=True)
+axes.set_xscale('log')
+
+# +
+atlas = load_summary(False)
+multi = atlas[atlas['Multiplanet System']==True]
+single = atlas[atlas['Single Transit']==True]
+print(f"Num planets with single transits: {len(single)}")
+print(f"Num planets in system with other planets: {len(multi)}")
+print(f"Num TOIs with multiple planets: {len({int(i) for i in multi.TOI})}")
+
+
 # -
 
+plt.scatter(single.p_mean, single.atlas_radius)
+
+atlas.columns
+
 # # Make TOI specific plots
+#
+#
+# The \exofop\ transit orbit parameters fall within the Atlas' 90\% CI range, demonstrating visual consistency. 
+# This consistency between parameter estimates is highlighted in onsider \TOI[174.03]'s posterior plot in Figure~\ref{fig:posteriors}.
+# The \exofop\ $R_{\rm p}/R_{\star}, b, P, \tau$ values are plotted in red on top of the 
+#
+#
+#
+#
 
 # ! download_toi 174 --outdir toi_174_files
 # ! download_toi 103 --outdir toi_174_files

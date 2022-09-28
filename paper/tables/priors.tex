@@ -1,0 +1,17 @@
+\begin{table*}[]
+\centering
+\caption{\textbf{Priors table:} Table of priors on the light curve transit model parameters. We use shorthand to represent distributions: $\Un$~uniform (min, max), $\N$~normal ($\mu,\sigma$), $\Par$~Pareto ($\alpha$, min) and finally $\invG$~Inverse Gamma (lower, upper). The prime superscript (${}^{\prime}$) indicates values from \exofop.  Each planet in a $n$-planet system will have its unique planet priors. The $t_i$ parameter is shorthand for both $\tmin$ and $\tmax$. The $P$ prior is used only for planets with a single transit in data in place of $\tmax$. $P_{\rm min}$ is defined in the text. Finally, the prior on $b$ is conditional on $R_{\rm p}/R_{\star}$ (refer to \exoplanet\ documentation for details.)}\label{tab:priors}
+\def\arraystretch{1.1} 
+\setlength{\tabcolsep}{0.5em}
+\begin{tabular}{cllcl}
+\text{Parameter}      & \text{Distribution}  &  & \text{Parameter}    & \text{Distribution}                                                    \\ 
+\cline{1-2} \cline{4-5} 
+\text{Star}           &                      &  & \text{Planet[$n$]}  &                                                                        \\
+$u_1, u_2$            & $\Un(0,1)$           &  & $R_{\rm p}/R_\star$ & $\ln \N(R_{\rm p}^{\prime}/R_\star, 1)$                                \\
+$f_0$                 & $\N(0, 10)$          &  & $b$                 & $\Un(0, R_{\rm p}/R_\star +1)$                                         \\                            
+\text{Noise}          &                      &  & $\tau/\rm{days}$    & $\ln\N(\ln\tau^{\prime}, 0.2) \in [4\, \rm{min},  10\tau^{\prime}]$    \\
+$\rho_{\rm GP}$       & $\invG(0.5, 10)$     &  & $t_i/\rm{TBJD}$     & $\N(t_i^{\prime}, \tau^{\prime}) \in [t_i^{\prime}\pm10\tau^{\prime}]$ \\
+$ \sigma_{\rm GP}, J$ & $\invG(1, 5)$        &  & $P/\rm{days}$       & $\Par(2/3, P_{\rm min})$                                               \\
+$ Q_{\rm GP}$         & 0.3                  &  & $N_P$               & $N^{\prime}_P$                                       
+\end{tabular}    
+\end{table*}

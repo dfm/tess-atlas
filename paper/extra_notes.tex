@@ -1,0 +1,54 @@
+
+% GENERIC TESS INTRO
+\textcolor{olive}{[
+\textuit{INTRO VERSION 2:}
+NASA's Transiting Exoplanet Survey Satellite \tess\ \citep{Ricker:2015:JATIS} concluded its two-year Primary Mission to search for transiting exoplanets orbiting nearby bright stars in July 2020.
+During this time, the \tess\ Science Processing Operations Center pipeline SPOC \citep{Jenkins:2016:SPIE}  recorded data with a 2-minute cadence for about $200,000$ pre-selected stars.
+Additionally, \tess\ captured full-frame images of its entire field of view over 10- and 30-minute intervals, enabling flux measurements of several million stars.
+Between 2, 10 and 30-minute observations, the \tess\ Primary Mission and the ongoing extended missions have identified over \red{$\numTessCandidates$} planet candidates, \red{$\numTessPlanets$} of which have been confirmed as planets \citep{Stassun:2018:AJ, Stassun:2019:AJ, Guerrero:2021:ApJS, Guerrero:2021:AAS}. Furthermore, \tess\ data have revealed new information on eclipsing binaries~\citep{ Guo:2020:MNRAS, Powell:2021:AJ}, tidally interacting systems~\citet{Holoien:2019:ApJ}, comets and exocomets~\citep{Farnham:2019:ApJL, Zieba:2019:A&A, Kuznyetsova:2020:OAP, Woods:2021:PASP, Pavlenko:2021:KPCB}),  variable stars~\citet{Antoci:2019:MNRAS, Handler:2020:NatAs}, supernovae~\cite{Vallely:2021:MNRAS, Fausnaugh:2021:ApJ}, and even black holes~\cite{Jayasinghe:2021:MNRAS}.
+]}
+
+
+
+
+
+
+\section{Transit model parameterisation details}\label{apdx:model_details}
+
+\paragraph{Transit times}
+To expedite the analysis, we assume that the \exofop\ period and phase of the orbit are sufficiently accurate to fit only the data nearby the anticipated transit times (with some buffer, $\pm2\tau$) and disregard the remaining data.
+This implies that the number of periods $N_P$ in the TESS observational baseline is exact and the transits must occur within the data cutouts.
+This can be difficult to enforce---especially for low signal-to-noise transits.
+A good approximation can be achieved by fitting for two reference transit times, $t_{\rm min}$ and $t_{\rm max}$, with a fixed number of periods, $N_P$, between them, instead of a single reference time and the period.
+Then the implied period can be computed as $P = (t_{\rm max} - t_{\rm min}) / N_P$.
+Importantly this does not change the prior on $P$ and $t_0$ since the Jacobian is a constant $1/N_P$.
+
+
+\paragraph{Transit duration}
+The transit duration $\tau$ is better constrained than the orbit's semi-major axis, $a$ the so it can be better as a fit parameter.
+For a circular orbit, the transit duration is \citep{Winn:2010}
+\begin{equation}
+  \tau = \frac{P}{\pi}\,\sin^{-1}\left( \frac{\sqrt{(1 + k^2) - b^2}}{a\,\sin i} \right) \quad.
+\end{equation}
+Rearranging this, we find
+\begin{equation}
+  a^2\,\sin^2 i\,\sin^2\left(\frac{\pi\,\tau}{P}\right) = (1 + k^2) - b^2 \quad.
+\end{equation}
+Then, using the fact that $\cos^2 i = b^2 / a^2$, we find
+\begin{equation}
+  a^2 = \frac{(1 + k)^2 - b^2\,\cos^2\phi}{\sin^2\phi}
+\end{equation}
+for $\phi = \pi\,\tau / P$.
+And the Jacobian is
+\begin{eqnarray}
+  \frac{\dd a}{\dd \tau} &=& \frac{\pi\,\cos \phi}{a\,P\,\sin^3 \phi}\,\left[b^2 - (1 + k)^2\right] \quad.
+\end{eqnarray}
+
+% The majority of \tess\ exoplanet candidates were discovered using the photometric transit method~\cite{}. 
+% Unfortunately, systematic effects~\citep[e.g][]{} and non-planetary astrophysical sources~\citep[e.g. stellar granulation and eclipsing binaries][]{} can mimic exoplanet transits.
+% Hence, to validate these candidates, it is necessary to eliminate false positives and, if possible, conduct additional observations.
+% The TESS 
+% Although we have begun to replace manual inspection with objective tests for triage and vetting, we still rely heavily on human intervention in making dispositions
+% Prior to becoming TOIs, \tess\ candidates undergo 
+
+% Targets are assigned consecutive TOI IDs. Multi- planet systems are assigned suffixes (.01, .02, etc.) mir- roring the suffixes assigned for the TCE. TEV automat- ically generates a comma-separated values (CSV) file with all necessary parameters for each TOI from the vetted TOI list. Each TOI has a table of pa- rameters, a DV summary page, and a full DV report.

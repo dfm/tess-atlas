@@ -91,10 +91,13 @@ class PageBuilder:
             notebook_regex=toi_regex,
             path_to_menu_page=os.path.join(self.builddir, MENU_PAGE),
         )
-        make_stats_page(
-            notebook_root=toi_regex,
-            path_to_stats_page=os.path.join(self.builddir, STATS_PAGE),
-        )
+        try:
+            make_stats_page(
+                notebook_regex=toi_regex,
+                path_to_stats_page=os.path.join(self.builddir, STATS_PAGE),
+            )
+        except Exception as e:
+            log(f"Failed to make stats page: {e}")
 
         # build book
         self.sphinx_build_pages()

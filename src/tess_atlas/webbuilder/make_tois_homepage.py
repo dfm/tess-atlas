@@ -83,7 +83,8 @@ def get_toi_category(notebook_path):
     for toi_type in ["single", "multi", "norm"]:
         if toi_number in CATEGORISED_TOIS[toi_type]:
             return toi_type
-    raise ValueError(f"TOI{toi_number} is uncategorised.")
+    print(f"TOI{toi_number} is uncategorised.")
+    return "norm"
 
 
 def generate_page_data(notebook_regex):

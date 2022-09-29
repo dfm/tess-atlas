@@ -32,6 +32,11 @@ html_theme_options = dict(
     show_toc_level=1,
     collapse_navigation=True,
     show_prev_next=False,
+    launch_buttons=dict(
+        colab_url="https://{your-colab-url}",
+        jupyterhub_url="https://{your-binderhub-url}",
+        binderhub_url="https://{your-binderhub-url}",
+    ),
 )
 html_static_path = ["_static"]
 language = None

@@ -20,6 +20,20 @@ def make_toi_csv(fname: str, toi_numbers: Optional[List[int]] = []):
     data.to_csv(fname, index=False)
 
 
+def add_slurm_cli_args(parser: argparse.ArgumentParser):
+    parser.add_argument(
+        "--module_loads",
+        default="git/2.18.0 gcc/9.2.0 openmpi/4.0.2 python/3.8.5",
+        help="String containing all module loads in one line (each module separated by a space)",
+    )
+    parser.add_argument(
+        "--submit",
+        action="store_true",  # False by default
+        help="Submit once files created",
+    )
+    return parser
+
+
 def get_cli_args(cli_data):
     parser = argparse.ArgumentParser(
         description="Create slurm job for analysing TOIs"
@@ -34,15 +48,7 @@ def get_cli_args(cli_data):
         help="outdir for jobs. If outdir already has analysed TOIs, than (and the kwarg 'clean' not passed), than slurm files for only the unanalysed TOIs generated)",
         default="tess_atlas_catalog",
     )
-    parser.add_argument(
-        "--module_loads",
-        help="String containing all module loads in one line (each module separated by a space)",
-    )
-    parser.add_argument(
-        "--submit",
-        action="store_true",  # False by default
-        help="Submit once files created",
-    )
+    parser = add_slurm_cli_args(parser)
     parser.add_argument(
         "--clean",
         action="store_true",  # False by default

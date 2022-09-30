@@ -4,13 +4,14 @@ import os
 import lightkurve as lk
 from lightkurve.lightcurve import TessLightCurve
 import numpy as np
-import pandas as pd
 from typing import List, Optional
+
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
-from .data_object import DataObject
-from ..utils import get_cache_dir
+from tess_atlas.data.data_object import DataObject
+from tess_atlas.data.data_utils import residual_rms
+from .lightcurve_search import LightcurveSearch
 
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
@@ -48,7 +49,7 @@ class LightCurveData(DataObject):
     def from_database(cls, tic: int, outdir: str):
         """Uses lightkurve to get TESS data for a TIC from MAST"""
         logger.info("Downloading LightCurveData from MAST")
-        lc = download_lightkurve_data(tic, outdir)
+        lc = LightcurveSearch(tic).lk_download(outdir)
         logger.info("Completed light curve data download")
         return cls(
             raw_lc=lc,
@@ -119,7 +120,7 @@ class LightCurveData(DataObject):
         return os.path.join(outdir, fname)
 
     def get_observation_durations(self, tic):
-        data = download_lightkurve_data(tic, self.outdir)
+        data = LightcurveSearch(tic).lk_download(self.outdir)
         observation_durations = []
         for obs in data:
             t = obs.time.value
@@ -172,53 +173,9 @@ class LightCurveData(DataObject):
         return transit_mask
 
 
-def search_for_lightkurve_data(tic):
-    search = lk.search_lightcurve(
-        target=f"TIC {tic}", mission="TESS", author="SPOC"
-    )
-    if not search:
-        raise ValueError(f"Search contains no data products")
-    logger.debug(f"Search  succeeded: {search}")
-
-    # Restrict to short cadence no "fast" cadence
-    search = search[np.where(search.table["t_exptime"] == 120)]
-    if len(search) < 1:
-        raise ValueError(
-            f"Search contains no data products with t_exptime == 120"
-        )
-
-    return search
-
-
-def download_lightkurve_data(tic, outdir):
-    search = search_for_lightkurve_data(tic)
-    # note:
-    # in multi-planet system, doesnt matter which planet's TIC we use
-    # (each planet has its own TIC)
-    logger.info(
-        f"Downloading {len(search)} observations of light curve data "
-        f"(TIC {tic})"
-    )
-    cache_dir = get_cache_dir(default=outdir)
-
-    # see lightkurve docs on quality flags:
-    # http://docs.lightkurve.org/reference/api/lightkurve.SearchResult.download_all.html
-    data = search.download_all(
-        download_dir=cache_dir,
-        flux_column="pdcsap_flux",
-        quality_bitmask="hardest",
-    )
-    if data is None:
-        raise ValueError(f"No light curves for TIC {tic}")
-    data = data.stitch().remove_nans()
-    return data
-
-
-def residual_rms(resid):
-    return np.sqrt(np.median((resid - np.median(resid)) ** 2))
-
-
 def check_transit_mask(tic_entry):
+    import matplotlib.pyplot as plt
+
     candidates = tic_entry.candidates
     max_duration = max([c.duration * 2 for c in candidates])
     day_buffer = max(0.3, max_duration)

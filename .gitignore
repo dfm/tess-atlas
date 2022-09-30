@@ -2,7 +2,7 @@
 .ipynb_checkpoints
 *.log
 cached*
-!src/tess_atlas/data/cached_tic_database.csv
+!src/tess_atlas/data/exofop/cached_tic_database.csv
 build
 docs/notebooks/*/*.html
 __pycache__

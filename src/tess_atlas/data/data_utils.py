@@ -3,6 +3,7 @@ from typing import Dict, Optional, Union
 import os.path
 import time
 from math import floor, log
+import numpy as np
 
 # from pympler.asizeof import asizeof
 import pickle
@@ -40,3 +41,7 @@ def sizeof(obj, human_readable: Optional[bool] = True) -> Union[str, int]:
         return format_bytes_to_human_readable(bytes)  # str
     else:
         return bytes  # int
+
+
+def residual_rms(resid):
+    return np.sqrt(np.median((resid - np.median(resid)) ** 2))

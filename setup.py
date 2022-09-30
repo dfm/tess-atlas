@@ -121,6 +121,7 @@ if __name__ == "__main__":
                 "make_webpages=tess_atlas.webbuilder.web_cli:main",
                 "make_slurm_job=tess_atlas.slurm_job_generator.slurm_job_generator:main",
                 "download_toi=tess_atlas.api.download_analysed_toi:main",
+                "update_tic_cache=tess_atlas.data.exofop.update_cache_cli:main",
             ]
         },
     )

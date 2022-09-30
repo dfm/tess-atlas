@@ -9,7 +9,7 @@ from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
-from ..data.lightcurve_data import LightCurveData, residual_rms
+from ..data.data_utils import residual_rms
 from .plotting_utils import (
     get_longest_unbroken_section_of_data,
     get_colors,

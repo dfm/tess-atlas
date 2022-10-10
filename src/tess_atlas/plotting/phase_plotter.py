@@ -25,7 +25,6 @@ from .labels import (
 from .plotting_utils import (
     get_colors,
     get_lc_and_gp_from_inference_object,
-    get_longest_unbroken_section_of_data,
     fold_data,
     generate_model_lightcurve,
     fold_lightcurve_models,
@@ -108,8 +107,9 @@ def plot_phase(
 
 def _get_period_txt(p_std, p_mean):
     # generate period txt
-    unc = f" \\pm {p_std:.2f}" if p_std else ""
-    unc = "" if p_std < 0.001 else unc
+    unc = ""
+    if p_std:
+        unc = "" if p_std < 0.001 else f" \\pm {p_std:.2f}"
     return f"$P = {p_mean:.2f}{unc}$ [days]"
 
 

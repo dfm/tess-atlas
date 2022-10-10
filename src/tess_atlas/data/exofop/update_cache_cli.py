@@ -39,6 +39,7 @@ def main():
             cpu_per_task=1,
             time="00:30:00",
             mem="1000MB",
+            partition="datamover",
             submit_dir=outdir,
             command=command,
         )

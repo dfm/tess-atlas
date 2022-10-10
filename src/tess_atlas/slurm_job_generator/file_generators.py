@@ -26,6 +26,7 @@ def make_slurm_file(
     time: str,
     mem: str,
     submit_dir: str,
+    partition: Optional[str] = "",
     jobid: Optional[int] = None,
     array_args: Optional[List[int]] = None,
     array_job: Optional[bool] = False,
@@ -41,6 +42,7 @@ def make_slurm_file(
         cpu_per_task=cpu_per_task,
         load_env=get_python_source_command(),
         mem=mem,
+        partition=partition,
         array_job=str(array_job),
         command=command,
     )

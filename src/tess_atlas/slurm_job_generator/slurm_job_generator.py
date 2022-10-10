@@ -52,6 +52,7 @@ def setup_jobs(
                 time="20:00",
                 jobname=f"gen",
                 mem="1000MB",
+                partition="datamover",
                 command=f"{cmd} --setup",
             )
         )

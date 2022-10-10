@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-  paths:
+    paths:
     - src/**
   pull_request:
     branches:

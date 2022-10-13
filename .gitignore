@@ -1,6 +1,7 @@
 .DS_Store
 .ipynb_checkpoints
 *.log
+out_*/
 cached*
 !src/tess_atlas/data/exofop/cached_tic_database.csv
 build

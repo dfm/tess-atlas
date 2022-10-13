@@ -59,7 +59,7 @@ class PageBuilder:
         self.building_notebook_dir = os.path.join(self.builddir, NOTEBOOKS_DIR)
         self.webdir = os.path.join(self.builddir, "_build")
         self.downloading_notebook = os.path.join(self.webdir, NOTEBOOKS_DIR)
-        self.update_api_files = False
+        self.update_api_files = update_api_files
 
     def setup_build_dir(self):
         if self.rebuild and os.path.exists(self.builddir):
@@ -91,10 +91,13 @@ class PageBuilder:
             notebook_regex=toi_regex,
             path_to_menu_page=os.path.join(self.builddir, MENU_PAGE),
         )
-        make_stats_page(
-            notebook_root=toi_regex,
-            path_to_stats_page=os.path.join(self.builddir, STATS_PAGE),
-        )
+        try:
+            make_stats_page(
+                notebook_root=toi_regex,
+                path_to_stats_page=os.path.join(self.builddir, STATS_PAGE),
+            )
+        except Exception as e:
+            logger.error(f"Failed to make stats page: {e}")
 
         # build book
         self.sphinx_build_pages()

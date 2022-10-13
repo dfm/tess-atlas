@@ -1,9 +1,10 @@
-import os
-import shutil
 import glob
+import os
 import re
-import pandas as pd
+import shutil
 from typing import List
+
+import pandas as pd
 
 STATS_COMMAND = "sacct -S {start} -E {end} -u {user} {extra_args} -o 'jobname%-40,cputimeraw,State,MaxRSS' --parsable2 > jobstats.txt"
 

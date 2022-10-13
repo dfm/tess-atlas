@@ -1,15 +1,14 @@
+import functools
 import logging
-
 from typing import List
 
 import pandas as pd
+
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-from .tic_database import TICDatabase
 
+from .keys import LK_AVAIL, MULTIPLANET, SINGLE, TIC_ID, TOI
 from .paths import TIC_SEARCH
-from .keys import TIC_ID, TOI, LK_AVAIL, SINGLE, MULTIPLANET
-
-import functools
+from .tic_database import TICDatabase
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

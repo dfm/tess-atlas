@@ -40,12 +40,11 @@ from typing import List
 import pandas as pd
 import tqdm
 
-
-from tess_atlas.utils import get_notebook_logger, notebook_initalisations
 from tess_atlas.plotting import (
-    plot_toi_list_radius_vs_period,
     plot_exofop_vs_atlas_comparison,
+    plot_toi_list_radius_vs_period,
 )
+from tess_atlas.utils import get_notebook_logger, notebook_initalisations
 
 OUTDIR = "example_loader_files"
 
@@ -168,15 +167,15 @@ Saves summary info in a JSON and CSV for future plotting
 """
 
 
-from arviz import InferenceData
-import arviz as az
-import pandas as pd
-from glob import glob
-from tqdm.auto import tqdm
+import json
 import re
 import warnings
-import json
+from glob import glob
 
+import arviz as az
+import pandas as pd
+from arviz import InferenceData
+from tqdm.auto import tqdm
 
 R_earth = 6378100
 R_sun = 695700000

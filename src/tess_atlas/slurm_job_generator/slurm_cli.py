@@ -1,10 +1,10 @@
 import argparse
-import pandas as pd
 import os
+from typing import List, Optional
+
+import pandas as pd
+
 from ..data.exofop import get_toi_list
-
-
-from typing import Optional, List
 
 
 def get_toi_numbers(toi_csv: str):

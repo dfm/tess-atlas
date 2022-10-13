@@ -1,25 +1,25 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import arviz as az
-import os
 import logging
 import os
+
+import arviz as az
+import matplotlib.pyplot as plt
+import numpy as np
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 from ..data.data_utils import residual_rms
-from .plotting_utils import (
-    get_longest_unbroken_section_of_data,
-    get_colors,
-    get_lc_and_gp_from_inference_object,
-)
-from .phase_plotter import plot_phase
 from .labels import (
     DIAGNOSTIC_LIGHTCURVE_PLOT,
-    DIAGNOSTIC_TRACE_PLOT,
     DIAGNOSTIC_RAW_LC_PLOT,
+    DIAGNOSTIC_TRACE_PLOT,
+)
+from .phase_plotter import plot_phase
+from .plotting_utils import (
+    get_colors,
+    get_lc_and_gp_from_inference_object,
+    get_longest_unbroken_section_of_data,
 )
 
 

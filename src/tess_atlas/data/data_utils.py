@@ -1,12 +1,13 @@
 import json
-from typing import Dict, Optional, Union
 import os.path
-import time
-from math import floor, log
-import numpy as np
 
 # from pympler.asizeof import asizeof
 import pickle
+import time
+from math import floor, log
+from typing import Dict, Optional, Union
+
+import numpy as np
 
 
 def save_json(fpath: str, data_dict: Dict):

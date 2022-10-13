@@ -1,6 +1,7 @@
-import textwrap
-import pkg_resources
 import os
+import textwrap
+
+import pkg_resources
 
 DIR = os.path.dirname(__file__)
 BIB_FILE = os.path.join(DIR, "bib.txt")

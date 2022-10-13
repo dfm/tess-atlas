@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import logging
 import multiprocessing as mp
 import os
 import sys
-import warnings
-import datetime
-import logging
 import time
+import warnings
 from contextlib import contextmanager
 
 import matplotlib.pyplot as plt

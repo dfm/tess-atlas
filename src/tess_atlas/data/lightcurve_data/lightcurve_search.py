@@ -1,11 +1,9 @@
 import logging
-import lightkurve as lk
 
+import lightkurve as lk
 import numpy as np
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
-from tess_atlas.utils import get_cache_dir
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME, get_cache_dir
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

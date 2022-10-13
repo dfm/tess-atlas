@@ -1,10 +1,10 @@
-import jinja2
-from typing import List
 import os
+from typing import List, Optional
 
-from typing import Optional
-from .slurm_utils import get_python_source_command, to_str_list
+import jinja2
+
 from ..file_management import mkdir
+from .slurm_utils import get_python_source_command, to_str_list
 
 SLURM_TEMPLATE = "slurm_template.sh"
 SUBMIT_TEMPLATE = "submit_template.sh"

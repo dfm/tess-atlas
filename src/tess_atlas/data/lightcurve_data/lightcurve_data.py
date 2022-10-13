@@ -1,18 +1,16 @@
 import logging
 import os
-
-import lightkurve as lk
-from lightkurve.lightcurve import TessLightCurve
-import numpy as np
 from typing import List, Optional
 
-
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+import lightkurve as lk
+import numpy as np
+from lightkurve.lightcurve import TessLightCurve
 
 from tess_atlas.data.data_object import DataObject
 from tess_atlas.data.data_utils import residual_rms
-from .lightcurve_search import LightcurveSearch
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
+from .lightcurve_search import LightcurveSearch
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

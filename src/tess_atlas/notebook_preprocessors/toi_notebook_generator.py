@@ -8,23 +8,17 @@ import pkg_resources
 
 from ..data.tic_entry import TICEntry
 from ..tess_atlas_version import __version__
+from .paths import TOI_TEMPLATE_FNAME, TRANSIT_MODEL
 
-TOI_TEMPLATE_FNAME = "notebook_templates/toi_template.py"
+
+def convert_py_to_ipynb(pyfile):
+    ipynb = pyfile.replace(".py", ".ipynb")
+    template_py_pointer = jupytext.read(pyfile, fmt="py:light")
+    jupytext.write(template_py_pointer, ipynb)
 
 
-def get_template_contents() -> str:
-    """Gets str contents of toi_template.ipynb"""
-    # get path to toi_template.py
-    template_py_filename = pkg_resources.resource_filename(
-        "tess_atlas", TOI_TEMPLATE_FNAME
-    )
-    # Converts toi_template.py --> toi_template.ipynb
-    template_ipynb_filename = template_py_filename.replace(".py", ".ipynb")
-    template_py_pointer = jupytext.read(template_py_filename, fmt="py:light")
-    jupytext.write(template_py_pointer, template_ipynb_filename)
-
-    # reads toi_template.ipynb contents
-    with open(template_ipynb_filename, "r") as f:
+def get_file_contents(path) -> str:
+    with open(path, "r") as f:
         txt = f.read()
     return txt
 
@@ -32,10 +26,14 @@ def get_template_contents() -> str:
 def create_toi_notebook(
     toi_number: int, notebook_filename: str, quickrun: bool
 ):
-    with open(notebook_filename, "w") as f:
-        txt = get_template_contents()
+    pyfile = notebook_filename.replace(".ipynb", ".py")
+    with open(pyfile, "w") as f:
+        txt = get_file_contents(TOI_TEMPLATE_FNAME)
         txt = txt.replace("{{{TOINUMBER}}}", f"{toi_number}")
         txt = txt.replace("{{{VERSIONNUMBER}}}", f"'{__version__}'")
+        txt = txt.replace(
+            "{{{TRANSIT_MODEL_CODE}}}", get_file_contents(TRANSIT_MODEL)
+        )
         if quickrun:
             txt = re.sub(r"tune=[0-9]+", f"tune={5}", txt)
             txt = re.sub(r"draws=[0-9]+", f"draws={10}", txt)
@@ -46,6 +44,10 @@ def create_toi_notebook(
                 "init_params(planet_transit_model, **params, quick=True)",
             )
         f.write(txt)
+
+    # convert to ipynb
+    convert_py_to_ipynb(pyfile)
+    os.remove(pyfile)
 
     # ensure notebook is valid
     notebook = nbformat.read(notebook_filename, as_version=4)

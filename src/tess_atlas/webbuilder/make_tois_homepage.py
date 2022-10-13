@@ -3,12 +3,13 @@
 """Module to build home page for TOIs"""
 import glob
 import os
-from tess_atlas.data.exofop import (
-    get_toi_numbers_for_different_categories,
-    get_toi_list,
-)
-from .templates import render_page_template, TOI_LINK, IMAGE
 
+from tess_atlas.data.exofop import (
+    get_toi_list,
+    get_toi_numbers_for_different_categories,
+)
+
+from .templates import IMAGE, TOI_LINK, render_page_template
 
 CATEGORISED_TOIS = get_toi_numbers_for_different_categories()
 CATEGORISED_TOIS = {

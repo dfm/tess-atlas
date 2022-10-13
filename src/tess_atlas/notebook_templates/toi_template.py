@@ -82,6 +82,7 @@ import pymc3_ext as pmx
 from arviz import InferenceData
 from celerite2.theano import GaussianProcess, terms
 
+from tess_atlas import citations
 from tess_atlas.analysis import (
     calculate_eccentricity_weights,
     compute_variable,
@@ -90,23 +91,22 @@ from tess_atlas.analysis import (
 )
 from tess_atlas.data import TICEntry
 from tess_atlas.data.inference_data_tools import (
+    get_optimized_init_params,
     summary,
     test_model,
-    get_optimized_init_params,
 )
-from tess_atlas.utils import get_notebook_logger
 from tess_atlas.plotting import (
+    plot_diagnostics,
     plot_eccentricity_posteriors,
-    plot_lightcurve,
+    plot_inference_trace,
     plot_interactive_lightcurve,
+    plot_lightcurve,
     plot_phase,
     plot_posteriors,
     plot_priors,
-    plot_diagnostics,
-    plot_inference_trace,
     plot_raw_lightcurve,
 )
-from tess_atlas import citations
+from tess_atlas.utils import get_notebook_logger
 
 TOI_NUMBER = {{{TOINUMBER}}}
 logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")

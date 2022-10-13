@@ -1,7 +1,7 @@
 import os
 import shutil
-from typing import Optional
 import tarfile
+from typing import Optional
 
 
 def mkdir(base, name=None):

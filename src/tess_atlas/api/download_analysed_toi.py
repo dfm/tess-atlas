@@ -1,6 +1,6 @@
-import subprocess
-import logging
 import argparse
+import logging
+import subprocess
 
 logger = logging.getLogger("TESS-Atlas")
 

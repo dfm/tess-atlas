@@ -1,26 +1,28 @@
-import pandas as pd
-import os
-
 import logging
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME, all_logging_disabled
+import os
+import random
+from math import isnan
+
+import matplotlib.pyplot as plt
+import pandas as pd
+from numpy import nan
+from tqdm.auto import tqdm
+
 from tess_atlas.data.data_utils import get_file_timestamp
-from .paths import TIC_CACHE, TIC_DATASOURCE, TIC_OLD_CACHE
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME, all_logging_disabled
+
+from ..lightcurve_data.lightcurve_search import LightcurveSearch
 from .keys import (
-    TIC_ID,
     LK_AVAIL,
+    MULTIPLANET,
+    PERIOD,
+    PLANET_COUNT,
+    SINGLE,
+    TIC_ID,
     TOI,
     TOI_INT,
-    PLANET_COUNT,
-    MULTIPLANET,
-    SINGLE,
-    PERIOD,
 )
-from ..lightcurve_data.lightcurve_search import LightcurveSearch
-from numpy import nan
-from math import isnan
-from tqdm.auto import tqdm
-import random
-import matplotlib.pyplot as plt
+from .paths import TIC_CACHE, TIC_DATASOURCE, TIC_OLD_CACHE
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

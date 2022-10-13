@@ -5,15 +5,15 @@ Run loader example
 Build jupyter-book
 """
 import os
-import subprocess
 import shutil
+import subprocess
 from typing import Optional
-from ..file_management import copy_tree, make_tarfile
 
 from tess_atlas.utils import setup_logger
-from tess_atlas.webbuilder.make_tois_homepage import make_menu_page
 from tess_atlas.webbuilder.make_run_stats_page import make_stats_page
+from tess_atlas.webbuilder.make_tois_homepage import make_menu_page
 
+from ..file_management import copy_tree, make_tarfile
 
 logger = setup_logger("page builder")
 

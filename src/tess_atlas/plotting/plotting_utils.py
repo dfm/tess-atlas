@@ -1,27 +1,25 @@
+import logging
+import math
+import re
 from typing import Dict, List, Optional, Tuple
 
-import logging
 import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import math
-from scipy.interpolate import interp1d
-import re
-
 from matplotlib import rcParams
-from matplotlib.ticker import ScalarFormatter, MaxNLocator, NullLocator
+from matplotlib.ticker import MaxNLocator, NullLocator, ScalarFormatter
+from scipy.interpolate import interp1d
 
 from tess_atlas.data.inference_data_tools import (
+    get_median_sample,
     get_posterior_samples,
     get_samples_dataframe,
-    get_median_sample,
 )
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 from ..analysis import compute_variable, get_untransformed_varnames
-
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

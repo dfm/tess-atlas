@@ -19,9 +19,9 @@ from .labels import (
     PRIOR_PLOT,
 )
 from .plotting_utils import (
-    format_prior_samples_and_initial_params,
-    format_label_string_with_offset,
     exception_catcher,
+    format_label_string_with_offset,
+    format_prior_samples_and_initial_params,
 )
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)

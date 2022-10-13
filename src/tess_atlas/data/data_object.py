@@ -1,8 +1,9 @@
+import logging
 import os
 from abc import ABC
-import logging
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+
 from .data_utils import sizeof
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)

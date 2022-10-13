@@ -1,7 +1,8 @@
 import logging
 import os
-from typing import Dict, List
 from copy import deepcopy
+from typing import Dict, List
+
 import pandas as pd
 
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME

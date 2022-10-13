@@ -1,7 +1,7 @@
 import logging
 import os
-from typing import List, Optional, Dict
 import shutil
+from typing import Dict, List, Optional
 
 import pandas as pd
 from arviz import InferenceData
@@ -16,9 +16,9 @@ from .inference_data_tools import (
     save_inference_data,
 )
 from .lightcurve_data import LightCurveData
+from .optimized_params import OptimizedParams
 from .planet_candidate import PlanetCandidate
 from .stellar_data import StellarData
-from .optimized_params import OptimizedParams
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

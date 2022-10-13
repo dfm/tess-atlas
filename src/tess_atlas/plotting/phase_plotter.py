@@ -1,13 +1,11 @@
 import logging
 import os
-
-
-from typing import Optional, Dict, List
+from typing import Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-from arviz import InferenceData
 import plotly.graph_objects as go
+from arviz import InferenceData
 from plotly.subplots import make_subplots
 
 from tess_atlas.data import TICEntry
@@ -23,11 +21,11 @@ from .labels import (
     TIME_SINCE_TRANSIT_LABEL,
 )
 from .plotting_utils import (
+    fold_data,
+    fold_lightcurve_models,
+    generate_model_lightcurve,
     get_colors,
     get_lc_and_gp_from_inference_object,
-    fold_data,
-    generate_model_lightcurve,
-    fold_lightcurve_models,
 )
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)

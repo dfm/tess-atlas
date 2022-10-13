@@ -6,19 +6,20 @@ import corner
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.ticker import MaxNLocator, NullLocator, ScalarFormatter
+
 from tess_atlas.data import TICEntry
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 from tess_atlas.data.inference_data_tools import get_samples_dataframe
-from matplotlib.ticker import ScalarFormatter, MaxNLocator, NullLocator
+from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 from .labels import ECCENTRICITY_PLOT, LATEX, POSTERIOR_PLOT, PRIOR_PLOT
 from .plotting_utils import (
-    format_prior_samples_and_initial_params,
-    get_range,
-    get_one_dimensional_median_and_error_bar,
-    format_label_string_with_offset,
-    get_colors,
     exception_catcher,
+    format_label_string_with_offset,
+    format_prior_samples_and_initial_params,
+    get_colors,
+    get_one_dimensional_median_and_error_bar,
+    get_range,
 )
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)

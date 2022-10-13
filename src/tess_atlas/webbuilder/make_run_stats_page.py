@@ -7,19 +7,20 @@
 #TODO: combine with analysis.stats_plotter
 #TODO: combine with slurm_utils
 """
-import pandas as pd
-import matplotlib.pyplot as plt
 import glob
-from tess_atlas.data.exofop import get_tic_database, filter_db_without_lk
-from tess_atlas.data.planet_candidate import CLASS_SHORTHAND
-import pandas as pd
 import os
 import re
+
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
-import numpy as np
-from .templates import render_page_template, TOI_LINK, IMAGE
+
+from tess_atlas.data.exofop import filter_db_without_lk, get_tic_database
+from tess_atlas.data.planet_candidate import CLASS_SHORTHAND
 from tess_atlas.plotting.runtime_plotter import plot_runtimes
+
+from .templates import IMAGE, TOI_LINK, render_page_template
 
 URL_BASE = "http://catalog.tess-atlas.cloud.edu.au/content/toi_notebooks"
 NOTEBOOK_URL = URL_BASE + "/toi_{}.html"

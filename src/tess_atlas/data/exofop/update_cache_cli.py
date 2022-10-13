@@ -1,7 +1,9 @@
-import argparse, os
+import argparse
+import os
+
+from tess_atlas.slurm_job_generator import add_slurm_cli_args, make_slurm_file
 
 from .tic_database import TICDatabase
-from tess_atlas.slurm_job_generator import add_slurm_cli_args, make_slurm_file
 
 
 def get_cli_args():

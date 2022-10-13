@@ -3,8 +3,8 @@ import re
 from typing import Optional
 
 import jupytext
-import pkg_resources
 import nbformat
+import pkg_resources
 
 from ..data.tic_entry import TICEntry
 from ..tess_atlas_version import __version__

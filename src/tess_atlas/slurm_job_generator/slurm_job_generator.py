@@ -1,13 +1,13 @@
 import os
-
 import sys
 from typing import List
 
-from .slurm_cli import get_cli_args
-from .file_generators import make_slurm_file, make_main_submitter
-from .slurm_utils import get_unprocessed_toi_numbers
 from tess_atlas.tess_atlas_version import __version__
+
 from ..file_management import mkdir
+from .file_generators import make_main_submitter, make_slurm_file
+from .slurm_cli import get_cli_args
+from .slurm_utils import get_unprocessed_toi_numbers
 
 MAX_ARRAY_SIZE = 2048
 

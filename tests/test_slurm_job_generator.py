@@ -10,7 +10,6 @@ from tess_atlas.slurm_job_generator.slurm_job_generator import (
     setup_jobs,
 )
 
-
 CLEAN_AFTER = True
 
 TEST_ARRAY_SIZE = 15

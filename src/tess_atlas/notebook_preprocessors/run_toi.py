@@ -3,13 +3,10 @@
 """Module to create and run a TOI notebook from the template notebook"""
 
 import argparse
-import logging
 import os
-import re
 import time
 from typing import Optional, Tuple
 
-from ..data.tic_entry import TICEntry
 from ..tess_atlas_version import __version__
 from ..utils import RUNNER_LOGGER_NAME, setup_logger
 from .notebook_executor import execute_ipynb
@@ -101,7 +98,8 @@ def record_run_stats(
 def main():
     toi_number, outdir, quickrun, setup = get_cli_args()
     logger = setup_logger(
-        RUNNER_LOGGER_NAME, outdir=os.path.join(outdir, __version__)
+        RUNNER_LOGGER_NAME,
+        outdir=os.path.join(outdir, __version__, f"toi_{toi_number}_files"),
     )
     logger.info(
         f"run_toi({toi_number}) {'quick' if quickrun else ''} {'setup' if setup else ''}"

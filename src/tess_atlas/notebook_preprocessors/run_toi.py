@@ -45,6 +45,7 @@ def run_toi(
     outdir: str,
     quickrun: Optional[bool] = False,
     setup: Optional[bool] = False,
+    make_webpage: Optional[bool] = False,
 ) -> Tuple[bool, float]:
     """Creates+preprocesses TOI notebook and records the executions' stats.
 
@@ -60,6 +61,8 @@ def run_toi(
         setup: bool
             If true creates notebook + downloads data needed for analysis
             but does not execute notebook
+        make_webpage: bool
+            If true creates a webpage for the TOI
 
     Returns:
         execution_successful: bool
@@ -77,6 +80,9 @@ def run_toi(
         record_run_stats(
             toi_number, execution_successful, time.time() - t0, outdir
         )
+    if make_webpage:
+        raise NotImplementedError("Webpage creation not yet implemented")
+
     return execution_successful, time.time() - t0
 
 

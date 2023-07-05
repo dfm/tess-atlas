@@ -1,38 +1,21 @@
 import os
-import unittest
 
-from tess_atlas.notebook_preprocessors.toi_notebook_generator import (
-    create_toi_notebook_from_template_notebook,
-)
-from tess_atlas.tess_atlas_version import __version__
-from tess_atlas.webbuilder.page_builder import make_book
+import pytest
 
+from tess_atlas.webbuilder import build_website
 
-class TestWebbuild(unittest.TestCase):
-    def setUp(self) -> None:
-        self.notebook_dir = "out_webtest/notebooks"
-        self.webdir = "out_webtest/html"
-        self.generate_fake_notebooks()
-
-    def test_makebook(self):
-        make_book(
-            builddir=self.webdir,
-            notebook_dir=f"{self.notebook_dir}/{__version__}/",
-            rebuild=True,
-            update_api_files=True,
-        )
-
-    def generate_fake_notebooks(self):
-        """Generate fake notebooks for testing"""
-        os.makedirs(self.notebook_dir, exist_ok=True)
-        for i in [101, 102, 103, 178, 273, 1812]:
-            create_toi_notebook_from_template_notebook(
-                toi_number=i,
-                outdir=self.notebook_dir,
-                quickrun=False,
-                setup=False,
-            )
+N_TOI_NOTEBOOKS = 5
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.fake_notebook_dir(n=N_TOI_NOTEBOOKS)
+def test_website_generation(tmp_path, fake_notebook_dir):
+    webdir = f"{tmp_path}/webdir"
+
+    build_website(
+        builddir=webdir,
+        notebook_dir=fake_notebook_dir,
+        rebuild=True,
+        update_api_files=False,
+    )
+    assert os.path.exists(webdir)
+    assert os.path.exists(f"{webdir}/_build/index.html")

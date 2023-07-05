@@ -1,9 +1,0 @@
-LK_AVAIL = "Lightcurve Availible"
-TIC_ID = "TIC ID"
-TOI = "TOI"  # 101.01
-TOI_INT = "TOI int"  # 101
-PLANET_COUNT = "planet count"
-MULTIPLANET = "Multiplanet System"
-SINGLE = "Single Transit"
-NORM = "Normal"
-PERIOD = "Period (days)"

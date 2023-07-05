@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import pandas as pd
 
-from ..data.exofop import get_toi_list
+from ..data.exofop import EXOFOP_DATA
 
 
 def get_toi_numbers(toi_csv: str):
@@ -14,7 +14,9 @@ def get_toi_numbers(toi_csv: str):
 
 def make_toi_csv(fname: str, toi_numbers: Optional[List[int]] = []):
     if len(toi_numbers) == 0:
-        toi_numbers = get_toi_list()
+        toi_numbers = EXOFOP_DATA.get_toi_list(
+            category=None, remove_toi_without_lk=True
+        )
     toi_numbers = list(set([int(i) for i in toi_numbers]))
     data = pd.DataFrame(dict(toi_numbers=toi_numbers))
     data.to_csv(fname, index=False)

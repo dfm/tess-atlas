@@ -9,7 +9,7 @@ from arviz import InferenceData
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
 
 from .data_object import DataObject
-from .exofop import get_tic_data_from_database, get_tic_url
+from .exofop import EXOFOP_DATA
 from .inference_data_tools import (
     get_idata_fname,
     load_inference_data,
@@ -60,7 +60,7 @@ class TICEntry(DataObject):
 
     @property
     def exofop_url(self) -> str:
-        return get_tic_url(self.tic_number)
+        return EXOFOP_DATA.get_tic_url(self.tic_number)
 
     @property
     def tic_number(self) -> int:
@@ -92,7 +92,8 @@ class TICEntry(DataObject):
     @classmethod
     def from_database(cls, toi: int):
         logger.info("Querying ExoFOP for TIC data")
-        return cls(toi=toi, tic_data=get_tic_data_from_database([toi]))
+        tic_data = EXOFOP_DATA.get_tic_data([toi])
+        return cls(toi=toi, tic_data=tic_data)
 
     @classmethod
     def from_cache(cls, toi: int, outdir: str):

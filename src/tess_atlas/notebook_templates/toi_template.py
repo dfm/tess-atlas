@@ -69,7 +69,7 @@ notebook_initalisations()
 # %load_ext autotime
 # # %load_ext jupyternotify
 # %autoreload 2
-# %matplotlib inline
+# # %matplotlib inline
 
 import os
 
@@ -238,6 +238,7 @@ if prior_samples:
 #
 # ### Sampling
 # With the model and priors defined, we can begin sampling.
+
 
 # + pycharm={"name": "#%%\n"} tags=["def"]
 def run_inference(model) -> InferenceData:

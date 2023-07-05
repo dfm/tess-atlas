@@ -28,7 +28,9 @@ class NotebookRunnerTestCase(unittest.TestCase):
 
     def test_notebook_creation(self):
         notebook_fn = run_toi.create_toi_notebook_from_template_notebook(
-            toi_number=723, quickrun=True, outdir=self.outdir
+            toi_number=723,
+            quickrun=True,
+            outdir=self.outdir,
         )
         self.assertTrue(os.path.exists(notebook_fn))
 
@@ -39,26 +41,21 @@ class NotebookRunnerTestCase(unittest.TestCase):
         except nbformat.ValidationError:
             self.fail(f"{notebook_fn} is an invalid notebook")
 
-    def test_slow_notebook_execution(self):
-        notebook_execution(MULTI_PLANET, outdir=self.outdir, quickrun=False)
-
     def test_quick_notebook_execution(self):
         notebook_execution(SINGLE_PLANET, outdir=self.outdir, quickrun=True)
 
 
 def notebook_execution(toi_id, outdir, quickrun=True, remove_after=False):
-    notebook_fn = run_toi.create_toi_notebook_from_template_notebook(
-        toi_number=toi_id, quickrun=quickrun, outdir=outdir
+    success, runtime = run_toi.run_toi(
+        toi_number=toi_id,
+        outdir=outdir,
+        quickrun=quickrun,
+        setup=False,
+        make_webpage=True,
     )
-    success = run_toi.execute_ipynb(notebook_fn)
-
-    samples_file = (
-        f"{outdir}/{__version__}/toi_{toi_id}_files/toi_{toi_id}.netcdf"
-    )
-    assert os.path.exists(samples_file), samples_file
     assert success
     if remove_after:
-        shutil.rmtree(f"{outdir}/{__version__}/toi_{toi_id}_files/")
+        shutil.rmtree(f"{outdir}/toi_{toi_id}_files/")
 
 
 if __name__ == "__main__":

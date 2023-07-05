@@ -22,7 +22,10 @@ def shutil_logpath(path, names):
 
 def copy_tree(src, dst, verbose: Optional[bool] = True):
     ignore = shutil_logpath if verbose else None
-    shutil.copytree(src, mkdir(dst), ignore=ignore, dirs_exist_ok=True)
+    try:
+        shutil.copytree(src, mkdir(dst), ignore=ignore, dirs_exist_ok=True)
+    except shutil.Error as e:
+        print(f"Error copying {src}->{dst}: {e}")
 
 
 def make_tarfile(output_filename: str, source_dir: str):

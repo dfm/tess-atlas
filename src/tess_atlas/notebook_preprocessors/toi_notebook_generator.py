@@ -4,7 +4,6 @@ from typing import Optional
 
 import jupytext
 import nbformat
-import pkg_resources
 
 from ..data.tic_entry import TICEntry
 from ..tess_atlas_version import __version__
@@ -23,7 +22,7 @@ def get_file_contents(path) -> str:
     return txt
 
 
-def create_toi_notebook(
+def _create_toi_notebook(
     toi_number: int, notebook_filename: str, quickrun: bool
 ):
     pyfile = notebook_filename.replace(".ipynb", ".py")
@@ -34,15 +33,9 @@ def create_toi_notebook(
         txt = txt.replace(
             "{{{TRANSIT_MODEL_CODE}}}", get_file_contents(TRANSIT_MODEL)
         )
-        if quickrun:
-            txt = re.sub(r"tune=[0-9]+", f"tune={5}", txt)
-            txt = re.sub(r"draws=[0-9]+", f"draws={10}", txt)
-            txt = re.sub(r"chains=[0-9]+", f"chains={1}", txt)
-            txt = re.sub(r"cores=[0-9]+", f"cores={1}", txt)
-            txt = txt.replace(
-                "init_params(planet_transit_model, **params)",
-                "init_params(planet_transit_model, **params, quick=True)",
-            )
+        if quickrun:  # hacks to make the notebook run faster
+            txt = __quickrun_replacements(txt)
+
         f.write(txt)
 
     # convert to ipynb
@@ -54,7 +47,30 @@ def create_toi_notebook(
     nbformat.validate(notebook)
 
 
-def safe_create_toi_notebook(
+def __quickrun_replacements(txt):
+    """Hacks to make the notebook run faster for testing purposes."""
+    txt = txt.replace("TESS Atlas fit", "TESS Atlas fit (quickrun)")
+    txt = re.sub(r"tune=[0-9]+", f"tune={5}", txt)
+    txt = re.sub(r"draws=[0-9]+", f"draws={10}", txt)
+    txt = re.sub(r"chains=[0-9]+", f"chains={1}", txt)
+    txt = re.sub(r"cores=[0-9]+", f"cores={1}", txt)
+    txt = txt.replace(
+        "init_params(planet_transit_model, **params)",
+        "init_params(planet_transit_model, **params, quick=True)",
+    )
+    GP_CODE = """gp = GaussianProcess(
+                kernel, t=t, diag=yerr**2 + jitter_prior**2, quiet=True
+            )
+            gp.marginal(name="obs", observed=residual)
+            my_planet_transit_model.gp_mu = gp.predict(residual, return_var=False)
+    """
+    txt = txt.replace(GP_CODE, "my_planet_transit_model.gp_mu = residual")
+    txt = txt.replace("kernel", "# kernel = ")
+    txt = txt.replace("from celerite2.theano", "# from celerite2.theano")
+    return txt
+
+
+def _safe_create_toi_notebook(
     toi_number: int,
     notebook_filename: str,
     quickrun: bool,
@@ -63,7 +79,7 @@ def safe_create_toi_notebook(
     for i in range(attempts):
         while True:
             try:
-                create_toi_notebook(toi_number, notebook_filename, quickrun)
+                _create_toi_notebook(toi_number, notebook_filename, quickrun)
                 break
             except Exception:
                 continue
@@ -82,7 +98,7 @@ def create_toi_notebook_from_template_notebook(
     outdir: Optional[str] = "notebooks",
     quickrun: Optional[bool] = False,
     setup: Optional[bool] = False,
-):
+) -> str:
     """Creates a jupyter notebook for the TOI
 
     Args:
@@ -93,7 +109,7 @@ def create_toi_notebook_from_template_notebook(
             (useful for testing/debugging -- produces non-scientific results)
         outdir: str
             Base outdir for TOI. Notebook will be saved at
-            {outdir}/{tess_atlas_version}/toi_{toi_number}.ipynb}
+            {outdir}/toi_{toi_number}.ipynb}
         setup: bool
             If true also downloads data needed for analysis and caches data.
 
@@ -101,13 +117,11 @@ def create_toi_notebook_from_template_notebook(
         notebook_filename: str
             The filepath of the generated notebook
     """
-    notebook_filename = os.path.join(
-        outdir, f"{__version__}/toi_{toi_number}.ipynb"
-    )
+    notebook_filename = os.path.join(outdir, f"toi_{toi_number}.ipynb")
     notebook_dir = os.path.dirname(notebook_filename)
     os.makedirs(notebook_dir, exist_ok=True)
 
-    safe_create_toi_notebook(toi_number, notebook_filename, quickrun)
+    _safe_create_toi_notebook(toi_number, notebook_filename, quickrun)
 
     if setup:
         download_toi_data(toi_number, notebook_dir)

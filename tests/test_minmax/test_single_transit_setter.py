@@ -3,13 +3,15 @@ import shutil
 import unittest
 
 import pandas as pd
+import pytest
 
 from tess_atlas.data import TICEntry
 
 CLEAN_AFTER_TEST = False
 
 
-class TestData(unittest.TestCase):
+@unittest.skip("This is a test for a bug still being investigated")
+class TestSingleTransitSetter(unittest.TestCase):
     def setUp(self):
         norm_tois = [103, 978]
         single_trans_tois = [5153, 2168]

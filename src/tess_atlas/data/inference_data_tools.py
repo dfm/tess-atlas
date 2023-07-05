@@ -19,7 +19,7 @@ def get_idata_fname(outdir):
     return os.path.join(outdir, INFERENCE_DATA_FNAME)
 
 
-def load_inference_data(outdir: str):
+def load_inference_data(outdir: str) -> az.InferenceData:
     fname = get_idata_fname(outdir)
     if not os.path.isfile(fname):
         raise FileNotFoundError(f"{fname} not found.")
@@ -31,7 +31,7 @@ def load_inference_data(outdir: str):
         logger.error(f"Cant read inference file: {e}")
 
 
-def save_inference_data(inference_data, outdir: str):
+def save_inference_data(inference_data: az.InferenceData, outdir: str):
     fname = get_idata_fname(outdir)
     inference_data.to_netcdf(
         filename=fname, groups=["posterior", "log_likelihood", "sample_stats"]
@@ -39,7 +39,9 @@ def save_inference_data(inference_data, outdir: str):
     save_samples(inference_data, outdir)
 
 
-def summary(inference_data, just_planet_params=False) -> pd.DataFrame:
+def summary(
+    inference_data: az.InferenceData, just_planet_params=False
+) -> pd.DataFrame:
     """Returns a dataframe with the mean+sd of each candidate's p, b, r"""
     df = az.summary(
         inference_data, var_names=["~lightcurves"], filter_vars="like"
@@ -75,7 +77,7 @@ def summary(inference_data, just_planet_params=False) -> pd.DataFrame:
     return df
 
 
-def get_samples_dataframe(inference_data) -> pd.DataFrame:
+def get_samples_dataframe(inference_data: az.InferenceData) -> pd.DataFrame:
     samples = inference_data.to_dataframe(groups=["posterior"])
     # converting column labels to only include posterior label (removing group)
     new_cols = []
@@ -90,7 +92,9 @@ def get_samples_dataframe(inference_data) -> pd.DataFrame:
 
 
 def get_posterior_samples(
-    inference_data, varnames: List[str], size: Optional[int] = None
+    inference_data: az.InferenceData,
+    varnames: List[str],
+    size: Optional[int] = None,
 ) -> List[List[float]]:
     """Flattens posterior samples (from chains) and returns List of samples"""
     flat_samps = inference_data.posterior.stack(sample=("chain", "draw"))
@@ -105,7 +109,7 @@ def get_posterior_samples(
 
 
 def get_median_sample(
-    inference_data, varnames: List[str]
+    inference_data: az.InferenceData, varnames: List[str]
 ) -> List[List[float]]:
     """Get the median sample for each param"""
     samples = get_posterior_samples(inference_data, varnames)

@@ -31,7 +31,7 @@ class MatplotlibPlotTest(unittest.TestCase):
             shutil.rmtree(self.out)
         os.chdir(self.orig_dir)
 
-    @pytest.skip("Dont have a fast way to plug a model in here.")
+    @pytest.mark.skip("Dont have a fast way to plug a model in here.")
     def test_static_phase_plot(self):
         from tess_atlas.plotting import plot_phase
 

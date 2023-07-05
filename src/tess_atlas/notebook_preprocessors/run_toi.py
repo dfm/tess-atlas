@@ -7,7 +7,6 @@ import os
 import time
 from typing import Optional, Tuple
 
-from ..tess_atlas_version import __version__
 from ..utils import RUNNER_LOGGER_NAME, setup_logger
 from .notebook_executor import execute_ipynb
 from .toi_notebook_generator import create_toi_notebook_from_template_notebook
@@ -76,12 +75,10 @@ def run_toi(
     )
     execution_successful = True
     if not setup:
-        execution_successful = execute_ipynb(notebook_filename)
+        execution_successful = execute_ipynb(notebook_filename, make_webpage)
         record_run_stats(
             toi_number, execution_successful, time.time() - t0, outdir
         )
-    if make_webpage:
-        raise NotImplementedError("Webpage creation not yet implemented")
 
     return execution_successful, time.time() - t0
 
@@ -93,7 +90,7 @@ def record_run_stats(
     outdir: str,
 ):
     """Creates/Appends to a CSV the runtime and status of the TOI analysis."""
-    fname = os.path.join(outdir, __version__, "run_stats.csv")
+    fname = os.path.join(outdir, "run_stats.csv")
     if not os.path.isfile(fname):
         open(fname, "w").write("toi,execution_complete,duration_in_s\n")
     open(fname, "a").write(
@@ -105,7 +102,7 @@ def main():
     toi_number, outdir, quickrun, setup = get_cli_args()
     logger = setup_logger(
         RUNNER_LOGGER_NAME,
-        outdir=os.path.join(outdir, __version__, f"toi_{toi_number}_files"),
+        outdir=os.path.join(outdir, f"toi_{toi_number}_files"),
     )
     logger.info(
         f"run_toi({toi_number}) {'quick' if quickrun else ''} {'setup' if setup else ''}"

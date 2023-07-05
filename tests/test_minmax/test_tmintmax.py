@@ -2,6 +2,7 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import pytest
 from tqdm.auto import tqdm
 
 from tess_atlas.data import TICEntry
@@ -12,13 +13,16 @@ FAILED_TOIS = "359 710 978 1192 1894 1895 2005 2151 2168 2299 2321 2326 2338 248
 FAILED_TOIS = [int(i) for i in FAILED_TOIS]
 
 OUT = "out"
-os.makedirs(OUT, exist_ok=True)
 
-tminequal = []
-has_single = []
 
-for t in tqdm(FAILED_TOIS):
-    tic = TICEntry.load(t)
-    fig = plot_raw_lightcurve(tic, save=False)
-    fig.savefig(f"{OUT}/lc_{tic.toi_number}.png", bbox_inches="tight")
-    plt.close(fig)
+@pytest.mark.skip(reason="This is a test for a bug still being investigated")
+def test_tminequal():
+    os.makedirs(OUT, exist_ok=True)
+
+    tminequal = []
+    has_single = []
+    for t in tqdm(FAILED_TOIS):
+        tic = TICEntry.load(t)
+        fig = plot_raw_lightcurve(tic, save=False)
+        fig.savefig(f"{OUT}/lc_{tic.toi_number}.png", bbox_inches="tight")
+        plt.close(fig)

@@ -1,20 +1,21 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""Module to build home page for TOIs"""
+"""Module to build menu page for TOIs
+
+The page will contain links to the TOI notebooks, and a thumbnail of the phase plot
+See http://catalog.tess-atlas.cloud.edu.au/content/toi_fits.html
+
+
+#TODO: This will hopefully be replaced with the AnalysisSummary class + itables
+"""
 import glob
 import os
 
-from tess_atlas.data.exofop import (
-    get_toi_list,
-    get_toi_numbers_for_different_categories,
-)
+from tess_atlas.utils import grep_toi_number
 
+from ...data.exofop import EXOFOP_DATA, constants
 from .templates import IMAGE, TOI_LINK, render_page_template
 
-CATEGORISED_TOIS = get_toi_numbers_for_different_categories()
-CATEGORISED_TOIS = {
-    k: df["toi_numbers"].tolist() for k, df in CATEGORISED_TOIS.items()
-}
+CATEGORISED_TOIS = EXOFOP_DATA.get_categorised_toi_lists()
+CATEGRIES = [constants.NORMAL, constants.MULTIPLANET, constants.SINGLE_TRANSIT]
 
 
 def get_toi_str_from_path(path):
@@ -25,18 +26,14 @@ def get_toi_fname(path):
     return os.path.basename(path).split(".")[0]
 
 
-def get_toi_number(path):
-    return int(get_toi_str_from_path(path))
-
-
 def render_toi_data(path):
     fname = get_toi_fname(path)
-    toi_int = get_toi_number(path)
+    toi_int = grep_toi_number(path)
     return TOI_LINK.render(toi_int=toi_int, toi_fname=fname)
 
 
 def sort_files(files):
-    return sorted(files, key=lambda x: get_toi_number(x))
+    return sorted(files, key=lambda x: grep_toi_number(x))
 
 
 def get_phase_plots(notebook_path, notebook_dir):
@@ -67,10 +64,14 @@ def split_notebooks(notebook_files, notebook_dir):
 
 
 def generate_number_data(successful_data, failed_data):
-    numbers = {k: len(v) for k, v in CATEGORISED_TOIS.items()}
-    numbers["total"] = len(get_toi_list())
+    numbers = {
+        constants.SINGLE_TRANSIT: EXOFOP_DATA.get_counts().single_transit,
+        constants.MULTIPLANET: EXOFOP_DATA.get_counts().multiplanet,
+        constants.NORMAL: EXOFOP_DATA.get_counts().normal,
+    }
+    numbers["total"] = EXOFOP_DATA.get_counts().all
     total_done, total_fail = 0, 0
-    for type in CATEGORISED_TOIS.keys():
+    for type in CATEGRIES:
         numbers[f"{type}_done"] = len(successful_data[type].keys()) - 1
         numbers[f"{type}_fail"] = len(failed_data[type])
         total_done += numbers[f"{type}_done"]
@@ -80,11 +81,14 @@ def generate_number_data(successful_data, failed_data):
 
 
 def get_toi_category(notebook_path):
-    toi_number = get_toi_number(notebook_path)
-    for toi_type in ["single", "multi", "norm"]:
-        if toi_number in CATEGORISED_TOIS[toi_type]:
-            return toi_type
-    raise ValueError(f"TOI{toi_number} is uncategorised.")
+    toi_number = grep_toi_number(notebook_path)
+    if toi_number in CATEGORISED_TOIS.normal:
+        return constants.NORMAL
+    elif toi_number in CATEGORISED_TOIS.multiplanet:
+        return constants.MULTIPLANET
+    elif toi_number in CATEGORISED_TOIS.single_transit:
+        return constants.SINGLE_TRANSIT
+    return "NA"
 
 
 def generate_page_data(notebook_regex):
@@ -114,10 +118,9 @@ def generate_page_data(notebook_regex):
     )
     num_fail, num_pass = len(failed_notebooks), len(success_notebooks)
 
-    successful_data = {
-        k: {"TOI": ["Phase Plot"]} for k in CATEGORISED_TOIS.keys()
-    }
-    failed_data = {k: [] for k in CATEGORISED_TOIS.keys()}
+    successful_data = {k: {"TOI": ["Phase Plot"]} for k in CATEGRIES}
+    failed_data = {k: [] for k in CATEGRIES}
+    failed_data["NA"] = []
 
     for notebook_path in success_notebooks:
         toi_data = render_toi_data(notebook_path)

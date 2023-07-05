@@ -7,8 +7,14 @@ from .tic_database import TICDatabase
 
 
 def get_cli_args():
-    """Get CLI arguments"""
-    parser = argparse.ArgumentParser(prog="update_tic_cache")
+    parser = argparse.ArgumentParser(
+        prog="update_tic_cache",
+        description=(
+            "Update TIC cache from ExoFOP database. "
+            "Lightkurve is queried for each TIC ID to "
+            "verify that the correct data is availible."
+        ),
+    )
     parser.add_argument(
         "--clean",
         action="store_true",  # False by default

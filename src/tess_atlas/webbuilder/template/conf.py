@@ -1,17 +1,14 @@
-project = 'TESS Atlas"'
+project = "TESS Atlas"
 copyright = "2022, TESS Atlas community"
 author = "the TESS Atlas community"
 
-html_title = "TESS Atlas"
+master_doc = "index"
+html_title = project
 html_logo = "_static/atlas_logo.png"
 html_favicon = "_static/atlas_logo.png"
 release = "1"
 extensions = [
-    "sphinx_togglebutton",
-    "sphinx_tabs.tabs",
-    "sphinx_copybutton",
     "myst_nb",
-    "jupyter_book",
     "sphinx_comments",
     "sphinx_external_toc",
     "sphinx.ext.intersphinx",
@@ -19,29 +16,32 @@ extensions = [
     "sphinx_book_theme",
     "sphinx_remove_toctrees",
 ]
-# nbsphinx_execute = 'never'
-jupyter_execute_notebooks = "off"
-exclude_patterns = []
+nb_execution_mode = "off"
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 html_theme = "sphinx_book_theme"
 html_theme_options = dict(
     repository_url="https://github.com/dfm/tess-atlas",
     use_repository_button=True,
-    use_fullscreen_button=True,
     use_download_button=True,
     search_bar_text="Search the Atlas...",
     show_toc_level=1,
     collapse_navigation=True,
     show_prev_next=False,
+    home_page_in_toc=True,
+    toc_title=project,
+    # navbar_end= ["paperbutton.html"],
 )
+# templates_path = ["_templates"]
+
+html_sidebars = {"**": ["navbar-logo.html", "sbt-sidebar-nav.html"]}
 html_static_path = ["_static"]
-language = None
-pygments_style = "sphinx"
+
 html_permalinks = True
 html_sourcelink_suffix = ""
 numfig = True
-panels_add_bootstrap_css = False
+panels_add_bootstrap_css = True
 suppress_warnings = ["myst.domains"]
-html_copy_source = True
+html_copy_source = False
 remove_from_toctrees = ["content/toi_notebooks/toi_*.ipynb"]
 
 # https://stackoverflow.com/questions/55297443/including-notebook-with-nbsphinx-fails/70474616#70474616

@@ -24,9 +24,8 @@ CLASSIFIERS = [
     "Programming Language :: Python :: 3",
 ]
 INSTALL_REQUIRES = [
-    "tomli>=1.0.0",
-    "docutils==0.16",
     "exoplanet>=0.5.1",
+    "pymc3>=3.9",
     "pymc3-ext>=0.1.0",
     "theano-pymc>=1.1.2",
     "celerite2>=0.2.0",
@@ -35,21 +34,8 @@ INSTALL_REQUIRES = [
     "arviz>=0.10.0",
     "corner>=2.2.1",
     "seaborn",
-    "nbconvert~=5.6",
-    "jupyter_client==6.1.12",  # pinned beacuse of nbconvert bug https://github.com/jupyter/nbconvert/pull/1549#issuecomment-818734169
-    "jupyter-book",
-    "sphinx==3.5.4",
-    "sphinx-book-theme",
-    "sphinx-tabs<=2.1.0",
-    "sphinx_design",
-    "sphinx-remove-toctrees",
-    "sphinx_togglebutton",
-    "click~=7.1",
-    "jupytext",
-    "ipython-autotime",
-    "memory_profiler",
-    "pympler",
-    # "jupyternotify",
+    "itables",
+    "StrEnum",
 ]
 EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}
 EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [
@@ -58,6 +44,19 @@ EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [
     "black<=21.9b0",
     "isort",
     "jupyter_contrib_nbextensions",
+    "sphinx-book-theme>=1.0.0",
+    "sphinx_design",
+    "sphinx-remove-toctrees",
+    "sphinx_togglebutton",
+    "jupytext",
+    "ipython-autotime",
+    "sphinx_external_toc",
+    "memory_profiler",
+    "pympler",
+    "psutil",
+    "ploomber-engine>=0.0.24",
+    "pretty-jupyter",
+    "itables",
 ]
 
 # END PROJECT SPECIFIC

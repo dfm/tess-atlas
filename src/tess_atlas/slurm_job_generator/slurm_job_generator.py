@@ -2,8 +2,6 @@ import os
 import sys
 from typing import List
 
-from tess_atlas.tess_atlas_version import __version__
-
 from ..file_management import mkdir
 from .file_generators import make_main_submitter, make_slurm_file
 from .slurm_cli import get_cli_args
@@ -19,7 +17,6 @@ def setup_jobs(
     submit: bool,
     clean: bool,
 ) -> None:
-
     if not clean:
         toi_numbers = get_unprocessed_toi_numbers(toi_numbers, outdir)
 
@@ -67,7 +64,7 @@ def setup_jobs(
             )
         )
 
-    notebook_dir = os.path.join(outdir, __version__)
+    notebook_dir = os.path.join(outdir)
     web_fn = make_slurm_file(
         **kwargs,
         cpu_per_task=1,

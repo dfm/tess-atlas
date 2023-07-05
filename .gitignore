@@ -1,3 +1,7 @@
+.pytest_cache
+tmp
+*.tar.gz
+.virtual_documents
 .DS_Store
 .ipynb_checkpoints
 *.log

@@ -4,10 +4,12 @@ import datetime
 import logging
 import multiprocessing as mp
 import os
+import re
 import sys
 import time
 import warnings
 from contextlib import contextmanager
+from typing import List, NamedTuple, Optional, Union
 
 import matplotlib.pyplot as plt
 from IPython import get_ipython
@@ -25,7 +27,7 @@ class DeltaTimeFormatter(logging.Formatter):
         return super().format(record)
 
 
-def setup_logger(logger_name, outdir=""):
+def setup_logger(logger_name: str, outdir: Optional[str] = ""):
     logger = logging.getLogger(logger_name)
     logger.handlers.clear()
     logger.setLevel(logging.INFO)
@@ -123,6 +125,20 @@ def get_notebook_logger(outdir=""):
 
     notebook_logger = setup_logger(NOTEBOOK_LOGGER_NAME, outdir)
     return notebook_logger
+
+
+def grep_toi_number(str) -> Union[int, None]:
+    """Extract TOI number from string using regex
+    "http://localhost:63342/tess-atlas/tests/out_webtest/html/_build/content/toi_notebooks/toi_101.html"
+    "http://catalog.tess-atlas.cloud.edu.au/content/toi_notebooks/toi_101.html"
+    "run_toi(101)"
+
+    """
+    regex = r"toi_(\d+)|run_toi\((\d+)\)"
+    toi_number = re.search(regex, str)
+    if toi_number is None:
+        return None
+    return int(toi_number.group(1))
 
 
 @contextmanager

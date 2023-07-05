@@ -1,4 +1,5 @@
 """
+Module to build the website
 Copy docs templates to outdir
 Make summary plots + page
 Run loader example
@@ -7,11 +8,11 @@ Build jupyter-book
 import os
 import shutil
 import subprocess
+from glob import glob
 from typing import Optional
 
 from tess_atlas.utils import setup_logger
-from tess_atlas.webbuilder.make_run_stats_page import make_stats_page
-from tess_atlas.webbuilder.make_tois_homepage import make_menu_page
+from tess_atlas.webbuilder.pages import make_menu_page, make_stats_page
 
 from ..file_management import copy_tree, make_tarfile
 
@@ -30,7 +31,7 @@ def log(t, red=True):
     logger.info(t)
 
 
-class PageBuilder:
+class WebBuilder:
     def __init__(
         self,
         notebook_src,
@@ -79,7 +80,7 @@ class PageBuilder:
         make_tarfile("tess_atlas_pages.tar.gz", source_dir=self.webdir)
 
     def sphinx_build_pages(self):
-        command = f"sphinx-build -b html -j auto {self.builddir} {self.webdir}"
+        command = f"sphinx-build -v -T -E -a -b html -j auto {self.builddir} {self.webdir}"
         log(f"Running >>>", red=False)
         log(command)
         subprocess.run(command, shell=True, check=True)
@@ -87,10 +88,14 @@ class PageBuilder:
     def build(self):
         # make homepage
         toi_regex = os.path.join(self.building_notebook_dir, "toi_*.ipynb")
-        make_menu_page(
-            notebook_regex=toi_regex,
-            path_to_menu_page=os.path.join(self.builddir, MENU_PAGE),
-        )
+        log(f"Building book with {len(glob(toi_regex))} TOI notebooks")
+        try:
+            make_menu_page(
+                notebook_regex=toi_regex,
+                path_to_menu_page=os.path.join(self.builddir, MENU_PAGE),
+            )
+        except Exception as e:
+            logger.error(f"Failed to make menu page: {e}")
         try:
             make_stats_page(
                 notebook_root=toi_regex,
@@ -110,11 +115,35 @@ class PageBuilder:
         log("TARing webdir contents\n")
         make_tarfile("tess_atlas_pages.tar.gz", source_dir=self.webdir)
 
-        log("Done!")
+        log(
+            "Done! Open the website at:\n"
+            f"file://{os.path.abspath(self.webdir)}/index.html\n"
+        )
 
 
-def make_book(builddir, notebook_dir, rebuild, update_api_files):
-    p = PageBuilder(
+def build_website(
+    builddir: str,
+    notebook_dir: str,
+    rebuild: bool = False,
+    update_api_files: bool = False,
+):
+    """
+    Build the website
+
+    Parameters
+    ----------
+    builddir : str
+        Directory to build the website in
+    notebook_dir : str
+        Directory containing the TOI notebooks
+    rebuild : bool
+        If True, rebuild the website from scratch
+    update_api_files : bool
+        If True, update the API files for the website
+        (this will take some time -- requires copying all notebooks/data)
+
+    """
+    p = WebBuilder(
         notebook_src=notebook_dir,
         builddir=builddir,
         rebuild=rebuild,

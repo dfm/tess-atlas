@@ -16,9 +16,9 @@ import numpy as np
 import pandas as pd
 from tqdm.auto import tqdm
 
-from tess_atlas.data.exofop import filter_db_without_lk, get_tic_database
 from tess_atlas.data.planet_candidate import CLASS_SHORTHAND
 from tess_atlas.plotting.runtime_plotter import plot_runtimes
+from tess_atlas.utils import grep_toi_number
 
 from .templates import IMAGE, TOI_LINK, render_page_template
 
@@ -31,20 +31,15 @@ NETCDF_REGEX = "*/toi_*_files/*.netcdf"
 PHASE_REGEX = "*/toi_*_files/phase*_1_lowres.png"
 
 
-def toi_num(f):
-    toi_str = re.search(r"toi_(.*\d)", f).group()
-    return int(toi_str.split("_")[1])
-
-
 def do_tois_have_netcdf(notebook_root, all_tois):
     files = glob.glob(f"{notebook_root}/{NETCDF_REGEX}")
-    tois = [toi_num(f) for f in files]
+    tois = [grep_toi_number(f) for f in files]
     return [True if i in tois else False for i in all_tois]
 
 
 def do_tois_have_phase_plot(notebook_root, all_tois):
     files = glob.glob(f"{notebook_root}/{PHASE_REGEX}")
-    tois = [toi_num(f) for f in files]
+    tois = [grep_toi_number(f) for f in files]
     return [True if i in tois else False for i in all_tois]
 
 
@@ -105,13 +100,12 @@ def get_log_last_line(log_fn):
 
 
 def get_toi_number_from_log(log_fn):
-    regex = r"run_toi\((.*\d)\)"
     with open(log_fn, "r") as f:
         f.seek(50, 0)
         txt = f.read(200)  # read the chars from idx 50 - 250
-        match = re.findall(regex, txt)
-        if match:
-            return int(match[0])
+        toi_int = grep_toi_number(txt)
+        if toi_int:
+            return toi_int
         else:
             return np.nan
 

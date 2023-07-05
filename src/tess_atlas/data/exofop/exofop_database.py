@@ -1,7 +1,10 @@
 import logging
 import os
 import random
+from collections import namedtuple
+from dataclasses import dataclass
 from math import isnan
+from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -12,23 +15,39 @@ from tess_atlas.data.data_utils import get_file_timestamp
 from tess_atlas.utils import NOTEBOOK_LOGGER_NAME, all_logging_disabled
 
 from ..lightcurve_data.lightcurve_search import LightcurveSearch
-from .keys import (
+from .constants import (
     LK_AVAIL,
     MULTIPLANET,
+    NORMAL,
     PERIOD,
     PLANET_COUNT,
-    SINGLE,
+    SINGLE_TRANSIT,
+    TIC_CACHE,
+    TIC_DATASOURCE,
     TIC_ID,
+    TIC_OLD_CACHE,
+    TIC_SEARCH,
     TOI,
     TOI_INT,
 )
-from .paths import TIC_CACHE, TIC_DATASOURCE, TIC_OLD_CACHE
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
-class TICDatabase:
-    """Interface to the table of TIC that we analyse"""
+class Categories(NamedTuple):
+    multiplanet: Union[int, List[int]]
+    single_transit: Union[int, List[int]]
+    normal: Union[int, List[int]]
+    all: Optional[Union[int, List[int]]] = None
+
+
+class ExofopDatabase:
+    """Interface to the Exofop datatable of TIC that we analyse.
+
+    We cache the TIC database in a CSV file, and update it periodically when needed.
+    # TODO: cron job to update the cache periodically?
+
+    """
 
     def __init__(self, clean=False, update=False):
         self._db = pd.DataFrame()
@@ -68,6 +87,11 @@ class TICDatabase:
         return {}
 
     def update(self):
+        """Update the TIC cache from the exofop database
+
+        Queries Lightkurve to check if lightcurve data is available for each TIC.
+        (quering lightkurve is slow, so we cache the results)
+        """
         table = _download_exofop_tic_table()
         tic_lk_dict = dict(zip(table[TIC_ID], table[LK_AVAIL]))
         tic_lk_dict.update(self.cached_tic_lk_dict)  # add any cached TICs
@@ -103,11 +127,70 @@ class TICDatabase:
         )
         self.load()
 
-    @property
-    def df(self):
-        return self._db
+    def get_df(
+        self, category=None, remove_toi_without_lk=False
+    ) -> pd.DataFrame:
+        df = self._db.copy()
+        if remove_toi_without_lk:
+            df = _filter_db_without_lk(df)
+        if category is not None:
+            if category == MULTIPLANET:
+                df = df[df[MULTIPLANET]]
+            elif category == SINGLE_TRANSIT:
+                df = df[df[SINGLE_TRANSIT]]
+            elif category == NORMAL:
+                df = df[~df[MULTIPLANET] & ~df[SINGLE_TRANSIT]]
+        return df
 
-    def plot_caches(self):
+    def get_tic_id_for_toi(self, toi_number: int) -> int:
+        """Get the TIC ID for a given TOI number"""
+        toi = self._db[self._db[TOI] == toi_number + 0.01].iloc[0]
+        return int(toi[TIC_ID])
+
+    def get_categorised_toi_lists(self) -> Categories:
+        """Get the TOI numbers for different categories of TICs.
+
+        Returns:
+            Categories:
+                A Categories object with each category storing its "toi_numbers"
+        """
+        return Categories(
+            multiplanet=self.get_toi_list(category=MULTIPLANET),
+            single_transit=self.get_toi_list(category=SINGLE_TRANSIT),
+            normal=self.get_toi_list(category=NORMAL),
+            all=self.get_toi_list(category=None),
+        )
+
+    def get_toi_list(
+        self, category=None, remove_toi_without_lk=True
+    ) -> List[int]:
+        """Get the list of TOI numbers in the database"""
+        db = self.get_df(
+            category=category, remove_toi_without_lk=remove_toi_without_lk
+        )
+        return list(set(db[TOI].values.astype(int)))
+
+    def get_tic_data(self, toi_numbers: List[int]) -> pd.DataFrame:
+        """Get rows of about a TIC  from ExoFOP associated with a TOI target.
+        :param int toi_numbers: The list TOI number for which the TIC data is required
+        :return: Dataframe with all TOIs for the TIC which contains TOI {toi_id}
+        :rtype: pd.DataFrame
+        """
+        tic_db = self._db
+        tics = [self.get_tic_id_for_toi(toi) for toi in toi_numbers]
+        dfs = [tic_db[tic_db[TIC_ID] == tic].sort_values(TOI) for tic in tics]
+        tois_for_tic = pd.concat(dfs)
+        if len(tois_for_tic) < 1:
+            raise ValueError(f"TOI data for TICs-{tics} does not exist.")
+        return tois_for_tic
+
+    @staticmethod
+    def get_tic_url(tic_id):
+        """ExoFop Url"""
+        return TIC_SEARCH.format(tic_id=tic_id)
+
+    def plot_caches(self) -> None:
+        """Plot if the TOI has lightcurve data using the old and new TIC caches"""
         old = self.load_old_cache()
         new = self._db
         if len(old) > 0:
@@ -124,8 +207,17 @@ class TICDatabase:
         plt.tight_layout()
         plt.savefig(TIC_CACHE.replace(".csv", ".png"))
 
+    def get_counts(self, filter=False) -> Categories:
+        """Get the number of TOIs in the database"""
+        return Categories(
+            multiplanet=len(self.get_df(MULTIPLANET, filter)),
+            single_transit=len(self.get_df(SINGLE_TRANSIT, filter)),
+            normal=len(self.get_df(NORMAL, filter)),
+            all=len(self.get_df(None, filter)),
+        )
 
-def _download_exofop_tic_table():
+
+def _download_exofop_tic_table() -> pd.DataFrame:
     db = pd.read_csv(TIC_DATASOURCE)
     logger.info(f"TIC database has {len(db)} entries")
     db[[TOI_INT, PLANET_COUNT]] = (
@@ -133,12 +225,17 @@ def _download_exofop_tic_table():
     )
     db = db.astype({TOI_INT: "int", PLANET_COUNT: "int"})
     db[MULTIPLANET] = db[TOI_INT].duplicated(keep=False)
-    db[SINGLE] = db[PERIOD] <= 0
+    db[SINGLE_TRANSIT] = db[PERIOD] <= 0
     db[LK_AVAIL] = nan
     return db
 
 
-def _lightcurve_availible(tic):
+def _lightcurve_availible(tic: int) -> Union[bool, float]:
+    """Check if a TIC has lightcurve data available
+
+    Returns:
+        Union[bool, float]: True if lightcurve data is available, False if not, nan if error
+    """
     with all_logging_disabled():
         try:
             return LightcurveSearch(tic).lk_data_available
@@ -172,3 +269,8 @@ def _plot_lk_status(ax, data, label=""):
     ax.set_yticks([])
     ax.set_xlabel("TOI Number")
     ax.set_ylabel(label)
+
+
+def _filter_db_without_lk(db: pd.DataFrame) -> pd.DataFrame:
+    """Filter out TOIs without lightcurve data"""
+    return db[db[LK_AVAIL] == True]

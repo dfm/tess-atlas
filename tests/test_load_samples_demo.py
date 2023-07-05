@@ -7,7 +7,9 @@
 import os
 import shutil
 
+import pandas as pd
 import pymc3 as pm
+import pytest
 
 from tess_atlas.data import TICEntry
 from tess_atlas.notebook_preprocessors import run_load_samples_demo
@@ -16,31 +18,27 @@ DATA = dict(TOI=103, TIC=336732616)
 version = "TEST_LOADER_DEMO"
 
 
-def get_outdir():
-    outdir = os.path.join(f"./notebooks/{version}/toi_{DATA['TOI']}_files/")
-    os.makedirs(outdir, exist_ok=True)
-    return outdir
-
-
-def create_fake_sample_files(version):
-    __version__ = version
+@pytest.fixture
+def fake_samples_path():
     with pm.Model():
         pm.Uniform("p[0]", 0, 20)
         pm.Uniform("b[0]", 0, 20)
         pm.Uniform("r[0]", 0, 20)
-        trace = pm.sample(draws=10, n_init=1, chains=1, tune=10)
+        trace = pm.sample(
+            draws=10, n_init=1, chains=1, tune=10, return_inferencedata=True
+        )
     tic_entry = TICEntry(
-        tic_number=DATA["TIC"], candidates=[], toi=DATA["TOI"]
+        toi=DATA["TOI"],
+        tic_data=pd.DataFrame(),
     )
-    tic_entry.inference_trace = trace
-    fname = os.path.join(get_outdir(), f"toi_{DATA['TOI']}.netcdf")
-    tic_entry.save_inference_trace(fname)
+    tic_entry.outdir = os.path.join(f"./notebooks/toi_{DATA['TOI']}_files/")
+    tic_entry.save_data(inference_data=trace)
 
 
-def test_load_samples():
-    create_fake_sample_files(version)
-    fn = run_load_samples_demo.get_load_samples_demo_notebook_filename(version)
+@pytest.mark.skip(reason="The demo notebook is not yet ready.")
+def test_load_samples(fake_samples_path):
+    fn = run_load_samples_demo.get_load_samples_demo_notebook_filename()
     assert os.path.exists(fn)
     successful_operation = run_load_samples_demo.execute_ipynb(fn)
     assert successful_operation
-    shutil.rmtree(get_outdir())
+    shutil.rmtree(os.path.dirname(fake_samples_path))

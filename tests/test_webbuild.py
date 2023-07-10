@@ -10,7 +10,6 @@ N_TOI_NOTEBOOKS = 5
 @pytest.mark.fake_notebook_dir(n=N_TOI_NOTEBOOKS)
 def test_website_generation(tmp_path, fake_notebook_dir):
     webdir = f"{tmp_path}/webdir"
-
     build_website(
         builddir=webdir,
         notebook_dir=fake_notebook_dir,

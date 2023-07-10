@@ -57,6 +57,7 @@ EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [
     "ploomber-engine>=0.0.24",
     "pretty-jupyter",
     "itables",
+    "interruptingcow",
 ]
 
 # END PROJECT SPECIFIC
@@ -115,8 +116,7 @@ if __name__ == "__main__":
         zip_safe=True,
         entry_points={
             "console_scripts": [
-                "run_toi=tess_atlas.notebook_preprocessors.run_toi:main",
-                "run_tois=tess_atlas.notebook_preprocessors.run_tois:main",
+                "run_toi=tess_atlas.notebook_preprocessors.cli:cli_run_toi",
                 "make_webpages=tess_atlas.webbuilder.web_cli:main",
                 "make_slurm_job=tess_atlas.slurm_job_generator.slurm_job_generator:main",
                 "download_toi=tess_atlas.api.download_analysed_toi:main",

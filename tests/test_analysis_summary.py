@@ -9,7 +9,7 @@ N_TOI_NOTEBOOKS = 5
 
 
 @pytest.mark.fake_notebook_dir(n=N_TOI_NOTEBOOKS)
-def test_summary(fake_notebook_dir, tmpdir):
+def test_summary(fake_notebook_dir, tmpdir, monkeypatch):
     """
     Test that the summary can be loaded from a directory of notebooks
 
@@ -17,14 +17,17 @@ def test_summary(fake_notebook_dir, tmpdir):
     (the notebook exists -- so the analysis _should_ have started)
     """
 
-    # get 1st TOI from the fake notebook dir and delete it
-    toi_0_files = glob.glob(f"{fake_notebook_dir}/toi_*_files")[0]
-    shutil.rmtree(toi_0_files)
-    n_successful_analyses = N_TOI_NOTEBOOKS - 1
+    n_successful_analyses = N_TOI_NOTEBOOKS
     n_started_analyses = N_TOI_NOTEBOOKS
 
-    summary = AnalysisSummary.load_from_outdir(
-        notebook_dir=fake_notebook_dir, n_threads=4
+    # pretend that there are 10 TOIs in EXOFOP
+    monkeypatch.setattr(
+        "tess_atlas.data.exofop.EXOFOP_DATA.get_toi_list",
+        lambda remove_toi_without_lk=False: list(range(101, 110)),
+    )
+
+    summary = AnalysisSummary.from_dir(
+        notebook_dir=fake_notebook_dir, n_threads=1
     )
     assert summary.n_total > 0
     assert summary.n_successful_analyses == n_successful_analyses

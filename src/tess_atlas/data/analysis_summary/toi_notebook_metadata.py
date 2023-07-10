@@ -46,7 +46,7 @@ class ToiNotebookMetadata(object):
         self.profiling_data: pd.DataFrame = None
 
     def _get_tic_data(self):
-        # TODO: does this work for multiplanet systems?
+        # FIXME: This is not correct for multiplanet systems
         return EXOFOP_DATA.get_tic_data([self.toi]).to_dict("records")[0]
 
     @property
@@ -77,21 +77,21 @@ class ToiNotebookMetadata(object):
         return self.notebook_exists
 
     @property
-    def analyis_completed(self) -> bool:
+    def analysis_completed(self) -> bool:
         """The analysis has completed if the inference object has been saved + the thumbnail exists"""
         return os.path.exists(self.thumbnail)
 
     @property
     def analysis_failed(self) -> bool:
         """The analysis has failed if the notebook exists but the inference object has not been saved"""
-        return not self.analyis_completed and self.analysis_started
+        return not self.analysis_completed and self.analysis_started
 
     @property
     def analysis_status(self) -> Status:
         """The status of the analysis: NOT_STARTED, PASS, FAIL"""
         if not self.analysis_started:
             return Status.NOT_STARTED
-        elif self.analyis_completed:
+        elif self.analysis_completed:
             return Status.PASS
         else:
             return Status.FAIL
@@ -152,7 +152,7 @@ class ToiNotebookMetadata(object):
     @property
     def thumbnail_html(self) -> str:
         """HTML code to embedthe thumbnail on catalog website"""
-        if self.analyis_completed:
+        if self.analysis_completed:
             return f"<a href='{self.url}'> <img src='{self.thumbnail}' width='200' height='200'> </a>"
         else:
             return ""
@@ -164,7 +164,7 @@ class ToiNotebookMetadata(object):
         return {
             "TOI": self.toi_html,
             "analysis_started": self.analysis_started,
-            "analysis_completed": self.analyis_completed,
+            "analysis_completed": self.analysis_completed,
             "analysis_status": self.analysis_status.value,
             "thumbnail": self.thumbnail_html,
             "category": self.category,

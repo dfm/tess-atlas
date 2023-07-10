@@ -229,7 +229,6 @@ def toi_num(f):
 def get_populoation_summary(summary_info):
     toi_id, p_means, r_means, p_sds, r_sds, rhat_oks = [], [], [], [], [], []
     for toi_num, toi_dat in summary_info.items():
-
         # get rhat info for TOI
         rhat_ok = True
         for param_dat in toi_dat.values():

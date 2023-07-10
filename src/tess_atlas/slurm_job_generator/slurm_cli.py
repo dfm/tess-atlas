@@ -7,7 +7,7 @@ import pandas as pd
 from ..data.exofop import EXOFOP_DATA
 
 
-def get_toi_numbers(toi_csv: str):
+def read_csv_toi_numbers(toi_csv: str):
     df = pd.read_csv(toi_csv)
     return list(df.toi_numbers.values)
 
@@ -65,12 +65,12 @@ def get_cli_args(cli_data):
     args = parser.parse_args(cli_data)
     os.makedirs(args.outdir, exist_ok=True)
     if args.toi_csv and args.toi_number is None:  # get TOI numbers from CSV
-        toi_numbers = get_toi_numbers(args.toi_csv)
+        toi_numbers = read_csv_toi_numbers(args.toi_csv)
     elif args.toi_csv is None and args.toi_number:  # get single TOI number
         toi_numbers = [args.toi_number]
     else:
         toi_fname = os.path.join(args.outdir, "tois.csv")  # get all TOIs
         make_toi_csv(toi_fname)
-        toi_numbers = get_toi_numbers(toi_fname)
+        toi_numbers = read_csv_toi_numbers(toi_fname)
 
     return toi_numbers, args.outdir, args.module_loads, args.submit, args.clean

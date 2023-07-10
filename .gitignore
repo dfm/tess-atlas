@@ -54,3 +54,5 @@ case_studies
 /tests/test_plotout/
 tess_atlas_catalog
 **/catalog.tess-atlas.cloud.edu.au/
+toi_103_files
+theano_cache

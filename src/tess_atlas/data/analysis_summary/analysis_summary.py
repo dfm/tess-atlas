@@ -28,9 +28,7 @@ class AnalysisSummary:
         return f"AnalysisSummary(Started[{self.n_analysed}], Pass[{self.n_successful_analyses}] + Failed[{self.n_failed_analyses}] = {self.n_total})"
 
     @classmethod
-    def load_from_outdir(
-        self, notebook_dir: str, n_threads=1
-    ) -> "AnalysisSummary":
+    def from_dir(self, notebook_dir: str, n_threads=1) -> "AnalysisSummary":
         """Load the metadata from the output directory.
 
         returns: a pandas DataFrame with the metadata
@@ -79,6 +77,7 @@ class AnalysisSummary:
     def save_to_csv(self, csv_path: str):
         """Save the metadata to a csv file."""
         self._data.to_csv(csv_path, index=False)
+        return csv_path
 
     @property
     def n_successful_analyses(self) -> int:

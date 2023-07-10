@@ -12,7 +12,8 @@ import pymc3 as pm
 import pytest
 
 from tess_atlas.data import TICEntry
-from tess_atlas.notebook_preprocessors import run_load_samples_demo
+
+# from tess_atlas.notebook_preprocessors import run_load_samples_demo
 
 DATA = dict(TOI=103, TIC=336732616)
 version = "TEST_LOADER_DEMO"
@@ -35,10 +36,10 @@ def fake_samples_path():
     tic_entry.save_data(inference_data=trace)
 
 
-@pytest.mark.skip(reason="The demo notebook is not yet ready.")
-def test_load_samples(fake_samples_path):
-    fn = run_load_samples_demo.get_load_samples_demo_notebook_filename()
-    assert os.path.exists(fn)
-    successful_operation = run_load_samples_demo.execute_ipynb(fn)
-    assert successful_operation
-    shutil.rmtree(os.path.dirname(fake_samples_path))
+# @pytest.mark.skip(reason="The demo notebook is not yet ready.")
+# def test_load_samples(fake_samples_path):
+#     fn = run_load_samples_demo.get_load_samples_demo_notebook_filename()
+#     assert os.path.exists(fn)
+#     successful_operation = run_load_samples_demo.execute_ipynb(fn)
+#     assert successful_operation
+#     shutil.rmtree(os.path.dirname(fake_samples_path))

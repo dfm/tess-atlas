@@ -172,6 +172,7 @@ class ExofopDatabase:
 
     def get_tic_data(self, toi_numbers: List[int]) -> pd.DataFrame:
         """Get rows of about a TIC  from ExoFOP associated with a TOI target.
+
         :param int toi_numbers: The list TOI number for which the TIC data is required
         :return: Dataframe with all TOIs for the TIC which contains TOI {toi_id}
         :rtype: pd.DataFrame

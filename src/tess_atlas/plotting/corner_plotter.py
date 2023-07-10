@@ -6,12 +6,10 @@ import corner
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.ticker import MaxNLocator, NullLocator, ScalarFormatter
+from matplotlib.ticker import MaxNLocator, NullLocator
 
-from tess_atlas.data import TICEntry
-from tess_atlas.data.inference_data_tools import get_samples_dataframe
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
+from ..data.inference_data_tools import get_samples_dataframe
+from ..utils import NOTEBOOK_LOGGER_NAME
 from .labels import ECCENTRICITY_PLOT, LATEX, POSTERIOR_PLOT, PRIOR_PLOT
 from .plotting_utils import (
     exception_catcher,
@@ -121,7 +119,7 @@ def reformat_trues(p: Dict, keys: List[str], val_id: int) -> np.array:
 
 @exception_catcher
 def plot_posteriors(
-    tic_entry: TICEntry,
+    tic_entry: "TICEntry",
     inference_data,
     initial_params: Optional[Dict] = {},
     plot_params=[],
@@ -182,7 +180,7 @@ def plot_posteriors(
 
 
 @exception_catcher
-def plot_posteriors_all(tic_entry: TICEntry, inference_data) -> None:
+def plot_posteriors_all(tic_entry: "TICEntry", inference_data) -> None:
     """Plots posteriors for all planets in one corner"""
     params = ["r", "b", "t0", "tmax", "p", "dur"]
     fig = plot_corner(
@@ -197,7 +195,7 @@ def plot_posteriors_all(tic_entry: TICEntry, inference_data) -> None:
 
 
 def plot_priors(
-    tic_entry: TICEntry, prior_samples: Dict, init_params: Dict
+    tic_entry: "TICEntry", prior_samples: Dict, init_params: Dict
 ) -> None:
     prior_samples, init_params = format_prior_samples_and_initial_params(
         prior_samples, init_params
@@ -210,7 +208,7 @@ def plot_priors(
 
 @exception_catcher
 def plot_eccentricity_posteriors(
-    tic_entry: TICEntry, ecc_samples: pd.DataFrame, title=True, fname=""
+    tic_entry: "TICEntry", ecc_samples: pd.DataFrame, title=True, fname=""
 ) -> None:
     params = ["e", "omega"]
     colors = get_colors(tic_entry.planet_count)

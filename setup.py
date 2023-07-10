@@ -101,7 +101,7 @@ if __name__ == "__main__":
         packages=PACKAGES,
         package_data={
             "tess_atlas": [
-                "notebook_templates/*.py",
+                "notebook_controllers/templates/*.py",
                 "data/*.csv",
                 "webbuilder/template/",
                 "slurm_job_generator/templates/*.sh",
@@ -116,7 +116,7 @@ if __name__ == "__main__":
         zip_safe=True,
         entry_points={
             "console_scripts": [
-                "run_toi=tess_atlas.notebook_preprocessors.cli:cli_run_toi",
+                "run_toi=tess_atlas.notebook_controllers.cli:cli_run_toi",
                 "make_webpages=tess_atlas.webbuilder.web_cli:main",
                 "make_slurm_job=tess_atlas.slurm_job_generator.slurm_job_generator:main",
                 "download_toi=tess_atlas.api.download_analysed_toi:main",

@@ -13,7 +13,7 @@ import pytest
 
 from tess_atlas.data import TICEntry
 
-# from tess_atlas.notebook_preprocessors import run_load_samples_demo
+# from tess_atlas.notebook_controllers import run_load_samples_demo
 
 DATA = dict(TOI=103, TIC=336732616)
 version = "TEST_LOADER_DEMO"

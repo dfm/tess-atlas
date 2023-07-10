@@ -1,5 +1,3 @@
-import os
-
 from .corner_plotter import plot_eccentricity_posteriors, plot_posteriors
 from .diagnostic_plotter import (
     plot_diagnostics,

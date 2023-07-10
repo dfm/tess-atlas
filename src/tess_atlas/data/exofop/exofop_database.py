@@ -11,9 +11,8 @@ import pandas as pd
 from numpy import nan
 from tqdm.auto import tqdm
 
-from tess_atlas.data.data_utils import get_file_timestamp
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME, all_logging_disabled
-
+from ...utils import NOTEBOOK_LOGGER_NAME, all_logging_disabled
+from ..data_utils import get_file_timestamp
 from ..lightcurve_data.lightcurve_search import LightcurveSearch
 from .constants import (
     LK_AVAIL,

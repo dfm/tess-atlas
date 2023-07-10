@@ -5,35 +5,17 @@ from typing import Dict, List, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.graph_objects as go
-from arviz import InferenceData
 from plotly.subplots import make_subplots
 
-from tess_atlas.data import TICEntry
-from tess_atlas.data.inference_data_tools import get_samples_dataframe
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
-from .extra_plotting.ci import plot_ci, plot_xy_binned
-from .labels import (
-    FLUX_LABEL,
-    LIGHTCURVE_PLOT,
-    PHASE_PLOT,
-    TIME_LABEL,
-    TIME_SINCE_TRANSIT_LABEL,
-)
-from .plotting_utils import (
-    fold_data,
-    fold_lightcurve_models,
-    generate_model_lightcurve,
-    get_colors,
-    get_lc_and_gp_from_inference_object,
-    get_longest_unbroken_section_of_data,
-)
+from ..utils import NOTEBOOK_LOGGER_NAME
+from .labels import FLUX_LABEL, LIGHTCURVE_PLOT, TIME_LABEL
+from .plotting_utils import get_colors, get_longest_unbroken_section_of_data
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 
 def plot_lightcurve(
-    tic_entry: TICEntry,
+    tic_entry: "TICEntry",
     model_lightcurves: Optional[np.ndarray] = None,
     save: Optional[bool] = True,
     zoom_in: Optional[bool] = False,
@@ -116,7 +98,7 @@ def plot_lightcurve(
 
 
 def plot_interactive_lightcurve(
-    tic_entry: TICEntry, model_lightcurves: Optional[List[float]] = None
+    tic_entry: "TICEntry", model_lightcurves: Optional[List[float]] = None
 ) -> go.Figure:
     """Plot lightcurve data + transit fits (if provided) in one plot"""
     if model_lightcurves is None:

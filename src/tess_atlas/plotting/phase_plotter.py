@@ -8,14 +8,11 @@ import plotly.graph_objects as go
 from arviz import InferenceData
 from plotly.subplots import make_subplots
 
-from tess_atlas.data import TICEntry
-from tess_atlas.data.inference_data_tools import get_samples_dataframe
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
+from ..data.inference_data_tools import get_samples_dataframe
+from ..utils import NOTEBOOK_LOGGER_NAME
 from .extra_plotting.ci import plot_ci, plot_xy_binned
 from .labels import (
     FLUX_LABEL,
-    LIGHTCURVE_PLOT,
     PHASE_PLOT,
     TIME_LABEL,
     TIME_SINCE_TRANSIT_LABEL,
@@ -323,7 +320,7 @@ def add_phase_data_to_ax(
 
 
 def plot_folded_lightcurve(
-    tic_entry: TICEntry, model_lightcurves: Optional[List[float]] = None
+    tic_entry: "TICEntry", model_lightcurves: Optional[List[float]] = None
 ) -> go.Figure:
     """Subplots of folded lightcurves + transit fits (if provided) for each transit"""
     if model_lightcurves is None:

@@ -6,8 +6,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 from arviz import InferenceData
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
+from ..utils import NOTEBOOK_LOGGER_NAME
 from .data_object import DataObject
 from .exofop import EXOFOP_DATA
 from .inference_data_tools import (

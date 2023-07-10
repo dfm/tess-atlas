@@ -1,9 +1,6 @@
-import sys
-
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 
 def plot_histogram_with_collection_bin(ax, data, bins, plt_kwargs):

@@ -11,10 +11,9 @@ import subprocess
 from glob import glob
 from typing import Optional
 
-from tess_atlas.utils import setup_logger
-from tess_atlas.webbuilder.pages import make_menu_page, make_stats_page
-
 from ..file_management import copy_tree, make_tarfile
+from ..utils import setup_logger
+from .pages import make_menu_page, make_stats_page
 
 logger = setup_logger("page builder")
 

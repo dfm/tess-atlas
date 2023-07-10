@@ -1,23 +1,13 @@
 import logging
 import os
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from matplotlib import ticker
-from matplotlib.ticker import MaxNLocator, ScalarFormatter
+from matplotlib.ticker import MaxNLocator
 
-from tess_atlas.data import TICEntry
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
-from .labels import (
-    ECCENTRICITY_PLOT,
-    LATEX,
-    PARAMS_CATEGORIES,
-    POSTERIOR_PLOT,
-    PRIOR_PLOT,
-)
+from ..utils import NOTEBOOK_LOGGER_NAME
+from .labels import LATEX, PARAMS_CATEGORIES, PRIOR_PLOT
 from .plotting_utils import (
     exception_catcher,
     format_label_string_with_offset,
@@ -29,7 +19,7 @@ logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 
 @exception_catcher
 def plot_priors(
-    tic_entry: TICEntry, prior_samples: Dict, init_params: Dict
+    tic_entry: "TICEntry", prior_samples: Dict, init_params: Dict
 ) -> None:
     prior_samples, init_params = format_prior_samples_and_initial_params(
         prior_samples, init_params

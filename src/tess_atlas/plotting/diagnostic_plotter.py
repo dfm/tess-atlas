@@ -5,7 +5,7 @@ import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+from ..utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

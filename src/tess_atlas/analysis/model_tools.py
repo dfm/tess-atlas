@@ -12,9 +12,8 @@ from pymc3.util import (
     is_transformed_name,
 )
 from theano.tensor.var import TensorVariable
-from tqdm.auto import tqdm
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+from ..utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

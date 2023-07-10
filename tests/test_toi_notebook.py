@@ -9,7 +9,7 @@ import testbook
 from interruptingcow import timeout
 from packaging import version
 
-from tess_atlas.notebook_preprocessors.controllers import TOINotebookConroller
+from tess_atlas.notebook_controllers.controllers import TOINotebookConroller
 
 SINGLE_PLANET = 103
 MULTI_PLANET = 178  # has 3 planets

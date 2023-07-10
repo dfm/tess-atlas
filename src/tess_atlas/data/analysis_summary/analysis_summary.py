@@ -5,8 +5,7 @@ import pandas as pd
 from tqdm.auto import tqdm
 from tqdm.contrib.concurrent import process_map as parallel_tqdm
 
-from tess_atlas.data.exofop import EXOFOP_DATA
-
+from ..exofop import EXOFOP_DATA
 from .toi_notebook_metadata import ToiNotebookMetadata
 
 warnings.filterwarnings("ignore", category=UserWarning)

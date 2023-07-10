@@ -7,7 +7,7 @@ from tess_atlas.data.analysis_summary.toi_notebook_metadata import (
     INFERENCE_DATA_FNAME,
     THUMBNAIL_PLOT,
 )
-from tess_atlas.notebook_preprocessors.controllers import TOINotebookConroller
+from tess_atlas.notebook_controllers.controllers import TOINotebookConroller
 
 TMP_OUTDIR = "./tmp/tess_atlas_test_notebooks"
 

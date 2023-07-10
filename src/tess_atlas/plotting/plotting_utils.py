@@ -9,17 +9,16 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import rcParams
-from matplotlib.ticker import MaxNLocator, NullLocator, ScalarFormatter
+from matplotlib.ticker import ScalarFormatter
 from scipy.interpolate import interp1d
 
-from tess_atlas.data.inference_data_tools import (
+from ..analysis import compute_variable, get_untransformed_varnames
+from ..data.inference_data_tools import (
     get_median_sample,
     get_posterior_samples,
     get_samples_dataframe,
 )
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
-from ..analysis import compute_variable, get_untransformed_varnames
+from ..utils import NOTEBOOK_LOGGER_NAME
 
 logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
 

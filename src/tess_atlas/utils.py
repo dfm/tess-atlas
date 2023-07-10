@@ -130,7 +130,7 @@ def get_notebook_logger(outdir=""):
 def grep_toi_number(str) -> Union[int, None]:
     """Extract TOI number from string using regex
     "http://localhost:63342/tess-atlas/tests/out_webtest/html/_build/content/toi_notebooks/toi_101.html"
-    "http://catalog.tess-atlas.cloud.edu.au/content/toi_notebooks/toi_101.html"
+    "__website__/content/toi_notebooks/toi_101.html"
     "run_toi(101)"
 
     """

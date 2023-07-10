@@ -20,9 +20,10 @@ from tess_atlas.data.planet_candidate import CLASS_SHORTHAND
 from tess_atlas.plotting.runtime_plotter import plot_runtimes
 from tess_atlas.utils import grep_toi_number
 
+from ... import __website__
 from .templates import IMAGE, TOI_LINK, render_page_template
 
-URL_BASE = "http://catalog.tess-atlas.cloud.edu.au/content/toi_notebooks"
+URL_BASE = f"{__website__}/content/toi_notebooks"
 NOTEBOOK_URL = URL_BASE + "/toi_{}.html"
 IMG_URL = URL_BASE + "/toi_{}_files/phase_plot_TOI{}_1_thumbnail.png"
 PHASE_IMG = "phase_plot_TOI{}_1_thumbnail.png"

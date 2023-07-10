@@ -2,10 +2,12 @@ import argparse
 import logging
 import subprocess
 
+from .. import __website__
+
 logger = logging.getLogger("TESS-Atlas")
 
 COMMAND = "wget -np -r {url}"
-ROOT = "http://catalog.tess-atlas.cloud.edu.au/_sources/content/toi_notebooks"
+ROOT = f"{__website__}/_sources/content/toi_notebooks"
 NOTEBOOK = f"{ROOT}/toi_{{TOI}}.ipynb"
 FILES = f"{ROOT}/toi_{{TOI}}_files/"
 

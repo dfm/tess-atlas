@@ -13,12 +13,13 @@ from tess_atlas.data.exofop.constants import (
     SINGLE_TRANSIT,
 )
 
+from ... import __website__
 from ...plotting.labels import THUMBNAIL_PLOT
 from ...utils import grep_toi_number
 from ..inference_data_tools import INFERENCE_DATA_FNAME
 from ..planet_candidate import CLASS_SHORTHAND
 
-URL_BASE = "http://catalog.tess-atlas.cloud.edu.au/content/toi_notebooks"
+URL_BASE = f"{__website__}/content/toi_notebooks"
 NOTEBOOK_URL = URL_BASE + "/toi_{}.html"
 
 

@@ -37,8 +37,9 @@ INSTALL_REQUIRES = [
     "itables",
     "StrEnum",
 ]
-EXTRA_REQUIRE = {"test": ["pytest>=3.6", "testbook>=0.2.3"]}
-EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [
+EXTRA_REQUIRE = {"dev": [
+    "pytest>=3.6",
+    "testbook>=0.2.3",
     "pre-commit",
     "flake8",
     "black<=21.9b0",
@@ -58,7 +59,9 @@ EXTRA_REQUIRE["dev"] = EXTRA_REQUIRE["test"] + [
     "pretty-jupyter",
     "itables",
     "interruptingcow",
-]
+    "jupyter-book",
+    'myst-nb'
+]}
 
 # END PROJECT SPECIFIC
 

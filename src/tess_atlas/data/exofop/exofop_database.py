@@ -1,10 +1,8 @@
 import logging
 import os
 import random
-from collections import namedtuple
-from dataclasses import dataclass
 from math import isnan
-from typing import Any, Dict, List, NamedTuple, Optional, Union
+from typing import List, NamedTuple, Optional, Union
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -85,20 +83,26 @@ class ExofopDatabase:
             return dict(zip(tics, lk_avail))
         return {}
 
-    def update(self):
+    def update(self, only_nans=True):
         """Update the TIC cache from the exofop database
 
         Queries Lightkurve to check if lightcurve data is available for each TIC.
-        (quering lightkurve is slow, so we cache the results)
+        (querying lightkurve is slow, so we cache the results)
         """
+        self.plot()
         table = _download_exofop_tic_table()
+        logger.info(f"Current TIC cache: {len(self._db):,}, online TIC list: {len(table):,}")
         tic_lk_dict = dict(zip(table[TIC_ID], table[LK_AVAIL]))
-        tic_lk_dict.update(self.cached_tic_lk_dict)  # add any cached TICs
+        tic_lk_dict.update(self.cached_tic_lk_dict)
         self._clean_cache()  # after extracting cache data, we can clean cache
+        table[LK_AVAIL] = table[TIC_ID].map(tic_lk_dict)
+        table.to_csv(TIC_CACHE, index=False)
 
         # update the table with the lightcurve availability
         nan_lk_dict = {tic: lk for tic, lk in tic_lk_dict.items() if isnan(lk)}
         num_nan = len(nan_lk_dict)
+
+        logger.info(f"Checking {num_nan}/{len(table)} TICs for lightcurve availability")
 
         # shuffle dict
         nan_lk_dict = {
@@ -111,7 +115,7 @@ class ExofopDatabase:
             desc="Checking TIC lightcurve availability",
         ):
             if isnan(avail):
-                nan_lk_dict[t] = _lightcurve_availible(t)
+                nan_lk_dict[t] = _lightcurve_available(t)
             if i % 100 == 0:  # update cache every 100 TICs
                 logger.debug(
                     f"Updating TIC cache at {100 * (i / num_nan):.2f}%"
@@ -125,6 +129,7 @@ class ExofopDatabase:
             f"Updated database from {len(self.load_old_cache())}-->{len(table)} TICs"
         )
         self.load()
+        self.plot()
 
     def get_df(
         self, category=None, remove_toi_without_lk=False
@@ -189,7 +194,7 @@ class ExofopDatabase:
         """ExoFop Url"""
         return TIC_SEARCH.format(tic_id=tic_id)
 
-    def plot_caches(self) -> None:
+    def plot(self) -> None:
         """Plot if the TOI has lightcurve data using the old and new TIC caches"""
         old = self.load_old_cache()
         new = self._db
@@ -221,7 +226,7 @@ def _download_exofop_tic_table() -> pd.DataFrame:
     db = pd.read_csv(TIC_DATASOURCE)
     logger.info(f"TIC database has {len(db)} entries")
     db[[TOI_INT, PLANET_COUNT]] = (
-        db[TOI].astype(str).str.split(".", 1, expand=True)
+        db[TOI].astype(str).str.split(".", n=1, expand=True).astype(int)
     )
     db = db.astype({TOI_INT: "int", PLANET_COUNT: "int"})
     db[MULTIPLANET] = db[TOI_INT].duplicated(keep=False)
@@ -230,7 +235,7 @@ def _download_exofop_tic_table() -> pd.DataFrame:
     return db
 
 
-def _lightcurve_availible(tic: int) -> Union[bool, float]:
+def _lightcurve_available(tic: int) -> Union[bool, float]:
     """Check if a TIC has lightcurve data available
 
     Returns:

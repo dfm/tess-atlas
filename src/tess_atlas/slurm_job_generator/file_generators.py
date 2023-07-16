@@ -32,7 +32,6 @@ def make_slurm_file(
     array_job: Optional[bool] = False,
     command: Optional[str] = None,
 ):
-
     log_dir = mkdir(outdir, f"log_{jobname}")
     common_kwargs = dict(
         jobname=f"toi_{jobname}",

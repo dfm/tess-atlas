@@ -34,7 +34,7 @@ jobs:
 
       # Test the py:light -> ipynb -> py:light round trip conversion
       - name: roundtrip conversion test
-        run: jupytext src/tess_atlas/notebook_templates/toi_template.py --to notebook --test
+        run: jupytext src/tess_atlas/notebook_controllers/templates/toi_template.py --to notebook --test
 
       # Verify pre-commits valid
       - name: pre-commit

@@ -10,7 +10,8 @@ class MenuPageController(NotebookController):
 
     def _get_templatized_text(self, **kwargs):
         summary_path = kwargs["summary_path"]
-        summary = AnalysisSummary.load_from_csv(summary_path)
+        summary = AnalysisSummary.from_dir(summary_path)
+
         txt = self._get_template_txt()
         # why am i not using jinja2?
         txt = txt.replace("{{{SUMMARY_PATH}}}", f"{summary_path}")
@@ -27,5 +28,5 @@ def run_menu_page(notebook_dir):
     )
     menu_notebook_fn = os.path.join(notebook_dir, "menu.ipynb")
     processor = MenuPageController(menu_notebook_fn)
-    processor.generate(summary_path)
+    processor.generate(summary_path=summary_path)
     processor.execute()

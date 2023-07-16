@@ -13,3 +13,7 @@ def test_get_toi_numbers_for_different_categories():
     toi_numbers = EXOFOP_DATA.get_categorised_toi_lists()
     assert isinstance(toi_numbers.single_transit, List)
     assert len(toi_numbers.single_transit) > 0
+
+
+def test_update():
+    EXOFOP_DATA.update()

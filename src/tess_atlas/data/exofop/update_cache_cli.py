@@ -3,7 +3,8 @@ import os
 
 from tess_atlas.slurm_job_generator import add_slurm_cli_args, make_slurm_file
 
-from .tic_database import TICDatabase
+from .exofop_database import ExofopDatabase
+
 
 
 def get_cli_args():
@@ -53,6 +54,7 @@ def main():
         )
         print(f"To run job:\n>>> sbatch {fn}")
     else:
-        db = TICDatabase(update=True, clean=args.clean)
-        db.plot_caches()
+        print(f"UPDATING TIC CACHE... clean={args.clean}")
+        db = ExofopDatabase(update=True, clean=args.clean)
+        db.plot()
         print("UPDATE COMPLETE!!")

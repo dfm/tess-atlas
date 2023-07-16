@@ -14,6 +14,7 @@ from typing import Optional
 from ..file_management import copy_tree, make_tarfile
 from ..utils import setup_logger
 from .pages import make_menu_page, make_stats_page
+from ..notebook_controllers.controllers.menu_notebook_controller import run_menu_page
 
 logger = setup_logger("page builder")
 
@@ -88,13 +89,17 @@ class WebBuilder:
         # make homepage
         toi_regex = os.path.join(self.building_notebook_dir, "toi_*.ipynb")
         log(f"Building book with {len(glob(toi_regex))} TOI notebooks")
-        try:
-            make_menu_page(
-                notebook_regex=toi_regex,
-                path_to_menu_page=os.path.join(self.builddir, MENU_PAGE),
-            )
-        except Exception as e:
-            logger.error(f"Failed to make menu page: {e}")
+        run_menu_page(self.building_notebook_dir)
+
+        #
+        # try:
+        #     make_menu_page(
+        #         notebook_regex=toi_regex,
+        #         path_to_menu_page=os.path.join(self.builddir, MENU_PAGE),
+        #     )
+        # except Exception as e:
+        #     logger.error(f"Failed to make menu page: {e}")
+
         try:
             make_stats_page(
                 notebook_root=toi_regex,

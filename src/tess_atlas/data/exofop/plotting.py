@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.lines import Line2D
 
-from .constants import LK_AVAIL, TOI_INT, TIC_CACHE
+from .constants import LK_AVAIL, TIC_CACHE, TOI_INT
 
 
 def plot_lk_status(new: pd.DataFrame, old: pd.DataFrame = None) -> plt.Figure:
@@ -54,7 +54,9 @@ def _add_lk_status_to_ax(ax: plt.Axes, data: pd.DataFrame, label=""):
     # make legend with larger markers visible in the plot
     handles, labels = ax.get_legend_handles_labels()
     handles = [Line2D([0], [0], color=c, lw=2) for c in colors.values()]
-    labels = [f"{l} ({len(s)})" for l, s in zip(labels, [valid, invalid, nans])]
+    labels = [
+        f"{l} ({len(s)})" for l, s in zip(labels, [valid, invalid, nans])
+    ]
     ax.legend(handles, labels, loc="upper left", fontsize=8)
     ax.set_ylim(0.99, 1.01)
     ax.set_xlim(left=100, right=max(data["TOI int"]))

@@ -2,7 +2,7 @@ import logging
 import os
 import random
 from math import isnan
-from typing import List, NamedTuple, Optional, Union, Dict
+from typing import Dict, List, NamedTuple, Optional, Union
 
 import pandas as pd
 from numpy import nan
@@ -90,7 +90,9 @@ class ExofopDatabase:
         (querying lightkurve is slow, so we cache the results)
         """
         new_table = _download_exofop_tic_table()
-        logger.info(f"Current TIC cache: {len(self._db):,}, online TIC list: {len(new_table):,}")
+        logger.info(
+            f"Current TIC cache: {len(self._db):,}, online TIC list: {len(new_table):,}"
+        )
 
         # Update new tables' TIC:lk-avail dict with cached data (for TIC already checked)
         tic_lk_dict = dict(zip(new_table[TIC_ID], new_table[LK_AVAIL]))
@@ -102,16 +104,18 @@ class ExofopDatabase:
         # Get the subset of TICs with no lightcurve data
         nan_lk_dict = {tic: lk for tic, lk in tic_lk_dict.items() if isnan(lk)}
         num_nan = len(nan_lk_dict)
-        logger.info(f"Checking {num_nan}/{len(new_table)} TICs for lightcurve availability")
+        logger.info(
+            f"Checking {num_nan}/{len(new_table)} TICs for lightcurve availability"
+        )
         # shuffle dict
         nan_lk_dict = {
             k: nan_lk_dict[k]
             for k in random.sample(list(nan_lk_dict.keys()), num_nan)
         }
         for i, (t, avail) in tqdm(
-                enumerate(nan_lk_dict.items()),
-                total=num_nan,
-                desc="Checking TIC lightcurve availability",
+            enumerate(nan_lk_dict.items()),
+            total=num_nan,
+            desc="Checking TIC lightcurve availability",
         ):
             if isnan(avail):
                 nan_lk_dict[t] = _lightcurve_available(t)
@@ -128,7 +132,7 @@ class ExofopDatabase:
         self.load()
 
     def get_df(
-            self, category=None, remove_toi_without_lk=False
+        self, category=None, remove_toi_without_lk=False
     ) -> pd.DataFrame:
         df = self._db.copy()
         if remove_toi_without_lk:
@@ -162,7 +166,7 @@ class ExofopDatabase:
         )
 
     def get_toi_list(
-            self, category=None, remove_toi_without_lk=True
+        self, category=None, remove_toi_without_lk=True
     ) -> List[int]:
         """Get the list of TOI numbers in the database"""
         db = self.get_df(
@@ -207,7 +211,9 @@ class ExofopDatabase:
             all=len(self.get_df(None, filter)),
         )
 
-    def _save_table_with_lk_status(self, table: pd.DataFrame, lk_status_dict: Dict[int, bool]):
+    def _save_table_with_lk_status(
+        self, table: pd.DataFrame, lk_status_dict: Dict[int, bool]
+    ):
         """Update the table with the lightcurve status"""
         tic_lk_dict = dict(zip(table[TIC_ID], table[LK_AVAIL]))
         tic_lk_dict.update(lk_status_dict)
@@ -246,5 +252,3 @@ def _lightcurve_available(tic: int) -> Union[bool, float]:
 def _filter_db_without_lk(db: pd.DataFrame) -> pd.DataFrame:
     """Filter out TOIs without lightcurve data"""
     return db[db[LK_AVAIL] == True]
-
-

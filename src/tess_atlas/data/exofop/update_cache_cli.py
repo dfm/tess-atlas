@@ -6,7 +6,6 @@ from tess_atlas.slurm_job_generator import add_slurm_cli_args, make_slurm_file
 from .exofop_database import ExofopDatabase
 
 
-
 def get_cli_args():
     parser = argparse.ArgumentParser(
         prog="update_tic_cache",

@@ -37,31 +37,33 @@ INSTALL_REQUIRES = [
     "itables",
     "StrEnum",
 ]
-EXTRA_REQUIRE = {"dev": [
-    "pytest>=3.6",
-    "testbook>=0.2.3",
-    "pre-commit",
-    "flake8",
-    "black<=21.9b0",
-    "isort",
-    "jupyter_contrib_nbextensions",
-    "sphinx-book-theme>=1.0.0",
-    "sphinx_design",
-    "sphinx-remove-toctrees",
-    "sphinx_togglebutton",
-    "jupytext",
-    "ipython-autotime",
-    "sphinx_external_toc",
-    "memory_profiler",
-    "pympler",
-    "psutil",
-    "ploomber-engine>=0.0.24",
-    "pretty-jupyter",
-    "itables",
-    "interruptingcow",
-    "jupyter-book",
-    'myst-nb'
-]}
+EXTRA_REQUIRE = {
+    "dev": [
+        "pytest>=3.6",
+        "testbook>=0.2.3",
+        "pre-commit",
+        "flake8",
+        "black<=21.9b0",
+        "isort",
+        "jupyter_contrib_nbextensions",
+        "sphinx-book-theme>=1.0.0",
+        "sphinx_design",
+        "sphinx-remove-toctrees",
+        "sphinx_togglebutton",
+        "jupytext",
+        "ipython-autotime",
+        "sphinx_external_toc",
+        "memory_profiler",
+        "pympler",
+        "psutil",
+        "ploomber-engine>=0.0.24",
+        "pretty-jupyter",
+        "itables",
+        "interruptingcow",
+        "jupyter-book",
+        "myst-nb",
+    ]
+}
 
 # END PROJECT SPECIFIC
 

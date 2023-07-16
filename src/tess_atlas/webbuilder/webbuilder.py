@@ -12,9 +12,11 @@ from glob import glob
 from typing import Optional
 
 from ..file_management import copy_tree, make_tarfile
+from ..notebook_controllers.controllers.menu_notebook_controller import (
+    run_menu_page,
+)
 from ..utils import setup_logger
 from .pages import make_menu_page, make_stats_page
-from ..notebook_controllers.controllers.menu_notebook_controller import run_menu_page
 
 logger = setup_logger("page builder")
 

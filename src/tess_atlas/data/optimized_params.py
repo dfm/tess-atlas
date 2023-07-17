@@ -5,12 +5,13 @@ from typing import Dict, List
 
 import pandas as pd
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
+from ..logger import LOGGER_NAME
 from .data_object import DataObject
 from .data_utils import load_json, save_json
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
+
+OPTIMIZED_PARAMS_JSON = "optimized_params.json"
 
 
 class OptimizedParams(DataObject):
@@ -53,7 +54,7 @@ class OptimizedParams(DataObject):
         return df
 
     @staticmethod
-    def get_filepath(outdir: str, fname="optimized_params.json") -> str:
+    def get_filepath(outdir: str, fname=OPTIMIZED_PARAMS_JSON) -> str:
         return os.path.join(outdir, fname)
 
     def _repr_html_(self):

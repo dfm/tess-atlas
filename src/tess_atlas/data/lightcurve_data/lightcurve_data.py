@@ -6,13 +6,14 @@ import lightkurve as lk
 import numpy as np
 from lightkurve.lightcurve import TessLightCurve
 
-from tess_atlas.data.data_object import DataObject
-from tess_atlas.data.data_utils import residual_rms
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
+from ...logger import LOGGER_NAME
+from ..data_object import DataObject
+from ..data_utils import residual_rms
 from .lightcurve_search import LightcurveSearch
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
+
+LC_DATA_FNAME = "lightkurve_lc.fits"
 
 
 class LightCurveData(DataObject):
@@ -114,7 +115,7 @@ class LightCurveData(DataObject):
         self.raw_lc.to_fits(fpath, overwrite=True)
 
     @staticmethod
-    def get_filepath(outdir, fname="lightkurve_lc.fits"):
+    def get_filepath(outdir, fname=LC_DATA_FNAME):
         return os.path.join(outdir, fname)
 
     def get_observation_durations(self, tic):

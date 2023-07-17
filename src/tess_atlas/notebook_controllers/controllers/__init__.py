@@ -1,2 +1,2 @@
 from .menu_notebook_controller import MenuPageController
-from .toi_notebook_controller import TOINotebookConroller
+from .toi_notebook_controller import TOINotebookController

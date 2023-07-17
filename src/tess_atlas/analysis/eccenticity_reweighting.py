@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import logging
 
 import corner
@@ -7,9 +8,9 @@ import pandas as pd
 from arviz import InferenceData
 
 from ..data.tic_entry import TICEntry
-from ..utils import NOTEBOOK_LOGGER_NAME
+from ..logger import LOGGER_NAME
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
 N = 500
 

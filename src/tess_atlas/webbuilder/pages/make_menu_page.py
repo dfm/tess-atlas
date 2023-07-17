@@ -9,9 +9,8 @@ See http://catalog.tess-atlas.cloud.edu.au/content/toi_fits.html
 import glob
 import os
 
-from tess_atlas.utils import grep_toi_number
-
 from ...data.exofop import EXOFOP_DATA, constants
+from ...utils import grep_toi_number
 from .templates import IMAGE, TOI_LINK, render_page_template
 
 CATEGORISED_TOIS = EXOFOP_DATA.get_categorised_toi_lists()

@@ -1,65 +1,21 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import logging
 import multiprocessing as mp
 import os
 import re
 import sys
-import time
 import warnings
-from contextlib import contextmanager
-from typing import List, NamedTuple, Optional, Union
+from pathlib import Path
+from typing import Optional, Union
 
 import matplotlib.pyplot as plt
 from IPython import get_ipython
 
-RUNNER_LOGGER_NAME = "TESS-ATLAS-RUNNER"
-NOTEBOOK_LOGGER_NAME = "TESS-ATLAS"
-
-
-class DeltaTimeFormatter(logging.Formatter):
-    def format(self, record):
-        duration = datetime.datetime.utcfromtimestamp(
-            record.relativeCreated / 1000
-        )
-        record.delta = duration.strftime("%H:%M:%S")
-        return super().format(record)
-
-
-def setup_logger(logger_name: str, outdir: Optional[str] = ""):
-    logger = logging.getLogger(logger_name)
-    logger.handlers.clear()
-    logger.setLevel(logging.INFO)
-
-    # add custom formatter to root logger
-    handler = logging.StreamHandler()
-    formatter = DeltaTimeFormatter(
-        "\033[92m[%(delta)s - %(name)s]\033[0m %(message)s"
-    )
-
-    # console logging
-    sh = logging.StreamHandler(sys.stdout)
-    sh.setFormatter(formatter)
-    sh.setLevel(logging.INFO)
-    logger.addHandler(sh)
-
-    if outdir != "":  # setup file logging
-        # create log file
-        os.makedirs(outdir, exist_ok=True)
-        fname = logger_name.replace("-", "_").lower()
-        filename = os.path.join(outdir, f"{fname}.log")
-
-        # setup log-file handler
-        fh = logging.FileHandler(filename)
-        fh.setFormatter(formatter)
-        fh.setLevel(logging.DEBUG)
-        logger.addHandler(fh)
-    return logger
-
 
 def notebook_initalisations():
-    get_ipython().magic('config InlineBackend.figure_format = "retina"')
+    ipy = get_ipython()
+    if ipy is not None:
+        ipy.magic('config InlineBackend.figure_format = "retina"')
 
     try:
         mp.set_start_method("fork")
@@ -105,28 +61,6 @@ def get_cache_dir(default="./"):
     return os.environ.get("JOBFS", default=default)
 
 
-def get_notebook_logger(outdir=""):
-    # Logging setup
-    for logger_name in [
-        "theano.gof.compilelock",
-        "filelock",
-        "lazylinker_c.py",
-        "theano.tensor.opt",
-        "exoplanet",
-        "matplotlib",
-        "urllib3",
-        "arviz",
-        "astropy",
-        "lightkurve",
-        "corner",
-    ]:
-        logger = logging.getLogger(logger_name)
-        logger.setLevel(logging.ERROR)
-
-    notebook_logger = setup_logger(NOTEBOOK_LOGGER_NAME, outdir)
-    return notebook_logger
-
-
 def grep_toi_number(str) -> Union[int, None]:
     """Extract TOI number from string using regex
     "http://localhost:63342/tess-atlas/tests/out_webtest/html/_build/content/toi_notebooks/toi_101.html"
@@ -139,27 +73,3 @@ def grep_toi_number(str) -> Union[int, None]:
     if toi_number is None:
         return None
     return int(toi_number.group(1))
-
-
-@contextmanager
-def all_logging_disabled(highest_level=logging.CRITICAL):
-    """
-    A context manager that will prevent any logging messages
-    triggered during the body from being processed.
-    :param highest_level: the maximum logging level in use.
-      This would only need to be changed if a custom level greater than CRITICAL
-      is defined.
-    """
-    # two kind-of hacks here:
-    #    * can't get the highest logging level in effect => delegate to the user
-    #    * can't get the current module-level override => use an undocumented
-    #       (but non-private!) interface
-
-    previous_level = logging.root.manager.disable
-
-    logging.disable(highest_level)
-
-    try:
-        yield
-    finally:
-        logging.disable(previous_level)

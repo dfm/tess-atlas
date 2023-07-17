@@ -8,7 +8,7 @@ import pandas as pd
 from numpy import nan
 from tqdm.auto import tqdm
 
-from ...utils import NOTEBOOK_LOGGER_NAME, all_logging_disabled
+from ...logger import LOGGER_NAME, all_logging_disabled
 from ..data_utils import get_file_timestamp
 from ..lightcurve_data.lightcurve_search import LightcurveSearch
 from .constants import (
@@ -28,7 +28,7 @@ from .constants import (
 )
 from .plotting import plot_lk_status
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
 
 class Categories(NamedTuple):

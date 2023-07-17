@@ -30,5 +30,7 @@ from itables import init_notebook_mode, show
 from tess_atlas.data.analysis_summary import AnalysisSummary
 
 init_notebook_mode(all_interactive=True)
-df = AnalysisSummary.load_from_csv("{{{SUMMARY_PATH}}}").dataframe
+df = AnalysisSummary.load_from_csv(
+    "{{{SUMMARY_PATH}}}"
+).generate_summary_table()
 show(df, caption="TESS Atlas Catalog Summary")

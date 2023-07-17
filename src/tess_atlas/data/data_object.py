@@ -2,10 +2,10 @@ import logging
 import os
 from abc import ABC
 
-from ..utils import NOTEBOOK_LOGGER_NAME
+from ..logger import LOGGER_NAME
 from .data_utils import sizeof
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
 
 class DataObject(ABC):

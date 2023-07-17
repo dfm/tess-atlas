@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from typing import Dict, List, Optional
@@ -7,25 +9,22 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from ..utils import NOTEBOOK_LOGGER_NAME
+from ..data.tic_entry import TICEntry
+from ..logger import LOGGER_NAME
 from .labels import FLUX_LABEL, LIGHTCURVE_PLOT, TIME_LABEL
 from .plotting_utils import get_colors, get_longest_unbroken_section_of_data
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
 
 def plot_lightcurve(
-    tic_entry: "TICEntry",
+    tic_entry: TICEntry,
     model_lightcurves: Optional[np.ndarray] = None,
     save: Optional[bool] = True,
     zoom_in: Optional[bool] = False,
     observation_periods: Optional[np.ndarray] = None,
 ) -> plt.Figure:
-    """Plot lightcurve data + transit fits (if provided) in one plot
-
-    model_lightcurves: (lightcurve_num, lightcurve_y_vals, planet_id)
-
-    """
+    """Plot lightcurve data"""
     # todo truncate region of missing data on axes
 
     if model_lightcurves is None:

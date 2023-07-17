@@ -1,12 +1,11 @@
 """Module to parse the metadata from the TOI notebooks"""
+import json
 import os
-from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
 from strenum import StrEnum
 
-from tess_atlas.data.exofop import EXOFOP_DATA
 from tess_atlas.data.exofop.constants import (
     MULTIPLANET,
     NORMAL,
@@ -14,74 +13,86 @@ from tess_atlas.data.exofop.constants import (
 )
 
 from ... import __website__
+from ...file_management import (
+    INFERENCE_DATA_FNAME,
+    PROFILING_CSV,
+    TIC_CSV,
+    TOI_DIR,
+    read_last_n_lines,
+)
+from ...logger import LOG_FNAME
 from ...plotting.labels import THUMBNAIL_PLOT
 from ...utils import grep_toi_number
-from ..inference_data_tools import INFERENCE_DATA_FNAME
 from ..planet_candidate import CLASS_SHORTHAND
 
 URL_BASE = f"{__website__}/content/toi_notebooks"
 NOTEBOOK_URL = URL_BASE + "/toi_{}.html"
+THUMBNAIL_URL = URL_BASE + "/toi_{}_files/thumbnail.png"
 
 
 class Status(StrEnum):
-    PASS = ("completed",)
-    FAIL = ("failed",)
+    PASS = "completed"
+    FAIL = "failed"
     NOT_STARTED = "not started"
+
+
+METADATA_FNAME = "summary.txt"
 
 
 class ToiNotebookMetadata(object):
     """Metadata about a TOI notebook
-
     - if the notebook exists
     - if the analysis has started
     - if the analysis has completed
     - if the analysis has failed
     - if the inference object has been saved
     - the runtime of the analysis
+
+    #TODO: merge with the toi_notebook_controller class? or a mixin?
     """
 
     def __init__(self, path: str):
         self.path = path
         self.toi: int = grep_toi_number(path)
-        self.tic_data = self._get_tic_data()
-        self.category = self.get_toi_category()
-        self.profiling_data: pd.DataFrame = None
+        # filepaths (some of these may not exist)
+        self.toi_dir = os.path.join(
+            os.path.dirname(path), TOI_DIR.format(toi=self.toi)
+        )
+        self.tic_data_fname = os.path.join(self.toi_dir, TIC_CSV)
+        self.inference_object_fname = os.path.join(
+            self.toi_dir, INFERENCE_DATA_FNAME
+        )
+        self.thumbnail_fname = os.path.join(self.toi_dir, THUMBNAIL_PLOT)
+        self.profiling_fname = os.path.join(self.toi_dir, PROFILING_CSV)
+        self.log_fname = os.path.join(self.toi_dir, LOG_FNAME)
+        self.save_fn = os.path.join(self.toi_dir, METADATA_FNAME)
 
-    def _get_tic_data(self):
-        # FIXME: This is not correct for multiplanet systems
-        return EXOFOP_DATA.get_tic_data([self.toi]).to_dict("records")[0]
+    @property
+    def tic_data(self) -> pd.DataFrame:
+        if not hasattr(self, "__tic_data"):
+            self.__tic_data = pd.DataFrame()
+            if os.path.exists(self.tic_data_fname):
+                self.__tic_data = pd.read_csv(self.tic_data_fname)
+        return self.__tic_data
 
     @property
     def notebook_exists(self) -> bool:
         return os.path.exists(self.path)
 
     @property
-    def basedir(self) -> str:
-        return os.path.dirname(self.path)
-
-    @property
-    def datadir(self) -> str:
-        return os.path.join(self.basedir, f"toi_{self.toi}_files")
-
-    @property
-    def thumbnail(self) -> str:
-        """TODO: make a thumbnail with all the phase plots in it (for multiplanet systems)"""
-        return os.path.join(self.datadir, THUMBNAIL_PLOT)
-
-    @property
     def inference_object_saved(self) -> bool:
-        f = os.path.join(self.datadir, INFERENCE_DATA_FNAME)
-        return os.path.exists(f)
+        return os.path.exists(self.inference_object_fname)
 
     @property
     def analysis_started(self) -> bool:
-        """The analysis has started if the notebook exists"""
         return self.notebook_exists
 
     @property
     def analysis_completed(self) -> bool:
-        """The analysis has completed if the inference object has been saved + the thumbnail exists"""
-        return os.path.exists(self.thumbnail)
+        return (
+            os.path.exists(self.thumbnail_fname)
+            and self.inference_object_saved
+        )
 
     @property
     def analysis_failed(self) -> bool:
@@ -98,45 +109,73 @@ class ToiNotebookMetadata(object):
         else:
             return Status.FAIL
 
-    def get_toi_category(self) -> str:
+    @property
+    def has_multiple_planets(self) -> bool:
+        return len(self.tic_data) > 1
+
+    @property
+    def toi_category(self) -> str:
         """Get the category of a TOI
         returns:
             str: "Multi-planet", "Single Transit", "Normal"
         """
-        if self.tic_data[MULTIPLANET]:
-            cat = MULTIPLANET
-            if self.tic_data[SINGLE_TRANSIT]:
-                cat += f", {SINGLE_TRANSIT}"
-        elif self.tic_data[SINGLE_TRANSIT]:
-            cat = SINGLE_TRANSIT
-        else:
-            cat = NORMAL
-        return cat
+
+        cat = []
+        if self.has_multiple_planets:
+            cat.append(MULTIPLANET)
+
+        if len(self.tic_data[self.tic_data[SINGLE_TRANSIT]]) > 1:
+            cat.append(SINGLE_TRANSIT)
+
+        if len(cat) == 0:
+            cat.append(NORMAL)
+
+        return ", ".join(cat)
 
     @property
     def classification(self) -> str:
         """Returns classification (eg confirmed-planet, eclipsing binary, etc)"""
-        classid = self.tic_data["TESS Disposition"]
-        return CLASS_SHORTHAND.get(classid, classid)
+        cls_ids = self.tic_data["TESS Disposition"].values
+        cls_ids = [CLASS_SHORTHAND.get(_id, _id) for _id in cls_ids]
+        return ", ".join(cls_ids)
 
     def load_profiling_data(self) -> pd.DataFrame:
-        """Load the profiling data from the notebook (saved with ploomber)"""
-        # TODO
-        raise NotImplementedError
+        """Load the profiling data from the notebook (saved with ploomber)
+        Returned dataframe has columns: ['cell', 'runtime', 'memory']
+        """
+        if os.path.exists(self.profiling_fname):
+            return pd.read_csv(self.profiling_fname, index_col=0)
+        return pd.DataFrame(columns=["cell", "runtime", "memory"])
+
+    @property
+    def profiling_data(self) -> pd.DataFrame:
+        if not hasattr(self, "__profiling_data"):
+            self.__profiling_data = self.load_profiling_data()
+        return self.__profiling_data
 
     @property
     def runtime(self) -> float:
         """Time (in Hr) to finish execution"""
-        return np.nan  # TODO: read in from CSV
+        if not hasattr(self, "__runtime"):
+            runtime = sum(self.profiling_data.runtime)
+            self.__runtime = runtime / (60 * 60)
+            if runtime < 1:
+                self.__runtime = np.nan
+        return self.__runtime
 
     @property
-    def logfile(self) -> str:
-        """Path to the logfile"""
-        raise NotImplementedError
+    def memory(self) -> float:
+        """Max RAM used during execution"""
+        if not hasattr(self, "__memory"):
+            self.__memory = np.nan
+            if len(self.profiling_data) > 1:
+                self.__memory = max(self.profiling_data.memory)
+        return self.__memory
 
-    def get_log_lines(self, n=10) -> str:
-        """Returns the last n lines from the logs"""
-        raise NotImplementedError
+    def get_log_lines(self, n=5) -> str:
+        if os.path.exists(self.log_fname):
+            return read_last_n_lines(self.log_fname, n)
+        return "LOGS NOT FOUND"
 
     @property
     def url(self) -> str:
@@ -155,7 +194,8 @@ class ToiNotebookMetadata(object):
     def thumbnail_html(self) -> str:
         """HTML code to embedthe thumbnail on catalog website"""
         if self.analysis_completed:
-            return f"<a href='{self.url}'> <img src='{self.thumbnail}' width='200' height='200'> </a>"
+            url = THUMBNAIL_URL.format(self.toi)
+            return f"<a href='{self.url}'> <img src='{url}' width='200' height='200'> </a>"
         else:
             return ""
 
@@ -164,14 +204,23 @@ class ToiNotebookMetadata(object):
 
     def __dict__(self):
         return {
-            "TOI": self.toi_html,
-            "analysis_started": self.analysis_started,
-            "analysis_completed": self.analysis_completed,
-            "analysis_status": self.analysis_status.value,
-            "thumbnail": self.thumbnail_html,
-            "category": self.category,
-            "classification": self.classification,
-            "runtime": self.runtime,
-            "inference_object_saved": self.inference_object_saved,
-            **self.tic_data,
+            "TOI": self.toi,
+            "TOI html": self.toi_html,
+            "Thumbnail": self.thumbnail_html,
+            "Status": self.analysis_status.value,
+            "Category": self.toi_category,
+            "Classification": self.classification,
+            "Runtime [Hr]": self.runtime,
+            "Memory [Mb]": self.inference_object_saved,
+            "Log lines": self.get_log_lines(),
         }
+
+    def save(self):
+        with open(self.save_fn, "w") as file:
+            json.dump(self.__dict__(), file, indent=2)
+
+    def get_meta_data(self):
+        if os.path.exists(self.save_fn):
+            with open(self.save_fn, "r") as file:
+                return json.load(file)
+        return self.__dict__()

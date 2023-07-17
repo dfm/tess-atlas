@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import time
@@ -9,12 +8,14 @@ from astroquery.exceptions import NoResultsWarning, ResolverError
 from astroquery.mast import Catalogs
 from requests.models import HTTPError
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
-
+from ..logger import LOGGER_NAME
 from .data_object import DataObject
 from .data_utils import load_json, save_json
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
+
+
+STELLAR_DATA_JSON = "stellar_data.json"
 
 
 class StellarData(DataObject):
@@ -117,7 +118,7 @@ class StellarData(DataObject):
         )
 
     @staticmethod
-    def get_filepath(outdir: str, fname="stellar_data.json") -> str:
+    def get_filepath(outdir: str, fname=STELLAR_DATA_JSON) -> str:
         return os.path.join(outdir, fname)
 
 

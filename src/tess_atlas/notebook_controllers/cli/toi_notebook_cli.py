@@ -1,8 +1,9 @@
 import argparse
 import os
 
-from ...utils import RUNNER_LOGGER_NAME, setup_logger
-from ..controllers import TOINotebookConroller
+from ...file_management import TOI_DIR
+from ...logger import LOGGER_NAME, setup_logger
+from ..controllers import TOINotebookController
 
 __all__ = ["cli_run_toi"]
 
@@ -10,13 +11,13 @@ __all__ = ["cli_run_toi"]
 def cli_run_toi():
     args = __get_cli_args()
     logger = setup_logger(
-        RUNNER_LOGGER_NAME,
-        outdir=os.path.join(args.outdir, f"toi_{args.toi_number}_files"),
+        LOGGER_NAME,
+        outdir=os.path.join(args.outdir, TOI_DIR.format(toi=args.toi_number)),
     )
     logger.info(
         f"run_toi({args.toi_number}) {'quick' if args.quickrun else ''} {'setup' if args.setup else ''}"
     )
-    nb_controller = TOINotebookConroller.from_toi_number(
+    nb_controller = TOINotebookController.from_toi_number(
         args.toi_number, args.outdir
     )
     nb_controller.generate(setup=args.setup, quickrun=args.quickrun)

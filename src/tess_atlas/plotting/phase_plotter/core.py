@@ -1,36 +1,32 @@
 import logging
 import os
-from typing import Dict, List, Optional
+from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-import plotly.graph_objects as go
 from arviz import InferenceData
-from plotly.subplots import make_subplots
+from scipy.interpolate import interp1d
 
-from ..data.inference_data_tools import get_samples_dataframe
-from ..utils import NOTEBOOK_LOGGER_NAME
-from .extra_plotting.ci import plot_ci, plot_xy_binned
-from .labels import (
+from ...data.inference_data_tools import get_samples_dataframe
+from ...logger import LOGGER_NAME
+from ..extra_plotting.ci import plot_ci, plot_xy_binned
+from ..labels import (
     FLUX_LABEL,
     PHASE_PLOT,
+    THUMBNAIL_PLOT,
     TIME_LABEL,
     TIME_SINCE_TRANSIT_LABEL,
 )
-from .plotting_utils import (
-    fold_data,
-    fold_lightcurve_models,
+from ..plotting_utils import get_colors
+from .lightcurve_model_from_samples import (
     generate_model_lightcurve,
-    get_colors,
     get_lc_and_gp_from_inference_object,
 )
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
 
-def _preprocess_phase_plot_data(
-    tic_entry, model, inference_data, initial_params, kwgs
-):
+def _preprocess_phase_plot_data(model, inference_data, initial_params, kwgs):
     if initial_params:
         kwgs.update(
             dict(
@@ -59,45 +55,51 @@ def _preprocess_phase_plot_data(
     return kwgs
 
 
-def plot_phase(
-    tic_entry,
-    model,
-    inference_data: Optional[InferenceData] = None,
-    initial_params: Optional[Dict] = None,
-    **kwgs,
-):
-    """Adapted from exoplanet tutorials
-    https://gallery.exoplanet.codes/tutorials/transit/#phase-plots
-
-    In addition to {tic_entry, model} this function needs either
-    - inference_data
-    - initial_params
+def _fold_lightcurve_models(
+    lc: np.array,
+    lc_models: np.ndarray,
+    t0s: np.array,
+    periods: np.array,
+    plt_min: float,
+    plt_max: float,
+) -> Tuple[np.array, np.ndarray]:
+    """Fold lightcurve models.
+    :param lc: The lightcurve.
+    :param lc_models: The lightcurve models.
+    :param t0s: The transit times.
+    :param periods: The periods.
+    :param plt_min: The minimum time to plot.
+    :param plt_max: The maximum time to plot.
+    :return: time, array of the folded lightcurve models.
     """
+    num_lc = len(lc_models)
+    xs, ys = [], []
 
-    kwgs = _preprocess_phase_plot_data(
-        tic_entry, model, inference_data, initial_params, kwgs
-    )
+    # fold lightcurve models
+    for i in range(num_lc):
+        x, fold_idx = fold_data(lc, t0s[i], periods[i], plt_min, plt_max)
+        xs.append(x[fold_idx])
+        ys.append(lc_models[i, fold_idx])
 
-    if kwgs.get("thumbnail", False):
-        kwgs.update(
-            data_bins=80,
-            default_fs=0,
-            period_fs=0,
-            legend_fs=0,
-            ms=2.5,
-            savekwgs=dict(
-                transparent=True, dpi=80, bbox_inches="tight", pad_inches=0
-            ),
-            annotate_with_period=False,
-            figsize=(2.0, 1.5),
-            legend=0,
-        )
-    figsize = kwgs.get("figsize", (7, 5))
+    # determine which lightcurve model is the longest
+    longest_x_id = np.argmax([len(x) for x in xs])
+    longest_x = xs[longest_x_id]
 
-    for i in range(tic_entry.planet_count):
-        fig = plt.figure(figsize=figsize)
-        ax = fig.gca()
-        add_phase_data_to_ax(ax, i, tic_entry, **kwgs)
+    # interpolate each lightcurve model to have same lengths
+    for i, (x, y) in enumerate(zip(xs, ys)):
+        f = interp1d(x, y, fill_value="extrapolate")
+        ys[i] = f(longest_x)
+    return longest_x, np.array(ys)
+
+
+def fold_data(lc, t0, p, plt_min, plt_max):
+    # wrap data around period with t0 offset
+    x_fold = lc.timefold(t0=t0, p=p)
+    # ignore data far away from period
+    idx = np.where((plt_min <= x_fold) & (x_fold <= plt_max))
+    inds = np.argsort(x_fold)
+    inds = inds[np.abs(x_fold)[inds] < plt_max]
+    return x_fold, inds
 
 
 def _get_period_txt(p_std, p_mean):
@@ -144,7 +146,7 @@ def add_phase_data_to_ax(
     toi = tic_entry.toi_number
     colors = get_colors(tic_entry.planet_count)
 
-    # ATM this is jsut the raw lc
+    # At the start this is just the raw flux data
     ith_flux = lc.flux
 
     if inference_data:
@@ -202,7 +204,7 @@ def add_phase_data_to_ax(
     # Plot initial folded lightcurve model if present
     initial_line = None
     if len(initial_lightcurves) > 0:
-        init_x, init_y = fold_lightcurve_models(
+        init_x, init_y = _fold_lightcurve_models(
             lc,
             initial_lightcurves[..., i],
             [initial_params["tmin"][i]],
@@ -222,7 +224,7 @@ def add_phase_data_to_ax(
     # Plot lc bands if inference data present
     model_line = None
     if inference_data:
-        pred_x, pred_y = fold_lightcurve_models(
+        pred_x, pred_y = _fold_lightcurve_models(
             lc,
             lcs[..., i],
             t0s=[s["tmin"][i] for s in model_samples],
@@ -293,7 +295,7 @@ def add_phase_data_to_ax(
         l.get_frame().set_linewidth(0.0)
 
     if not save:
-        return
+        return plt.gcf()
 
     if thumbnail:
         plt.axis("off")
@@ -310,67 +312,10 @@ def add_phase_data_to_ax(
     if plot_label:
         fname = f"{plot_label}_{fname}"
     if thumbnail:
-        fname = fname.replace(".png", "_thumbnail.png")
+        fname = THUMBNAIL_PLOT
 
     fname = os.path.join(tic_entry.outdir, fname)
     logger.debug(f"Saving {fname}")
     plt.savefig(fname, **savekwgs)
     if thumbnail:
         plt.close()
-
-
-def plot_folded_lightcurve(
-    tic_entry: "TICEntry", model_lightcurves: Optional[List[float]] = None
-) -> go.Figure:
-    """Subplots of folded lightcurves + transit fits (if provided) for each transit"""
-    if model_lightcurves is None:
-        model_lightcurves = []
-    subplot_titles = [
-        f"Planet {i + 1}: TOI-{c.toi_id}"
-        for i, c in enumerate(tic_entry.candidates)
-    ]
-    fig = make_subplots(
-        rows=tic_entry.planet_count,
-        subplot_titles=subplot_titles,
-        vertical_spacing=0.1,
-    )
-    for i in range(tic_entry.planet_count):
-        lc = tic_entry.lightcurve
-        planet = tic_entry.candidates[i]
-        fig.add_trace(
-            go.Scattergl(
-                x=lc.timefold(t0=planet.tmin, p=planet.period),
-                y=lc.flux,
-                mode="markers",
-                marker=dict(
-                    size=3,
-                    color=lc.time,
-                    showscale=False,
-                    colorbar=dict(title="Days"),
-                ),
-                name=f"Candidate {i + 1} Data",
-            ),
-            row=i + 1,
-            col=1,
-        )
-        fig.update_xaxes(title_text=TIME_LABEL, row=i + 1, col=1)
-        fig.update_yaxes(title_text=FLUX_LABEL, row=i + 1, col=1)
-    for i, model_lightcurve in enumerate(model_lightcurves):
-        lc = tic_entry.lightcurve
-        planet = tic_entry.candidates[i]
-        fig.add_trace(
-            go.Scattergl(
-                x=lc.timefold(t0=planet.tmin, p=planet.period),
-                y=model_lightcurve,
-                mode="markers",
-                name=f"Planet {i + 1}",
-            ),
-            row=i + 1,
-            col=1,
-        )
-    fig.update_layout(height=300 * tic_entry.planet_count)
-    fig.update(layout_coloraxis_showscale=False)
-    fname = os.path.join(tic_entry.outdir, PHASE_PLOT)
-    logger.debug(f"Saving {fname}")
-    fig.write_image(fname)
-    return fig

@@ -73,6 +73,39 @@ class AnalysisSummary:
         """
         return self._data.copy()
 
+    def generate_summary_table(self):
+        """Return a pandas DataFrame with the summary.
+
+        Columns:
+        - TOI: the TOI number
+        - Classification: the classification of the TOI (confirmed, candidate, etc)
+        - Category: the category of the TOI (single, multi, normal)
+        - Runtime [Hrs]: the runtime of the analysis in hours
+        - Phase Plot: thumbnail of the phase plot
+        - Analysis Status: the status of the analysis (Not started, Failed, Completed)
+
+        """
+        df = self.dataframe.copy()
+        df["Runtime [Hrs]"] = df["Runtime [s]"] / 3600
+        df["Analysis Status"] = df["Analysis Status"].map(
+            {
+                "not_started": "Not started",
+                "failed": "Failed",
+                "completed": "Completed",
+            }
+        )
+        df = df.rename(
+            columns={
+                "TOI": "TOI",
+                "Classification": "Classification",
+                "Category": "Category",
+                "Runtime [Hrs]": "Runtime [Hrs]",
+                "Phase Plot": "Phase Plot",
+                "Analysis Status": "Analysis Status",
+            }
+        )
+        return df
+
     def save_to_csv(self, csv_path: str):
         """Save the metadata to a csv file."""
         self._data.to_csv(csv_path, index=False)
@@ -105,4 +138,4 @@ class AnalysisSummary:
 
 
 def _get_toi_metadict(fn):
-    return ToiNotebookMetadata(fn).__dict__()
+    return ToiNotebookMetadata(fn).get_meta_data()

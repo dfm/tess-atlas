@@ -7,12 +7,10 @@ import numpy as np
 import pandas as pd
 import pymc3_ext as pmx
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME
+from ..file_management import INFERENCE_DATA_FNAME, SAMPLES_FNAME, get_filesize
+from ..logger import LOGGER_NAME
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
-
-SAMPLES_FNAME = "samples.csv"
-INFERENCE_DATA_FNAME = "inference_data.netcdf"
+logger = logging.getLogger(LOGGER_NAME)
 
 
 def get_idata_fname(outdir):
@@ -33,10 +31,13 @@ def load_inference_data(outdir: str) -> az.InferenceData:
 
 def save_inference_data(inference_data: az.InferenceData, outdir: str):
     fname = get_idata_fname(outdir)
+    if os.path.isfile(fname):
+        os.remove(fname)
     inference_data.to_netcdf(
         filename=fname, groups=["posterior", "log_likelihood", "sample_stats"]
     )
     save_samples(inference_data, outdir)
+    logger.info(f"Saved inference data [{get_filesize(fname)} MB]")
 
 
 def summary(
@@ -221,7 +222,6 @@ def get_optimized_init_params(
                         dict(theta=theta, logp=get_logp(model, theta))
                     )
 
-        final_logp = get_logp(model, theta)
         logger.info(
             f"Optimization complete! "
             f"(logp: {init_logp:.2f} -> {cache[-1]['logp']:.2f})"
@@ -240,4 +240,4 @@ def get_optimized_init_params(
 
 def get_logp(model, point):
     with model:
-        return model.check_test_point(test_point=point)["obs"]
+        return model.check_test_point(test_point=point).get("obs", -np.inf)

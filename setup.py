@@ -36,6 +36,9 @@ INSTALL_REQUIRES = [
     "seaborn",
     "itables",
     "StrEnum",
+    "jupyternotify",
+    "ipython-autotime",
+    "memory_profiler",
 ]
 EXTRA_REQUIRE = {
     "dev": [
@@ -51,12 +54,10 @@ EXTRA_REQUIRE = {
         "sphinx-remove-toctrees",
         "sphinx_togglebutton",
         "jupytext",
-        "ipython-autotime",
         "sphinx_external_toc",
-        "memory_profiler",
         "pympler",
         "psutil",
-        "ploomber-engine>=0.0.24",
+        "git+https://github.com/ploomber/ploomber-engine.git@main",  # using feature from ploomber-engine 0.0.29 (unreleased)
         "pretty-jupyter",
         "itables",
         "interruptingcow",

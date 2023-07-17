@@ -3,27 +3,41 @@
 It replaces some bits of code specific to the TOI notebooks, such as the TOI number.
 
 """
+from __future__ import annotations
+
 import os
 import re
 import time
 from typing import Optional, Tuple
 
+from ...data.analysis_summary.toi_notebook_metadata import ToiNotebookMetadata
 from ...data.tic_entry import TICEntry
 from ...tess_atlas_version import __version__
 from ...utils import grep_toi_number
 from ..paths import TOI_TEMPLATE_FNAME, TRANSIT_MODEL
 from .notebook_controller import NotebookController
 
-__all__ = ["TOINotebookConroller"]
+__all__ = ["TOINotebookController"]
 
 
-class TOINotebookConroller(NotebookController):
+class TOINotebookController(NotebookController):
     template = TOI_TEMPLATE_FNAME
 
     def __init__(self, notebook_filename: str):
         super().__init__(notebook_filename)
         self.toi_number = grep_toi_number(os.path.basename(notebook_filename))
+        if self.toi_number is None:
+            raise ValueError(
+                f"TOI number not found in notebook filename: {notebook_filename}"
+            )
+        self.toi_dir = f"{self.notebook_dir}/toi_{self.toi_number}_files"
         assert self.toi_number is not None
+
+    def execute(self, **kwargs) -> bool:
+        kwargs["profiling_path"] = f"{self.toi_dir}/profiling.csv"
+        status = super().execute(**kwargs)
+        ToiNotebookMetadata(self.notebook_path).save()
+        return status
 
     @classmethod
     def from_toi_number(cls, toi_number: int, notebook_dir: str = "notebooks"):
@@ -100,7 +114,7 @@ class TOINotebookConroller(NotebookController):
             run_duration: float
                 Time of analysis (in seconds)
         """
-        toi_nb_processor = TOINotebookConroller.from_toi_number(
+        toi_nb_processor = TOINotebookController.from_toi_number(
             toi_number, outdir
         )
         if setup:
@@ -143,13 +157,13 @@ def _quickrun_replacements(txt):
         "init_params(planet_transit_model, **params)",
         "init_params(planet_transit_model, **params, quick=True)",
     )
-    GP_CODE = """gp = GaussianProcess(
-                kernel, t=t, diag=yerr**2 + jitter_prior**2, quiet=True
-            )
-            gp.marginal(name="obs", observed=residual)
-            my_planet_transit_model.gp_mu = gp.predict(residual, return_var=False)
-    """
-    txt = txt.replace(GP_CODE, "my_planet_transit_model.gp_mu = residual")
-    txt = txt.replace("kernel", "# kernel = ")
+    txt = txt.replace("kernel = terms", "# kernel = terms")
+    txt = txt.replace("gp = GaussianProcess(", "# gp = GaussianProcess(")
+    txt = txt.replace("gp.marginal(name=", "# gp.marginal(name=")
+    txt = txt.replace("gp.predict(residual, return_var=False)", "residual")
+    txt = txt.replace(
+        "# cache params",
+        'obs = pm.Normal("obs", mu=residual, sigma=1, observed=residual)',
+    )
     txt = txt.replace("from celerite2.theano", "# from celerite2.theano")
     return txt

@@ -5,9 +5,9 @@ import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ..utils import NOTEBOOK_LOGGER_NAME
+from ..logger import LOGGER_NAME
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
 from ..data.data_utils import residual_rms
 from .labels import (
@@ -16,11 +16,10 @@ from .labels import (
     DIAGNOSTIC_TRACE_PLOT,
 )
 from .phase_plotter import plot_phase
-from .plotting_utils import (
-    get_colors,
+from .phase_plotter.lightcurve_model_from_samples import (
     get_lc_and_gp_from_inference_object,
-    get_longest_unbroken_section_of_data,
 )
+from .plotting_utils import get_colors, get_longest_unbroken_section_of_data
 
 
 def plot_raw_lightcurve(tic_entry, save=True, zoom_in=False):

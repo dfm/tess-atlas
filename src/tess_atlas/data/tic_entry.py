@@ -6,7 +6,8 @@ from typing import Dict, List, Optional
 import pandas as pd
 from arviz import InferenceData
 
-from ..utils import NOTEBOOK_LOGGER_NAME
+from ..file_management import TIC_CSV, TOI_DIR
+from ..logger import LOGGER_NAME
 from .data_object import DataObject
 from .exofop import EXOFOP_DATA
 from .inference_data_tools import (
@@ -19,9 +20,9 @@ from .optimized_params import OptimizedParams
 from .planet_candidate import PlanetCandidate
 from .stellar_data import StellarData
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
-TOI_DIR = "toi_{toi}_files"
+TIC_ID = "TIC ID"
 
 
 class TICEntry(DataObject):
@@ -64,9 +65,13 @@ class TICEntry(DataObject):
     @property
     def tic_number(self) -> int:
         try:
-            return int(self.tic_data["TIC ID"].iloc[0])
-        except Exception:
-            print(self.tic_data)
+            return _get_tic_id_from_table(self.tic_data)
+        except Exception as e:
+            raise ValueError(
+                f"Error {e}. "
+                f"Could not get TIC number for TOI {self.toi_number}. "
+                f"TIC data: \n{self.tic_data}"
+            )
 
     @property
     def planet_count(self) -> int:
@@ -127,7 +132,7 @@ class TICEntry(DataObject):
         self.__outdir = outdir
 
     @staticmethod
-    def get_filepath(outdir, fname="tic_data.csv"):
+    def get_filepath(outdir, fname=TIC_CSV):
         return os.path.join(outdir, fname)
 
     def save_data(
@@ -148,3 +153,7 @@ class TICEntry(DataObject):
             )
             self.optimized_params.save_data(self.outdir)
         logger.info(f"Saved data in {self.outdir}")
+
+
+def _get_tic_id_from_table(tic_data: pd.DataFrame) -> int:
+    return int(tic_data[TIC_ID].iloc[0])

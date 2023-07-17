@@ -8,7 +8,6 @@ def plot_histogram_with_collection_bin(ax, data, bins, plt_kwargs):
     ax.hist(clipped_data, bins=bins, **plt_kwargs)
     xlabels = bins[1:].astype(str)
     xlabels[-1] += "+"
-    N_labels = len(xlabels)
     ax.set_xlim([min(bins), max(bins)])
     xticks = ax.get_xticks().tolist()
     xticks[-1] = f"+{int(xticks[-1])}"
@@ -17,7 +16,6 @@ def plot_histogram_with_collection_bin(ax, data, bins, plt_kwargs):
 
 
 def plot_runtimes(df, savepath=""):
-    total_num_tois = len(df)
     df["time"] = df["duration"]
     fig, ax = plt.subplots()
     df_passed = df[df["STATUS"] == "PASS"]

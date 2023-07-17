@@ -1,5 +1,6 @@
 import glob
 import os
+from pathlib import Path
 
 import pytest
 
@@ -7,7 +8,7 @@ from tess_atlas.data.analysis_summary.toi_notebook_metadata import (
     INFERENCE_DATA_FNAME,
     THUMBNAIL_PLOT,
 )
-from tess_atlas.notebook_controllers.controllers import TOINotebookConroller
+from tess_atlas.notebook_controllers.controllers import TOINotebookController
 
 TMP_OUTDIR = "./tmp/tess_atlas_test_notebooks"
 
@@ -15,7 +16,7 @@ TMP_OUTDIR = "./tmp/tess_atlas_test_notebooks"
 def get_fake_notebook_path(
     toi_int, outdir=TMP_OUTDIR, additional_files=False
 ) -> str:
-    controller = TOINotebookConroller.from_toi_number(toi_int, outdir)
+    controller = TOINotebookController.from_toi_number(toi_int, outdir)
     controller.generate(quickrun=True)
     if additional_files:
         datafiles = f"{outdir}/toi_{toi_int}_files/"
@@ -45,3 +46,15 @@ def fake_notebook_dir(n_toi=5) -> str:
         return get_fake_notebook_dir(
             n_toi=n_toi, outdir=TMP_OUTDIR, additional_files=True
         )
+
+
+@pytest.fixture
+def tmp_working_dir(tmp_path) -> str:
+    """
+    Create temporary path using pytest native fixture,
+    them move it, yield, and restore the original path
+    """
+    old = os.getcwd()
+    os.chdir(str(tmp_path))
+    yield str(Path(tmp_path).resolve())
+    os.chdir(old)

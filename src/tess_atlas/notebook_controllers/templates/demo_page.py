@@ -40,11 +40,12 @@ from typing import List
 import pandas as pd
 import tqdm
 
+from tess_atlas.logger import get_notebook_logger
 from tess_atlas.plotting import (
     plot_exofop_vs_atlas_comparison,
     plot_toi_list_radius_vs_period,
 )
-from tess_atlas.utils import get_notebook_logger, notebook_initalisations
+from tess_atlas.utils import notebook_initalisations
 
 OUTDIR = "example_loader_files"
 

@@ -3,9 +3,10 @@ import logging
 import lightkurve as lk
 import numpy as np
 
-from tess_atlas.utils import NOTEBOOK_LOGGER_NAME, get_cache_dir
+from ...logger import LOGGER_NAME
+from ...utils import get_cache_dir
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
 
 class LightcurveSearch:

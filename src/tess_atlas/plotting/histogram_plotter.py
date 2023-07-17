@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MaxNLocator
 
-from ..utils import NOTEBOOK_LOGGER_NAME
+from ..logger import LOGGER_NAME
 from .labels import LATEX, PARAMS_CATEGORIES, PRIOR_PLOT
 from .plotting_utils import (
     exception_catcher,
-    format_label_string_with_offset,
+    format_hist_axes_label_string_with_offset,
     format_prior_samples_and_initial_params,
 )
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
 
 @exception_catcher
@@ -82,7 +82,7 @@ def plot_histograms(
             axes[row_i, col_i].set_xlabel(
                 latex_label.get(sample_name, sample_name)
             )
-            format_label_string_with_offset(axes[row_i, col_i], "x")
+            format_hist_axes_label_string_with_offset(axes[row_i, col_i], "x")
     plt.tight_layout()
     if fname:
         fig.savefig(fname)

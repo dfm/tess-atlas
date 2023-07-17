@@ -9,7 +9,7 @@ import testbook
 from interruptingcow import timeout
 from packaging import version
 
-from tess_atlas.notebook_controllers.controllers import TOINotebookConroller
+from tess_atlas.notebook_controllers.controllers import TOINotebookController
 
 SINGLE_PLANET = 103
 MULTI_PLANET = 178  # has 3 planets
@@ -18,7 +18,7 @@ SINGLE_TRANSIT = 1812
 
 
 def test_notebook_creation(tmpdir):
-    controller = TOINotebookConroller.from_toi_number(SINGLE_PLANET, tmpdir)
+    controller = TOINotebookController.from_toi_number(SINGLE_PLANET, tmpdir)
     controller.generate(quickrun=True)
     assert os.path.exists(controller.notebook_path)
     assert controller.valid_notebook
@@ -26,7 +26,7 @@ def test_notebook_creation(tmpdir):
 
 @pytest.mark.skip
 def test_analysis_starts(tmpdir):
-    controller = TOINotebookConroller.from_toi_number(SINGLE_PLANET, tmpdir)
+    controller = TOINotebookController.from_toi_number(SINGLE_PLANET, tmpdir)
     controller.generate(quickrun=True)
 
     # mock the data download stage
@@ -43,7 +43,7 @@ def test_analysis_starts(tmpdir):
 def toi_notebook():
     """Share kernel with the module after executing the cells with tags"""
     tags_to_execute = ["def"]
-    controller = TOINotebookConroller.from_toi_number(103, "tmp")
+    controller = TOINotebookController.from_toi_number(103, "tmp")
     controller.generate(quickrun=True)
 
     with testbook.testbook(

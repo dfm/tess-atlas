@@ -6,7 +6,7 @@ import nbformat
 from nbconvert import HTMLExporter
 from ploomber_engine import execute_notebook
 
-from tess_atlas.utils import RUNNER_LOGGER_NAME
+from ..logger import LOGGER_NAME
 
 __all__ = ["execute_ipynb"]
 
@@ -25,9 +25,8 @@ def execute_ipynb(
     :return: bool if notebook-preprocessing successful/unsuccessful
     """
     success = False
-    runner_logger = logging.getLogger(RUNNER_LOGGER_NAME)
+    runner_logger = logging.getLogger(LOGGER_NAME)
     runner_logger.info(f"Executing {notebook_filename}")
-
     try:
         with interruptingcow.timeout(timeout, exception=TimeoutError):
             run_path = os.path.dirname(notebook_filename)
@@ -35,11 +34,11 @@ def execute_ipynb(
                 input_path=notebook_filename,
                 output_path=notebook_filename,
                 cwd=run_path,
-                save_profiling_data=True,
+                save_profiling_data=kwargs.get("profiling_path", True),
                 profile_memory=True,
                 profile_runtime=True,
                 log_output=False,
-                debug_later=True,
+                debug_later=False,
             )
             success = True
     except Exception as e:

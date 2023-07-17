@@ -13,9 +13,9 @@ from pymc3.util import (
 )
 from theano.tensor.var import TensorVariable
 
-from ..utils import NOTEBOOK_LOGGER_NAME
+from ..logger import LOGGER_NAME
 
-logger = logging.getLogger(NOTEBOOK_LOGGER_NAME)
+logger = logging.getLogger(LOGGER_NAME)
 
 
 def sample_prior(model: Model, size: Optional[int] = 10000):
@@ -63,7 +63,7 @@ def compute_variable(
 ) -> Union[np.ndarray, Tuple[np.ndarray]]:
     """Computes value for a model variable.
 
-    :param Model model: The pymc3 model object
+    :param Model: The pymc3 model object
     :param List[List[float]] samples: the samples to evaluate the model at
     :param InferenceData idata: The inference data trace
     :param TensorVariable target: The tensor (or list of tensors) that you want to compute for the samples

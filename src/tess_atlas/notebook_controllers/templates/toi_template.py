@@ -63,11 +63,11 @@ notebook_initalisations()
 #
 # To get going, we'll add some _magic_, import some packages, and run some setup steps.
 
-# + pycharm={"name": "#%%\n"} tags=["exe", "hide-cell"]
+# + pycharm={"name": "#%%\n"} tags=["def", "hide-cell"]
 # %load_ext autoreload
 # %load_ext memory_profiler
 # %load_ext autotime
-# # %load_ext jupyternotify
+# %load_ext jupyternotify
 # %autoreload 2
 # # %matplotlib inline
 
@@ -89,6 +89,7 @@ from tess_atlas.data.inference_data_tools import (
     summary,
     test_model,
 )
+from tess_atlas.logger import get_notebook_logger
 from tess_atlas.plotting import (
     plot_diagnostics,
     plot_eccentricity_posteriors,
@@ -99,7 +100,8 @@ from tess_atlas.plotting import (
     plot_priors,
     plot_raw_lightcurve,
 )
-from tess_atlas.utils import get_notebook_logger
+
+# + pycharm={"name": "#%%\n"} tags=["exe", "hide-cell"]
 
 TOI_NUMBER = {{{TOINUMBER}}}
 logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")
@@ -191,7 +193,9 @@ plot_raw_lightcurve(tic_entry, zoom_in=True)
 planet_transit_model, params = build_planet_transit_model(tic_entry)
 model_varnames = get_untransformed_varnames(planet_transit_model)
 test_model(planet_transit_model)
-# # %notify -m "Planet model ready!"
+
+# + pycharm={"name": "#%%\n"} tags=["remove-cell"]
+# %notify -m "TOI Model compiled successfully."
 
 # -
 
@@ -256,16 +260,21 @@ def run_inference(model) -> InferenceData:
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 if tic_entry.inference_data is None:
     inference_data = run_inference(planet_transit_model)
+    tic_entry.inference_data = inference_data
+    tic_entry.save_data(inference_data=inference_data)
 else:
     logger.info("Using cached run")
     inference_data = tic_entry.inference_data
 inference_data
+
+# + pycharm={"name": "#%%\n"} tags=["remove-cell"]
+# %notify -m "Posterior ready!"
+
 # -
 
 # The `inference_data` object contains the posteriors and sampling metadata. Let's save it for future use, and take a look at summary statistics. Note: the _trace plot_ from sampling is hidden below.
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
-tic_entry.save_data(inference_data=inference_data)
 summary(inference_data)
 # + tags=["exe", "hide-cell"]
 plot_inference_trace(tic_entry)

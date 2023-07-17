@@ -3,6 +3,13 @@ import shutil
 import tarfile
 from typing import Optional
 
+# CONSTANT FILENAMES
+SAMPLES_FNAME = "samples.csv"
+INFERENCE_DATA_FNAME = "inference_data.netcdf"
+TOI_DIR = "toi_{toi}_files"
+TIC_CSV = "tic_data.csv"
+PROFILING_CSV = "profiling.csv"
+
 
 def mkdir(base, name=None):
     if name:
@@ -31,3 +38,28 @@ def copy_tree(src, dst, verbose: Optional[bool] = True):
 def make_tarfile(output_filename: str, source_dir: str):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
+
+
+def read_last_n_lines(file_path, n):
+    with open(file_path, "rb") as file:
+        file.seek(0, 2)  # Move the file pointer to the end of the file
+        file_size = file.tell()  # Get the current position (file size)
+
+        lines = []
+        line_count = 0
+        for i in range(file_size - 1, 0, -1):
+            file.seek(i)
+            char = file.read(1)
+            if char == b"\n":
+                lines.append(file.readline().decode().strip())
+                line_count += 1
+                if line_count == n:
+                    break
+        lines.reverse()  # Reverse the lines to get them in the correct order
+        return "\n".join(lines)
+
+
+def get_filesize(path):
+    """Get the size of a file in Mb"""
+    bytes = os.path.getsize(path)
+    return bytes / 1e6

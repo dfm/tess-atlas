@@ -1,7 +1,5 @@
 """This module contains the code for generating the TOI notebooks from the template notebook.
-
 It replaces some bits of code specific to the TOI notebooks, such as the TOI number.
-
 """
 from __future__ import annotations
 
@@ -10,43 +8,41 @@ import re
 import time
 from typing import Optional, Tuple
 
-from ...data.analysis_summary.toi_notebook_metadata import ToiNotebookMetadata
-from ...data.tic_entry import TICEntry
-from ...tess_atlas_version import __version__
-from ...utils import grep_toi_number
-from ..paths import TOI_TEMPLATE_FNAME, TRANSIT_MODEL
-from .notebook_controller import NotebookController
-
-__all__ = ["TOINotebookController"]
+from ....data import TICEntry
+from ....file_management import PROFILING_CSV, TOI_DIR
+from ....tess_atlas_version import __version__
+from ....utils import grep_toi_number
+from ...paths import TOI_TEMPLATE_FNAME, TRANSIT_MODEL
+from ..notebook_controller import NotebookController
 
 
-class TOINotebookController(NotebookController):
+class TOINotebookCore(NotebookController):
+    """Core functionality for a TOI notebook generation/execution."""
+
     template = TOI_TEMPLATE_FNAME
 
     def __init__(self, notebook_filename: str):
         super().__init__(notebook_filename)
-        self.toi_number = grep_toi_number(os.path.basename(notebook_filename))
+        self.toi_number: int = grep_toi_number(
+            os.path.basename(notebook_filename)
+        )
         if self.toi_number is None:
             raise ValueError(
                 f"TOI number not found in notebook filename: {notebook_filename}"
             )
-        self.toi_dir = f"{self.notebook_dir}/toi_{self.toi_number}_files"
-        assert self.toi_number is not None
+        self.toi_dir = (
+            f"{self.notebook_dir}/{TOI_DIR.format(toi=self.toi_number)}"
+        )
 
     def execute(self, **kwargs) -> bool:
-        kwargs["profiling_path"] = f"{self.toi_dir}/profiling.csv"
+        kwargs["profiling_path"] = f"{self.toi_dir}/{PROFILING_CSV}"
         status = super().execute(**kwargs)
-        ToiNotebookMetadata(self.notebook_path).save()
         return status
 
     @classmethod
     def from_toi_number(cls, toi_number: int, notebook_dir: str = "notebooks"):
         """Generate a TOI notebook from a template notebook and save it the notebook_dir."""
-        return cls(
-            notebook_filename=os.path.join(
-                notebook_dir, f"toi_{toi_number}.ipynb"
-            )
-        )
+        return cls(os.path.join(notebook_dir, f"toi_{toi_number}.ipynb"))
 
     def generate(self, *args, **kwargs):
         """
@@ -70,16 +66,11 @@ class TOINotebookController(NotebookController):
         txt = txt.replace(
             "{{{TRANSIT_MODEL_CODE}}}", self.get_file_contents(TRANSIT_MODEL)
         )
-        # hacks to make the notebook run faster
         txt = _quickrun_replacements(txt) if quickrun else txt
         return txt
 
     def __download_data(self):
-        """Downloads the data needed for the TOI notebook and caches it.
-        Meant to be done as a preprocessing step before running the notebook.
-
-        REQUIRES INTERNET CONNECTION
-        """
+        """Downloads data needed for the TOI notebook."""
         curr_dir = os.getcwd()
         os.chdir(self.notebook_dir)
         tic_data = TICEntry.load(self.toi_number)
@@ -137,7 +128,9 @@ def _record_run_stats(
     run_duration: float,
     outdir: str,
 ):
-    """Creates/Appends to a CSV the runtime and status of the TOI analysis."""
+    """Creates/Appends to a CSV the runtime and status of the TOI analysis.
+    #TODO: ask ozstar admin if this is ok to do (multiple parallel jobs writing to same file)
+    """
     fname = os.path.join(outdir, "run_stats.csv")
     if not os.path.isfile(fname):
         open(fname, "w").write("toi,execution_complete,duration_in_s\n")
@@ -146,7 +139,7 @@ def _record_run_stats(
     )
 
 
-def _quickrun_replacements(txt):
+def _quickrun_replacements(txt) -> str:
     """Hacks to make the notebook run faster for testing purposes."""
     txt = txt.replace("TESS Atlas fit", "TESS Atlas fit (quickrun)")
     txt = re.sub(r"tune=[0-9]+", f"tune={5}", txt)

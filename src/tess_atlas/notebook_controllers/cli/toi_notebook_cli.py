@@ -17,15 +17,15 @@ def cli_run_toi():
     logger.info(
         f"run_toi({args.toi_number}) {'quick' if args.quickrun else ''} {'setup' if args.setup else ''}"
     )
-    nb_controller = TOINotebookController.from_toi_number(
-        args.toi_number, args.outdir
+    success, runtime = TOINotebookController.run_toi(
+        toi_number=args.toi_number,
+        outdir=args.outdir,
+        setup=args.setup,
+        quickrun=args.quickrun,
     )
-    nb_controller.generate(setup=args.setup, quickrun=args.quickrun)
-    success = nb_controller.execute()
-    run_duration = nb_controller.execution_time
     job_str = "setup" if args.setup else "execution"
     logger.info(
-        f"TOI {args.toi_number} {job_str} complete: {success} ({run_duration:.2f}s)"
+        f"TOI {args.toi_number} {job_str} complete: {success} ({runtime:.2f}s)"
     )
 
 

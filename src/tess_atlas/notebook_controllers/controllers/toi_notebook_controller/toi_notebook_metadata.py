@@ -1,98 +1,97 @@
 """Module to parse the metadata from the TOI notebooks"""
 import json
 import os
+from typing import Dict, Union
 
 import numpy as np
 import pandas as pd
-from strenum import StrEnum
 
-from tess_atlas.data.exofop.constants import (
-    MULTIPLANET,
-    NORMAL,
-    SINGLE_TRANSIT,
-)
-
-from ... import __website__
-from ...file_management import (
+from .... import __website__
+from ....data.exofop import EXOFOP_DATA
+from ....data.exofop.constants import MULTIPLANET, NORMAL, SINGLE_TRANSIT
+from ....data.planet_candidate import CLASS_SHORTHAND
+from ....file_management import (
     INFERENCE_DATA_FNAME,
+    LC_DATA_FNAME,
     PROFILING_CSV,
     TIC_CSV,
     TOI_DIR,
     read_last_n_lines,
 )
-from ...logger import LOG_FNAME
-from ...plotting.labels import THUMBNAIL_PLOT
-from ...utils import grep_toi_number
-from ..planet_candidate import CLASS_SHORTHAND
+from ....logger import LOG_FNAME
+from ....plotting.labels import THUMBNAIL_PLOT
+from ....utils import grep_toi_number
+from .analysis_status import Status
 
 URL_BASE = f"{__website__}/content/toi_notebooks"
 NOTEBOOK_URL = URL_BASE + "/toi_{}.html"
 THUMBNAIL_URL = URL_BASE + "/toi_{}_files/thumbnail.png"
 
-
-class Status(StrEnum):
-    PASS = "completed"
-    FAIL = "failed"
-    NOT_STARTED = "not started"
-
-
 METADATA_FNAME = "summary.txt"
 
 
-class ToiNotebookMetadata(object):
+class TOINotebookMetadata(object):
     """Metadata about a TOI notebook
     - if the notebook exists
     - if the analysis has started
     - if the analysis has completed
     - if the analysis has failed
-    - if the inference object has been saved
-    - the runtime of the analysis
-
-    #TODO: merge with the toi_notebook_controller class? or a mixin?
+    - the runtime/memory of the analysis
     """
 
-    def __init__(self, path: str):
-        self.path = path
-        self.toi: int = grep_toi_number(path)
+    def __init__(self, notebook_path: str):
+        self.notebook_path = notebook_path
+        self.toi: int = grep_toi_number(notebook_path)
         # filepaths (some of these may not exist)
         self.toi_dir = os.path.join(
-            os.path.dirname(path), TOI_DIR.format(toi=self.toi)
+            os.path.dirname(notebook_path), TOI_DIR.format(toi=self.toi)
         )
         self.tic_data_fname = os.path.join(self.toi_dir, TIC_CSV)
-        self.inference_object_fname = os.path.join(
+        self.lc_data_fname = os.path.join(self.toi_dir, LC_DATA_FNAME)
+        self.inference_data_fname = os.path.join(
             self.toi_dir, INFERENCE_DATA_FNAME
         )
         self.thumbnail_fname = os.path.join(self.toi_dir, THUMBNAIL_PLOT)
         self.profiling_fname = os.path.join(self.toi_dir, PROFILING_CSV)
         self.log_fname = os.path.join(self.toi_dir, LOG_FNAME)
-        self.save_fn = os.path.join(self.toi_dir, METADATA_FNAME)
+        self.meta_fn = os.path.join(self.toi_dir, METADATA_FNAME)
 
     @property
     def tic_data(self) -> pd.DataFrame:
         if not hasattr(self, "__tic_data"):
-            self.__tic_data = pd.DataFrame()
             if os.path.exists(self.tic_data_fname):
                 self.__tic_data = pd.read_csv(self.tic_data_fname)
+            else:
+                self.__tic_data = EXOFOP_DATA.get_tic_data([self.toi])
         return self.__tic_data
 
     @property
-    def notebook_exists(self) -> bool:
-        return os.path.exists(self.path)
-
-    @property
-    def inference_object_saved(self) -> bool:
-        return os.path.exists(self.inference_object_fname)
-
-    @property
     def analysis_started(self) -> bool:
-        return self.notebook_exists
+        required_files_present = all(
+            [
+                os.path.exists(f)
+                for f in [
+                    self.notebook_path,
+                    self.tic_data_fname,
+                    self.lc_data_fname,
+                    self.log_fname,
+                ]
+            ]
+        )
+        return required_files_present
 
     @property
     def analysis_completed(self) -> bool:
-        return (
-            os.path.exists(self.thumbnail_fname)
-            and self.inference_object_saved
+        required_files_present = all(
+            [
+                os.path.exists(f)
+                for f in [
+                    self.inference_data_fname,
+                    self.thumbnail_fname,
+                ]
+            ]
         )
+        return required_files_present
 
     @property
     def analysis_failed(self) -> bool:
@@ -101,13 +100,11 @@ class ToiNotebookMetadata(object):
 
     @property
     def analysis_status(self) -> Status:
-        """The status of the analysis: NOT_STARTED, PASS, FAIL"""
         if not self.analysis_started:
             return Status.NOT_STARTED
         elif self.analysis_completed:
             return Status.PASS
-        else:
-            return Status.FAIL
+        return Status.FAIL
 
     @property
     def has_multiple_planets(self) -> bool:
@@ -116,30 +113,27 @@ class ToiNotebookMetadata(object):
     @property
     def toi_category(self) -> str:
         """Get the category of a TOI
-        returns:
-            str: "Multi-planet", "Single Transit", "Normal"
+        returns: str: "Multi-planet", "Single Transit", "Normal"
         """
-
         cat = []
         if self.has_multiple_planets:
             cat.append(MULTIPLANET)
-
-        if len(self.tic_data[self.tic_data[SINGLE_TRANSIT]]) > 1:
+        if any(self.tic_data.get(SINGLE_TRANSIT, [])):
             cat.append(SINGLE_TRANSIT)
-
         if len(cat) == 0:
             cat.append(NORMAL)
-
         return ", ".join(cat)
 
     @property
     def classification(self) -> str:
         """Returns classification (eg confirmed-planet, eclipsing binary, etc)"""
-        cls_ids = self.tic_data["TESS Disposition"].values
+        cls_ids = self.tic_data.get("TESS Disposition", [])
         cls_ids = [CLASS_SHORTHAND.get(_id, _id) for _id in cls_ids]
+        if len(cls_ids) == 0:
+            return "Unknown"
         return ", ".join(cls_ids)
 
-    def load_profiling_data(self) -> pd.DataFrame:
+    def __load_profiling_data(self) -> pd.DataFrame:
         """Load the profiling data from the notebook (saved with ploomber)
         Returned dataframe has columns: ['cell', 'runtime', 'memory']
         """
@@ -150,7 +144,7 @@ class ToiNotebookMetadata(object):
     @property
     def profiling_data(self) -> pd.DataFrame:
         if not hasattr(self, "__profiling_data"):
-            self.__profiling_data = self.load_profiling_data()
+            self.__profiling_data = self.__load_profiling_data()
         return self.__profiling_data
 
     @property
@@ -183,44 +177,42 @@ class ToiNotebookMetadata(object):
         return NOTEBOOK_URL.format(self.toi)
 
     @property
-    def toi_html(self) -> str:
-        """HTML link to the notebook on catalog website"""
-        if self.notebook_exists:
+    def __toi_html(self) -> str:
+        if self.analysis_started:
             return f"<a href='{self.url}'>TOI {self.toi}</a>"
-        else:
-            return f"TOI {self.toi}"
+        return f"TOI {self.toi}"
 
     @property
-    def thumbnail_html(self) -> str:
-        """HTML code to embedthe thumbnail on catalog website"""
+    def __thumbnail_html(self) -> str:
         if self.analysis_completed:
             url = THUMBNAIL_URL.format(self.toi)
             return f"<a href='{self.url}'> <img src='{url}' width='200' height='200'> </a>"
-        else:
-            return ""
+        return ""
 
-    def __repr__(self):
-        return f"<TOI{self.toi} Notebook>"
-
-    def __dict__(self):
+    @property
+    def meta_dict(self):
         return {
             "TOI": self.toi,
-            "TOI html": self.toi_html,
-            "Thumbnail": self.thumbnail_html,
+            "TOI html": self.__toi_html,
+            "Thumbnail": self.__thumbnail_html,
             "Status": self.analysis_status.value,
             "Category": self.toi_category,
             "Classification": self.classification,
             "Runtime [Hr]": self.runtime,
-            "Memory [Mb]": self.inference_object_saved,
+            "Memory [Mb]": self.memory,
             "Log lines": self.get_log_lines(),
         }
 
-    def save(self):
-        with open(self.save_fn, "w") as file:
-            json.dump(self.__dict__(), file, indent=2)
+    def save_metadata(self):
+        with open(self.meta_fn, "w") as file:
+            json.dump(self.meta_dict, file, indent=2)
 
-    def get_meta_data(self):
-        if os.path.exists(self.save_fn):
-            with open(self.save_fn, "r") as file:
+    def get_meta_data(self) -> Dict[str, Union[str, bool, int, float]]:
+        """Returns a dict with metadata about the analysis. Keys are:
+        ['TOI', 'TOI html', 'Thumbnail', 'Status', 'Category',
+        'Classification', 'Runtime [Hr]', 'Memory [Mb]', 'Log lines']
+        """
+        if os.path.exists(self.meta_fn):
+            with open(self.meta_fn, "r") as file:
                 return json.load(file)
-        return self.__dict__()
+        return self.meta_dict

@@ -57,7 +57,7 @@ EXTRA_REQUIRE = {
         "sphinx_external_toc",
         "pympler",
         "psutil",
-        "git+https://github.com/ploomber/ploomber-engine.git@main",  # using feature from ploomber-engine 0.0.29 (unreleased)
+        "ploomber-engine>=0.0.30",
         "pretty-jupyter",
         "itables",
         "interruptingcow",

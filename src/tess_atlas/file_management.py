@@ -9,6 +9,7 @@ INFERENCE_DATA_FNAME = "inference_data.netcdf"
 TOI_DIR = "toi_{toi}_files"
 TIC_CSV = "tic_data.csv"
 PROFILING_CSV = "profiling.csv"
+LC_DATA_FNAME = "lightkurve_lc.fits"
 
 
 def mkdir(base, name=None):

@@ -6,14 +6,13 @@ import lightkurve as lk
 import numpy as np
 from lightkurve.lightcurve import TessLightCurve
 
+from ...file_management import LC_DATA_FNAME
 from ...logger import LOGGER_NAME
 from ..data_object import DataObject
 from ..data_utils import residual_rms
 from .lightcurve_search import LightcurveSearch
 
 logger = logging.getLogger(LOGGER_NAME)
-
-LC_DATA_FNAME = "lightkurve_lc.fits"
 
 
 class LightCurveData(DataObject):

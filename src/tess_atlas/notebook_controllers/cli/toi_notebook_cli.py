@@ -3,7 +3,7 @@ import os
 
 from ...file_management import TOI_DIR
 from ...logger import LOGGER_NAME, setup_logger
-from ..controllers import TOINotebookController
+from ..controllers.toi_notebook_controller import TOINotebookController
 
 __all__ = ["cli_run_toi"]
 

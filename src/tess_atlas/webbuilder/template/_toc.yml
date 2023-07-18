@@ -4,6 +4,6 @@ parts:
   - chapters:
     - file: content/example_loader
     - file: citation
-    - file: content/toi_fits
+    - file: content/toi_notebooks/menu
       sections:
         - glob: content/toi_notebooks/toi_*

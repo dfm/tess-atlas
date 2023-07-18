@@ -34,6 +34,7 @@ class NotebookController:
         self.execution_time = t1 - t0
         return self.execution_success
 
+
     def _get_templatized_text(self, **kwargs):
         """Returns the template text with the kwargs filled in."""
         raise NotImplementedError()

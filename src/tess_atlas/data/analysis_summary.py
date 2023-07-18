@@ -10,6 +10,8 @@ from ..notebook_controllers.controllers.toi_notebook_controller import (
     Status,
     TOINotebookController,
 )
+from ..notebook_controllers.controllers.toi_notebook_controller.toi_notebook_metadata import META_DATA_KEYS
+
 from .exofop import EXOFOP_DATA
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -18,10 +20,7 @@ logger.setLevel(logging.DEBUG)
 
 
 class AnalysisSummary:
-    """Summary of the analysis that has been run.
-
-    This can be used to generate the summary-table of the catalog.
-    """
+    """Summary of all analysis that have been run."""
 
     def __init__(self, summary_data: pd.DataFrame):
         self._data = summary_data
@@ -79,6 +78,13 @@ class AnalysisSummary:
         """
         return self._data.copy()
 
+    def generate_summary_table(self) -> pd.DataFrame:
+        df = self.dataframe
+        df = df.drop(columns=["TOI"])
+        # rename columns with 'html' in the name to be the name before 'html'
+        df = df.rename(columns=lambda x: x.split(" html")[0] if "html" in x else x)
+        return df
+
     def save_to_csv(self, csv_path: str):
         self._data.to_csv(csv_path, index=False)
         return csv_path
@@ -86,3 +92,4 @@ class AnalysisSummary:
 
 def _get_toi_metadict(fn: str) -> Dict[str, Union[str, bool, int, float]]:
     return TOINotebookController(fn).get_meta_data()
+

@@ -16,9 +16,8 @@ from ..logger import setup_logger
 from ..notebook_controllers.controllers.menu_notebook_controller import (
     run_menu_page,
 )
-from .pages import make_menu_page, make_stats_page
 
-logger = setup_logger("page builder")
+logger = setup_logger("page builder", clean=True)
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATES_DIR = f"{DIR}/template/"
@@ -69,9 +68,9 @@ class WebBuilder:
             shutil.rmtree(self.builddir)
 
         if os.path.exists(self.builddir):
-            log(f"Website being updated at {self.builddir}")
+            log(f"Website being updated at {self.builddir} using notebooks in {self.notebook_src}")
         else:
-            log(f"Website being built at {self.builddir}")
+            log(f"Website being built at {self.builddir} using notebooks in {self.notebook_src}")
             os.makedirs(self.builddir, exist_ok=True)
             copy_tree(TEMPLATES_DIR, self.builddir)
             src = os.path.abspath(self.notebook_src)
@@ -92,23 +91,6 @@ class WebBuilder:
         toi_regex = os.path.join(self.building_notebook_dir, "toi_*.ipynb")
         log(f"Building book with {len(glob(toi_regex))} TOI notebooks")
         run_menu_page(self.building_notebook_dir)
-
-        #
-        # try:
-        #     make_menu_page(
-        #         notebook_regex=toi_regex,
-        #         path_to_menu_page=os.path.join(self.builddir, MENU_PAGE),
-        #     )
-        # except Exception as e:
-        #     logger.error(f"Failed to make menu page: {e}")
-
-        try:
-            make_stats_page(
-                notebook_root=toi_regex,
-                path_to_stats_page=os.path.join(self.builddir, STATS_PAGE),
-            )
-        except Exception as e:
-            logger.error(f"Failed to make stats page: {e}")
 
         # build book
         self.sphinx_build_pages()

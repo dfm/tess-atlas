@@ -29,6 +29,21 @@ THUMBNAIL_URL = URL_BASE + "/toi_{}_files/thumbnail.png"
 
 METADATA_FNAME = "summary.txt"
 
+LINK_HTML = "<a href='{l}'> {txt}</a>"
+IMG_HTML = "<img src='{l}' width='100px' height='100px'>"
+
+META_DATA_KEYS = [
+    "TOI",
+    "TOI html",
+    "Thumbnail html",
+    "Status",
+    "Category",
+    "Classification",
+    "Runtime [Hr]",
+    "Memory [Mb]",
+    "Log lines",
+]
+
 
 class TOINotebookMetadata(object):
     """Metadata about a TOI notebook
@@ -71,11 +86,11 @@ class TOINotebookMetadata(object):
             [
                 os.path.exists(f)
                 for f in [
-                    self.notebook_path,
-                    self.tic_data_fname,
-                    self.lc_data_fname,
-                    self.log_fname,
-                ]
+                self.notebook_path,
+                self.tic_data_fname,
+                self.lc_data_fname,
+                self.log_fname,
+            ]
             ]
         )
         return required_files_present
@@ -86,9 +101,9 @@ class TOINotebookMetadata(object):
             [
                 os.path.exists(f)
                 for f in [
-                    self.inference_data_fname,
-                    self.thumbnail_fname,
-                ]
+                self.inference_data_fname,
+                self.thumbnail_fname,
+            ]
             ]
         )
         return required_files_present
@@ -169,7 +184,7 @@ class TOINotebookMetadata(object):
     def get_log_lines(self, n=5) -> str:
         if os.path.exists(self.log_fname):
             return read_last_n_lines(self.log_fname, n)
-        return "LOGS NOT FOUND"
+        return " "
 
     @property
     def url(self) -> str:
@@ -179,22 +194,24 @@ class TOINotebookMetadata(object):
     @property
     def __toi_html(self) -> str:
         if self.analysis_started:
-            return f"<a href='{self.url}'>TOI {self.toi}</a>"
+            return LINK_HTML.format(l=self.url, txt=f"TOI {self.toi}")
         return f"TOI {self.toi}"
 
     @property
     def __thumbnail_html(self) -> str:
         if self.analysis_completed:
             url = THUMBNAIL_URL.format(self.toi)
-            return f"<a href='{self.url}'> <img src='{url}' width='200' height='200'> </a>"
+            img = IMG_HTML.format(l=url)
+            html = LINK_HTML.format(l=self.url, txt=img)
+            return html
         return ""
 
     @property
     def meta_dict(self):
-        return {
+        meta_dict = {
             "TOI": self.toi,
             "TOI html": self.__toi_html,
-            "Thumbnail": self.__thumbnail_html,
+            "Thumbnail html": self.__thumbnail_html,
             "Status": self.analysis_status.value,
             "Category": self.toi_category,
             "Classification": self.classification,
@@ -202,16 +219,16 @@ class TOINotebookMetadata(object):
             "Memory [Mb]": self.memory,
             "Log lines": self.get_log_lines(),
         }
+        if len(set(meta_dict.keys()) - set(META_DATA_KEYS)) > 0:
+            raise ValueError(f"Invalid metadata keys: {meta_dict.keys()}, expected: {META_DATA_KEYS}")
+        return meta_dict
 
     def save_metadata(self):
         with open(self.meta_fn, "w") as file:
             json.dump(self.meta_dict, file, indent=2)
 
     def get_meta_data(self) -> Dict[str, Union[str, bool, int, float]]:
-        """Returns a dict with metadata about the analysis. Keys are:
-        ['TOI', 'TOI html', 'Thumbnail', 'Status', 'Category',
-        'Classification', 'Runtime [Hr]', 'Memory [Mb]', 'Log lines']
-        """
+        """Returns a dict with metadata about the analysis."""
         if os.path.exists(self.meta_fn):
             with open(self.meta_fn, "r") as file:
                 return json.load(file)

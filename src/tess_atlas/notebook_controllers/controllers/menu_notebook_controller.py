@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import logging
 import os
 
 from ...data import AnalysisSummary
@@ -10,15 +13,17 @@ class MenuPageController(NotebookController):
 
     def _get_templatized_text(self, **kwargs):
         summary_path = kwargs["summary_path"]
-        summary = AnalysisSummary.from_dir(summary_path)
-
+        summary = AnalysisSummary.load_from_csv(summary_path)
         txt = self._get_template_txt()
-        # why am i not using jinja2?
         txt = txt.replace("{{{SUMMARY_PATH}}}", f"{summary_path}")
         txt = txt.replace("{{{N_FAIL}}}", f"{summary.n_failed_analyses}")
         txt = txt.replace("{{{N_PASS}}}", f"{summary.n_successful_analyses}")
         txt = txt.replace("{{{N_TOTAL}}}", f"{summary.n_total}")
         return txt
+
+    def execute(self, **kwargs) -> bool:
+        kwargs["save_profiling_data"] = kwargs.get("save_profiling_data", False)
+        return super().execute(**kwargs)
 
 
 def run_menu_page(notebook_dir):
@@ -30,3 +35,4 @@ def run_menu_page(notebook_dir):
     processor = MenuPageController(menu_notebook_fn)
     processor.generate(summary_path=summary_path)
     processor.execute()
+    logging.info(f"Menu page generated [{processor.execution_success}]: {processor.notebook_path}")

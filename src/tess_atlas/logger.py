@@ -42,12 +42,14 @@ def setup_logger(
     logger_name: str,
     outdir: Union[Optional[str], Path] = "",
     level=logging.INFO,
+    clean=False,
 ):
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
 
     if logger.hasHandlers():
-        return logger  # already set up
+        if not clean:
+            return logger  # already set up
 
     # add custom formatter to root logger
     handler = logging.StreamHandler()
@@ -89,10 +91,6 @@ def all_logging_disabled(highest_level=logging.CRITICAL):
       This would only need to be changed if a custom level greater than CRITICAL
       is defined.
     """
-    # two kind-of hacks here:
-    #    * can't get the highest logging level in effect => delegate to the user
-    #    * can't get the current module-level override => use an undocumented
-    #       (but non-private!) interface
 
     previous_level = logging.root.manager.disable
 

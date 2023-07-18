@@ -5,8 +5,10 @@ from pathlib import Path
 import pytest
 
 from tess_atlas.file_management import INFERENCE_DATA_FNAME
+from tess_atlas.notebook_controllers.controllers.toi_notebook_controller import (
+    TOINotebookController,
+)
 from tess_atlas.plotting.labels import THUMBNAIL_PLOT
-from tess_atlas.notebook_controllers.controllers.toi_notebook_controller import TOINotebookController
 
 TMP_OUTDIR = "./tmp/tess_atlas_test_notebooks"
 

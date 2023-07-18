@@ -86,11 +86,11 @@ class TOINotebookMetadata(object):
             [
                 os.path.exists(f)
                 for f in [
-                self.notebook_path,
-                self.tic_data_fname,
-                self.lc_data_fname,
-                self.log_fname,
-            ]
+                    self.notebook_path,
+                    self.tic_data_fname,
+                    self.lc_data_fname,
+                    self.log_fname,
+                ]
             ]
         )
         return required_files_present
@@ -101,9 +101,9 @@ class TOINotebookMetadata(object):
             [
                 os.path.exists(f)
                 for f in [
-                self.inference_data_fname,
-                self.thumbnail_fname,
-            ]
+                    self.inference_data_fname,
+                    self.thumbnail_fname,
+                ]
             ]
         )
         return required_files_present
@@ -220,7 +220,9 @@ class TOINotebookMetadata(object):
             "Log lines": self.get_log_lines(),
         }
         if len(set(meta_dict.keys()) - set(META_DATA_KEYS)) > 0:
-            raise ValueError(f"Invalid metadata keys: {meta_dict.keys()}, expected: {META_DATA_KEYS}")
+            raise ValueError(
+                f"Invalid metadata keys: {meta_dict.keys()}, expected: {META_DATA_KEYS}"
+            )
         return meta_dict
 
     def save_metadata(self):

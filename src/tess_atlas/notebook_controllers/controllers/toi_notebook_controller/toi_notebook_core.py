@@ -35,7 +35,9 @@ class TOINotebookCore(NotebookController):
         )
 
     def execute(self, **kwargs) -> bool:
-        kwargs["save_profiling_data"] = kwargs.get("save_profiling_data", f"{self.toi_dir}/{PROFILING_CSV}")
+        kwargs["save_profiling_data"] = kwargs.get(
+            "save_profiling_data", f"{self.toi_dir}/{PROFILING_CSV}"
+        )
         return super().execute(**kwargs)
 
     @classmethod

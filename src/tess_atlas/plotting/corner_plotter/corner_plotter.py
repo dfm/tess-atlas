@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from ...data.inference_data_tools import get_samples_dataframe
 from ...data.tic_entry import TICEntry
 from ...logger import LOGGER_NAME
-from ...data.inference_data_tools import get_samples_dataframe
 from ..labels import ECCENTRICITY_PLOT, LATEX, POSTERIOR_PLOT, PRIOR_PLOT
 from ..plotting_utils import (
     exception_catcher,

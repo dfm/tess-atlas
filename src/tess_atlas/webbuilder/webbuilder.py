@@ -68,9 +68,13 @@ class WebBuilder:
             shutil.rmtree(self.builddir)
 
         if os.path.exists(self.builddir):
-            log(f"Website being updated at {self.builddir} using notebooks in {self.notebook_src}")
+            log(
+                f"Website being updated at {self.builddir} using notebooks in {self.notebook_src}"
+            )
         else:
-            log(f"Website being built at {self.builddir} using notebooks in {self.notebook_src}")
+            log(
+                f"Website being built at {self.builddir} using notebooks in {self.notebook_src}"
+            )
             os.makedirs(self.builddir, exist_ok=True)
             copy_tree(TEMPLATES_DIR, self.builddir)
             src = os.path.abspath(self.notebook_src)

@@ -10,8 +10,9 @@ from ..notebook_controllers.controllers.toi_notebook_controller import (
     Status,
     TOINotebookController,
 )
-from ..notebook_controllers.controllers.toi_notebook_controller.toi_notebook_metadata import META_DATA_KEYS
-
+from ..notebook_controllers.controllers.toi_notebook_controller.toi_notebook_metadata import (
+    META_DATA_KEYS,
+)
 from .exofop import EXOFOP_DATA
 
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -82,7 +83,9 @@ class AnalysisSummary:
         df = self.dataframe
         df = df.drop(columns=["TOI"])
         # rename columns with 'html' in the name to be the name before 'html'
-        df = df.rename(columns=lambda x: x.split(" html")[0] if "html" in x else x)
+        df = df.rename(
+            columns=lambda x: x.split(" html")[0] if "html" in x else x
+        )
         return df
 
     def save_to_csv(self, csv_path: str):
@@ -92,4 +95,3 @@ class AnalysisSummary:
 
 def _get_toi_metadict(fn: str) -> Dict[str, Union[str, bool, int, float]]:
     return TOINotebookController(fn).get_meta_data()
-

@@ -22,7 +22,9 @@ class MenuPageController(NotebookController):
         return txt
 
     def execute(self, **kwargs) -> bool:
-        kwargs["save_profiling_data"] = kwargs.get("save_profiling_data", False)
+        kwargs["save_profiling_data"] = kwargs.get(
+            "save_profiling_data", False
+        )
         return super().execute(**kwargs)
 
 
@@ -35,4 +37,6 @@ def run_menu_page(notebook_dir):
     processor = MenuPageController(menu_notebook_fn)
     processor.generate(summary_path=summary_path)
     processor.execute()
-    logging.info(f"Menu page generated [{processor.execution_success}]: {processor.notebook_path}")
+    logging.info(
+        f"Menu page generated [{processor.execution_success}]: {processor.notebook_path}"
+    )

@@ -14,6 +14,8 @@
 #     name: python3
 # ---
 
+import itables.options as opt
+
 # + [markdown] tags=["def"]
 # # TOI Fits
 #
@@ -25,9 +27,7 @@
 # Each TOI’s analysis has its own page. Access them from the table below.
 #
 # + tags=[ "remove-input", "full-width"]
-from itables import init_notebook_mode, show, JavascriptFunction
-import itables.options as opt
-
+from itables import JavascriptFunction, init_notebook_mode, show
 
 opt.drawCallback = JavascriptFunction(
     "function(settings) " '{MathJax.Hub.Queue(["Typeset",MathJax.Hub]);}'
@@ -35,7 +35,9 @@ opt.drawCallback = JavascriptFunction(
 from tess_atlas.data.analysis_summary import AnalysisSummary
 
 init_notebook_mode(all_interactive=True)
-summary_df = AnalysisSummary.load_from_csv("{{{SUMMARY_PATH}}}").generate_summary_table()
+summary_df = AnalysisSummary.load_from_csv(
+    "{{{SUMMARY_PATH}}}"
+).generate_summary_table()
 show(
     summary_df,
     caption="TESS Atlas Catalog Summary",
@@ -43,6 +45,6 @@ show(
     scrollX=True,
     autoWidth=True,
     lengthMenu=[5, 10, 20, 50],
-    classes='cell-border nowrap display compact',
+    classes="cell-border nowrap display compact",
     maxBytes=0,
 )

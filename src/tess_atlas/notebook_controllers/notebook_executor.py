@@ -14,8 +14,11 @@ DAY_IN_SEC = 60 * 60 * 24
 
 
 def execute_ipynb(
-    notebook_filename: str, save_html=True, timeout=DAY_IN_SEC,
-    save_profiling_data=True, **kwargs
+    notebook_filename: str,
+    save_html=True,
+    timeout=DAY_IN_SEC,
+    save_profiling_data=True,
+    **kwargs,
 ):
     """Executes a notebook and saves its executed version.
 

@@ -3,7 +3,7 @@ make_webpages --notebooks <notebookdir> --webdir <webdir>
 """
 import argparse
 
-from .page_builder import make_book
+from .webbuilder import build_website
 
 
 def get_cli_args():
@@ -34,7 +34,7 @@ def get_cli_args():
 
 
 def main():
-    make_book(**get_cli_args())
+    build_website(**get_cli_args())
 
 
 if __name__ == "__main__":

@@ -3,8 +3,9 @@ import logging
 import subprocess
 
 from .. import __website__
+from ..logger import LOGGER_NAME
 
-logger = logging.getLogger("TESS-Atlas")
+logger = logging.getLogger(LOGGER_NAME)
 
 COMMAND = "wget -np -r {url}"
 ROOT = f"{__website__}/_sources/content/toi_notebooks"

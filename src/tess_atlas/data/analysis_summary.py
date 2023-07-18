@@ -10,9 +10,6 @@ from ..notebook_controllers.controllers.toi_notebook_controller import (
     Status,
     TOINotebookController,
 )
-from ..notebook_controllers.controllers.toi_notebook_controller.toi_notebook_metadata import (
-    META_DATA_KEYS,
-)
 from .exofop import EXOFOP_DATA
 
 warnings.filterwarnings("ignore", category=UserWarning)

@@ -3,9 +3,12 @@ from __future__ import annotations
 import logging
 import os
 
-from ...data import AnalysisSummary
+from ...data.analysis_summary import AnalysisSummary
+from ...logger import LOGGER_NAME
 from ..paths import MENU_PAGE_TEMPLATE_FNAME
 from .notebook_controller import NotebookController
+
+logger = logging.getLogger(LOGGER_NAME)
 
 
 class MenuPageController(NotebookController):
@@ -37,6 +40,6 @@ def run_menu_page(notebook_dir):
     processor = MenuPageController(menu_notebook_fn)
     processor.generate(summary_path=summary_path)
     processor.execute()
-    logging.info(
+    logger.info(
         f"Menu page generated [{processor.execution_success}]: {processor.notebook_path}"
     )

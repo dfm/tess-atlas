@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from tess_atlas.data.exofop import EXOFOP_DATA
 from tess_atlas.file_management import INFERENCE_DATA_FNAME
 from tess_atlas.notebook_controllers.controllers.toi_notebook_controller import (
     TOINotebookController,
@@ -58,3 +59,13 @@ def tmp_working_dir(tmp_path) -> str:
     os.chdir(str(tmp_path))
     yield str(Path(tmp_path).resolve())
     os.chdir(old)
+
+
+@pytest.fixture
+def mock_exofop_get_toi_list(monkeypatch):
+    """mock EXOFOP_DATA.get_toi_list(remove_toi_without_lk=True)"""
+
+    def mock_toi_list(*args, **kwargs):
+        return [i for i in range(101, 4000)]
+
+    monkeypatch.setattr(EXOFOP_DATA, "get_toi_list", mock_toi_list)

@@ -12,12 +12,12 @@ from glob import glob
 from typing import Optional
 
 from ..file_management import copy_tree, make_tarfile
-from ..logger import setup_logger
+from ..logger import LOGGER_NAME, setup_logger
 from ..notebook_controllers.controllers.menu_notebook_controller import (
     run_menu_page,
 )
 
-logger = setup_logger("page builder", clean=True)
+logger = setup_logger(LOGGER_NAME, clean=True)
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 TEMPLATES_DIR = f"{DIR}/template/"

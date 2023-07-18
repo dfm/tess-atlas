@@ -34,6 +34,9 @@ def execute_ipynb(
     if save_profiling_data is not False:
         profile_memory = True
         profile_runtime = True
+    else:
+        profile_memory = False
+        profile_runtime = False
     try:
         with interruptingcow.timeout(timeout, exception=TimeoutError):
             run_path = os.path.dirname(notebook_filename)

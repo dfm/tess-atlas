@@ -148,8 +148,10 @@ class ExofopDatabase:
 
     def get_tic_id_for_toi(self, toi_number: int) -> int:
         """Get the TIC ID for a given TOI number"""
-        toi = self._db[self._db[TOI] == toi_number + 0.01].iloc[0]
-        return int(toi[TIC_ID])
+        toi_data = self._db[self._db[TOI] == toi_number + 0.01]
+        if len(toi_data) == 0:
+            raise ValueError(f"TOI {toi_number} not found in database")
+        return int(toi_data.iloc[0][TIC_ID])
 
     def get_categorised_toi_lists(self) -> Categories:
         """Get the TOI numbers for different categories of TICs.

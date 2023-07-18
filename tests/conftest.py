@@ -6,9 +6,7 @@ import pytest
 
 from tess_atlas.data.exofop import EXOFOP_DATA
 from tess_atlas.file_management import INFERENCE_DATA_FNAME
-from tess_atlas.notebook_controllers.controllers.toi_notebook_controller import (
-    TOINotebookController,
-)
+from tess_atlas.notebook_controllers.controllers import TOINotebookController
 from tess_atlas.plotting.labels import THUMBNAIL_PLOT
 
 TMP_OUTDIR = "./tmp/tess_atlas_test_notebooks"

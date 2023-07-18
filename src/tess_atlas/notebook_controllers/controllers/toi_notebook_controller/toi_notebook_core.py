@@ -106,9 +106,7 @@ class TOINotebookCore(NotebookController):
             run_duration: float
                 Time of analysis (in seconds)
         """
-        toi_nb_processor = TOINotebookController.from_toi_number(
-            toi_number, outdir
-        )
+        toi_nb_processor = TOINotebookCore.from_toi_number(toi_number, outdir)
         if setup:
             t0 = time.time()
             toi_nb_processor.generate(quickrun=quickrun, setup=setup)

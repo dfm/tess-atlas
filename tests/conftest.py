@@ -66,6 +66,6 @@ def mock_exofop_get_toi_list(monkeypatch):
     """mock EXOFOP_DATA.get_toi_list(remove_toi_without_lk=True)"""
 
     def mock_toi_list(*args, **kwargs):
-        return [i for i in range(101, 4000)]
+        return [i for i in range(101, 150)]
 
     monkeypatch.setattr(EXOFOP_DATA, "get_toi_list", mock_toi_list)

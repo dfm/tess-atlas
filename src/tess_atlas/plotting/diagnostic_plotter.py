@@ -227,3 +227,6 @@ def plot_diagnostics(tic_entry, model, init_params):
         initial_params=init_params,
         thumbnail=True,
     )
+    # would be nice to plot the maximum posterior params on the phase plot
+    # would be nice to plot the corner with the initial params / maximum posterior params
+    # would be nice to plot the median posterior params + uncertainties on the EXOFOP Radius Ratio vs Period plot

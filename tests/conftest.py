@@ -2,10 +2,17 @@ import glob
 import os
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 
 from tess_atlas.data.exofop import EXOFOP_DATA
-from tess_atlas.file_management import INFERENCE_DATA_FNAME
+from tess_atlas.file_management import (
+    INFERENCE_DATA_FNAME,
+    LC_DATA_FNAME,
+    TIC_CSV,
+)
+from tess_atlas.logger import LOG_FNAME
 from tess_atlas.notebook_controllers.controllers import TOINotebookController
 from tess_atlas.plotting.labels import THUMBNAIL_PLOT
 
@@ -20,8 +27,18 @@ def get_fake_notebook_path(
     if additional_files:
         datafiles = f"{outdir}/toi_{toi_int}_files/"
         os.makedirs(datafiles, exist_ok=True)
-        open(f"{datafiles}/{INFERENCE_DATA_FNAME}", "w").write("test")
-        open(f"{datafiles}/{THUMBNAIL_PLOT}", "w").write("test")
+        for fn in [
+            INFERENCE_DATA_FNAME,
+            TIC_CSV,
+            LC_DATA_FNAME,
+            THUMBNAIL_PLOT,
+        ]:
+            open(f"{datafiles}/{fn}", "w").write("test")
+        fake_log = "\n".join(
+            " ".join(np.random.choice([*"abcdefgh "], size=100)).split()
+        )
+        open(f"{datafiles}/{LOG_FNAME}", "w").write(fake_log)
+
     return controller.notebook_path
 
 

@@ -35,22 +35,7 @@ def plot_phase(
         model, inference_data, initial_params, kwgs
     )
 
-    if kwgs.get("thumbnail", False):
-        kwgs.update(
-            data_bins=80,
-            default_fs=0,
-            period_fs=0,
-            legend_fs=0,
-            ms=2.5,
-            savekwgs=dict(
-                transparent=True, dpi=80, bbox_inches="tight", pad_inches=0
-            ),
-            annotate_with_period=False,
-            figsize=(2.0, 1.5),
-            legend=0,
-        )
     figsize = kwgs.get("figsize", (7, 5))
-
     for i in range(tic_entry.planet_count):
         fig = plt.figure(figsize=figsize)
         add_phase_data_to_ax(fig.gca(), i, tic_entry, **kwgs)

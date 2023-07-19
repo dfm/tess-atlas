@@ -4,6 +4,7 @@ import logging
 import os
 
 from ...data.analysis_summary import AnalysisSummary
+from ...data.exofop import EXOFOP_DATA
 from ...logger import LOGGER_NAME
 from ..paths import MENU_PAGE_TEMPLATE_FNAME
 from .notebook_controller import NotebookController
@@ -17,11 +18,17 @@ class MenuPageController(NotebookController):
     def _get_templatized_text(self, **kwargs):
         summary_path = kwargs["summary_path"]
         summary = AnalysisSummary.load_from_csv(summary_path)
+        n_exofop_toi = len(
+            EXOFOP_DATA.get_toi_list(remove_toi_without_lk=False)
+        )
+        n_tess_toi = len(EXOFOP_DATA.get_toi_list(remove_toi_without_lk=True))
         txt = self._get_template_txt()
         txt = txt.replace("{{{SUMMARY_PATH}}}", f"{summary_path}")
-        txt = txt.replace("{{{N_FAIL}}}", f"{summary.n_failed_analyses}")
-        txt = txt.replace("{{{N_PASS}}}", f"{summary.n_successful_analyses}")
-        txt = txt.replace("{{{N_TOTAL}}}", f"{summary.n_total}")
+        txt = txt.replace("{{{N_FAIL}}}", f"{summary.n_failed_analyses:,}")
+        txt = txt.replace("{{{N_PASS}}}", f"{summary.n_successful_analyses:,}")
+        txt = txt.replace("{{{N_TESS_ATLAS}}}", f"{n_tess_toi:,}")
+        txt = txt.replace("{{{N_EXOFOP}}}", f"{n_exofop_toi:,}")
+        txt = txt.replace("{{{N_NOT_STARTED}}}", f"{summary.n_not_analysed:,}")
         return txt
 
     def execute(self, **kwargs) -> bool:

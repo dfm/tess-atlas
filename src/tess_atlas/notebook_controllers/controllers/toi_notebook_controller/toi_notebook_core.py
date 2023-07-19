@@ -113,7 +113,7 @@ class TOINotebookCore(NotebookController):
             execution_successful = toi_nb_processor.notebook_exists
             runtime = time.time() - t0
         else:
-            execution_successful = toi_nb_processor.execute()
+            execution_successful = toi_nb_processor.execute(quickrun=quickrun)
             runtime = toi_nb_processor.execution_time
             _record_run_stats(
                 toi_number, execution_successful, runtime, outdir

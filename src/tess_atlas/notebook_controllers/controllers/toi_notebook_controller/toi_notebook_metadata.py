@@ -9,7 +9,7 @@ import pandas as pd
 from .... import __website__
 from ....data.exofop import EXOFOP_DATA
 from ....data.exofop.constants import MULTIPLANET, NORMAL, SINGLE_TRANSIT
-from ....data.planet_candidate import CLASS_SHORTHAND
+from ....data.planet_candidate import CLASSIFICATION_SHORTHAND
 from ....file_management import (
     INFERENCE_DATA_FNAME,
     LC_DATA_FNAME,
@@ -142,10 +142,9 @@ class TOINotebookMetadata(object):
     @property
     def classification(self) -> str:
         """Returns classification (eg confirmed-planet, eclipsing binary, etc)"""
-        cls_ids = self.tic_data.get("TESS Disposition", [])
-        cls_ids = [CLASS_SHORTHAND.get(_id, _id) for _id in cls_ids]
+        cls_ids = self.tic_data.get("TFOPWG Disposition", [])
         if len(cls_ids) == 0:
-            return "Unknown"
+            return "U"
         return ", ".join(cls_ids)
 
     def __load_profiling_data(self) -> pd.DataFrame:

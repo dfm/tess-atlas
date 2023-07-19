@@ -1,5 +1,6 @@
 import logging
 import os
+import traceback
 
 import interruptingcow
 import nbformat
@@ -52,9 +53,9 @@ def execute_ipynb(
             )
             success = True
     except Exception as e:
+        err_str = traceback.format_exc()
         runner_logger.error(
-            f"Preprocessing {notebook_filename} failed:\n\n {e}."
-            f"Use dltr {notebook_filename.replace('.ipynb', '.dump')} to debug."
+            f"Preprocessing {notebook_filename} failed:\n{err_str}"
         )
 
     if save_html:

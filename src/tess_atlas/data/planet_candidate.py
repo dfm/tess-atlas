@@ -7,13 +7,16 @@ from .lightcurve_data import LightCurveData
 
 BJD = 2457000
 
-CLASS_SHORTHAND = dict(
+CLASSIFICATION_SHORTHAND = dict(
+    PC="Planet Candidate",
+    APC="Ambiguous Planet Candidate",
     CP="Confirmed Planet",
+    KP="Known Planet",
+    FP="False Positive",
+    FA="False Alarm",
     EB="Eclipsing Binary",
     IS="Instrument Noise",
-    KP="Known Planet",
     O="O",
-    PC="Planet Candidate",
     V="Stellar Variability",
     U="Undecided",
 )
@@ -85,7 +88,7 @@ class PlanetCandidate(DataObject):
 
     @classification.setter
     def classification(self, classification):
-        self.__classification = CLASS_SHORTHAND.get(
+        self.__classification = CLASSIFICATION_SHORTHAND.get(
             classification, classification
         )
 
@@ -178,7 +181,7 @@ class PlanetCandidate(DataObject):
             duration=toi_data["Duration (hours)"] / 24.0,  # convert to days,
             lightcurve=lightcurve,
             snr=toi_data["Planet SNR"],
-            classification=toi_data["TESS Disposition"],
+            classification=toi_data["TFOPWG Disposition"],
             comment=toi_data["Comments"],
             pipeline=toi_data["Source"],
         )

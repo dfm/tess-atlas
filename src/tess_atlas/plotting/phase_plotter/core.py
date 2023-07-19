@@ -9,7 +9,7 @@ from scipy.interpolate import interp1d
 
 from ...data.inference_data_tools import get_samples_dataframe
 from ...logger import LOGGER_NAME
-from ..extra_plotting.ci import plot_ci, plot_xy_binned
+from ..extra_plotting.ci import plot_xy_binned
 from ..labels import (
     FLUX_LABEL,
     PHASE_PLOT,
@@ -123,16 +123,16 @@ def add_phase_data_to_ax(
     initial_params: Optional[Dict] = None,
     data_bins: Optional[int] = 200,
     plot_error_bars: Optional[bool] = False,
-    plot_data_ci: Optional[bool] = False,
     plot_all_datapoints: Optional[bool] = False,
     zoom_y_axis: Optional[bool] = False,
     plot_label: Optional[str] = "",
     num_lc: Optional[int] = 12,
-    thumbnail: Optional[bool] = False,
     default_fs: Optional[int] = 16,
     period_fs: Optional[int] = 12,
     legend_fs: Optional[int] = 10,
-    ms: Optional[int] = 6,
+    binned_data_kwgs: Optional[Dict] = dict(ms=6),
+    lc_alpha: Optional[float] = 1,
+    lc_fill_alpha: Optional[float] = 0.5,
     annotate_with_period: Optional[bool] = True,
     savekwgs=dict(transparent=False, dpi=150),
     save=True,
@@ -189,17 +189,10 @@ def add_phase_data_to_ax(
             alpha=0.75,
         )
         plt.colorbar(axes_cb, ax=ax, label=TIME_LABEL)
-    elif plot_data_ci:
-        plot_ci(
-            *xy_dat,
-            ax,
-            label="data",
-            zorder=-1000,
-            alpha=0.4,
-            bins=35,
-        )
     else:  # default
-        plot_xy_binned(*xy_dat, yerr=yerr[idx], ax=ax, bins=data_bins, ms=ms)
+        plot_xy_binned(
+            *xy_dat, yerr=yerr[idx], ax=ax, bins=data_bins, **binned_data_kwgs
+        )
 
     # Plot initial folded lightcurve model if present
     initial_line = None
@@ -218,6 +211,7 @@ def add_phase_data_to_ax(
             color=colors[i],
             label="initial fit",
             ls="dashed",
+            alpha=lc_alpha,
         )
         ylim = np.abs(np.min(np.hstack(init_y))) * 1.2
 
@@ -234,14 +228,18 @@ def add_phase_data_to_ax(
         )
         quants = np.percentile(pred_y, [16, 50, 84], axis=0)
         (model_line,) = ax.plot(
-            pred_x, quants[1, :], color=colors[i], label="model"
+            pred_x,
+            quants[1, :],
+            color=colors[i],
+            label="model",
+            alpha=lc_alpha,
         )
         art = ax.fill_between(
             pred_x,
             quants[0, :],
             quants[2, :],
             color=colors[i],
-            alpha=0.5,
+            alpha=lc_fill_alpha,
             zorder=1000,
         )
         art.set_edgecolor("none")
@@ -249,7 +247,7 @@ def add_phase_data_to_ax(
 
     # Annotate the plot with the planet's period
     if annotate_with_period:
-        ann = ax.annotate(
+        ax.annotate(
             _get_period_txt(p_std, p_mean),
             (0, 0),
             xycoords="axes fraction",
@@ -297,25 +295,14 @@ def add_phase_data_to_ax(
     if not save:
         return plt.gcf()
 
-    if thumbnail:
-        plt.axis("off")
-        plt.margins(x=0, y=0, tight=True)
-        plt.xlabel("")
-        plt.ylabel("")
-        plt.axis("tight")
-    else:
-        plt.title(f"TOI {toi}: Planet {i + 1}", fontsize=default_fs)
+    plt.title(f"TOI {toi}: Planet {i + 1}", fontsize=default_fs)
 
     plt.tight_layout()
 
     fname = PHASE_PLOT.replace(".", f"_TOI{toi}_{i + 1}.")
     if plot_label:
         fname = f"{plot_label}_{fname}"
-    if thumbnail:
-        fname = THUMBNAIL_PLOT
 
     fname = os.path.join(tic_entry.outdir, fname)
     logger.debug(f"Saving {fname}")
     plt.savefig(fname, **savekwgs)
-    if thumbnail:
-        plt.close()

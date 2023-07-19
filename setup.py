@@ -31,12 +31,11 @@ INSTALL_REQUIRES = [
     "celerite2>=0.2.0",
     "lightkurve>=2.0.11",
     "plotly>=4.9.0",
-    "arviz>=0.10.0",
+    "arviz<0.15.0",  # From this point 'arviz' has no attribute 'from_pymc3'
     "corner>=2.2.1",
     "seaborn",
     "itables",
     "StrEnum",
-    "jupyternotify",
     "ipython-autotime",
     "memory_profiler",
 ]

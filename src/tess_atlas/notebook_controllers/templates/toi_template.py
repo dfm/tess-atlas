@@ -67,7 +67,6 @@ notebook_initalisations()
 # %load_ext autoreload
 # %load_ext memory_profiler
 # %load_ext autotime
-# %load_ext jupyternotify
 # %autoreload 2
 # # %matplotlib inline
 
@@ -194,8 +193,6 @@ planet_transit_model, params = build_planet_transit_model(tic_entry)
 model_varnames = get_untransformed_varnames(planet_transit_model)
 test_model(planet_transit_model)
 
-# + pycharm={"name": "#%%\n"} tags=["remove-cell"]
-# %notify -m "TOI Model compiled successfully."
 
 # -
 
@@ -266,9 +263,6 @@ else:
     logger.info("Using cached run")
     inference_data = tic_entry.inference_data
 inference_data
-
-# + pycharm={"name": "#%%\n"} tags=["remove-cell"]
-# %notify -m "Posterior ready!"
 
 # -
 

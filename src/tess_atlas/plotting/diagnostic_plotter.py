@@ -15,7 +15,7 @@ from .labels import (
     DIAGNOSTIC_RAW_LC_PLOT,
     DIAGNOSTIC_TRACE_PLOT,
 )
-from .phase_plotter import plot_phase
+from .phase_plotter import plot_phase, plot_thumbnail
 from .phase_plotter.lightcurve_model_from_samples import (
     get_lc_and_gp_from_inference_object,
 )
@@ -220,14 +220,7 @@ def plot_inference_trace(tic_entry):
 
 def plot_diagnostics(tic_entry, model, init_params):
     plot_lightcurve_gp_and_residuals(tic_entry, model)
-    plot_phase(
-        tic_entry,
-        model,
-        tic_entry.inference_data,
-        plot_data_ci=True,
-        plot_label="data_ci",
-    )
-    plot_phase(
+    plot_thumbnail(
         tic_entry,
         model,
         tic_entry.inference_data,

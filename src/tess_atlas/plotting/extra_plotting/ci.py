@@ -79,10 +79,24 @@ def bin_by(x, y, nbins=200, bins=None):
     return df
 
 
-def plot_xy_binned(x, y, ax, bins, ms=6.0, yerr=[], fmt=".k"):
+def plot_xy_binned(
+    x,
+    y,
+    ax,
+    bins,
+    **kwgs,
+):
+    # set some default kwargs
+    defaults = dict(ms=6.0, yerr=[], fmt=".", color="k", alpha=1, zorder=-1000)
+    for key, value in defaults.items():
+        if key not in kwgs:
+            kwgs[key] = value
+
     bins = np.linspace(min(x), max(x), bins)
     denom, _ = np.histogram(x, bins)
     num, _ = np.histogram(x, bins, weights=y)
+
+    yerr = kwgs.pop("yerr")
     if len(yerr) == 0:
         yerr = np.zeros(len(x))
     err, _ = np.histogram(x, bins, weights=yerr)
@@ -95,8 +109,6 @@ def plot_xy_binned(x, y, ax, bins, ms=6.0, yerr=[], fmt=".k"):
         new_x[idx],
         new_y[idx],
         new_yerr[idx],
-        fmt=fmt,
         label="data",
-        zorder=-1000,
-        ms=ms,
+        **kwgs,
     )

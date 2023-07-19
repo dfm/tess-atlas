@@ -16,7 +16,6 @@
 # %load_ext autoreload
 # %load_ext memory_profiler
 # %load_ext autotime
-# %load_ext jupyternotify
 # %autoreload 2
 # %matplotlib inline
 

@@ -12,6 +12,9 @@
 {% if array_job=="True" -%}      #SBATCH --array=0-{{array_end}}
 {% endif %}
 module load {{module_loads}}
+
+export PLOOMBER_STATS_ENABLED=false
+
 {{load_env}}
 {% if array_job=="True" %}
 ARRAY_ARGS=({{array_args}})

@@ -3,6 +3,7 @@ It replaces some bits of code specific to the TOI notebooks, such as the TOI num
 """
 from __future__ import annotations
 
+import datetime
 import os
 import re
 import time
@@ -107,6 +108,7 @@ class TOINotebookCore(NotebookController):
                 Time of analysis (in seconds)
         """
         toi_nb_processor = TOINotebookCore.from_toi_number(toi_number, outdir)
+        job_type = "setup" if setup else "execution"
         if setup:
             t0 = time.time()
             toi_nb_processor.generate(quickrun=quickrun, setup=setup)
@@ -115,9 +117,9 @@ class TOINotebookCore(NotebookController):
         else:
             execution_successful = toi_nb_processor.execute(quickrun=quickrun)
             runtime = toi_nb_processor.execution_time
-            _record_run_stats(
-                toi_number, execution_successful, runtime, outdir
-            )
+        _record_run_stats(
+            toi_number, execution_successful, runtime, job_type, outdir
+        )
         return execution_successful, runtime
 
 
@@ -125,6 +127,7 @@ def _record_run_stats(
     toi_number: int,
     execution_successful: bool,
     run_duration: float,
+    job_type: str,
     outdir: str,
 ):
     """Creates/Appends to a CSV the runtime and status of the TOI analysis.
@@ -132,9 +135,12 @@ def _record_run_stats(
     """
     fname = os.path.join(outdir, "run_stats.csv")
     if not os.path.isfile(fname):
-        open(fname, "w").write("toi,execution_complete,duration_in_s\n")
+        open(fname, "w").write(
+            "toi,execution_complete,duration_in_s,job_type,timestamp\n"
+        )
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     open(fname, "a").write(
-        f"{toi_number},{execution_successful},{run_duration}\n"
+        f"{toi_number},{execution_successful},{run_duration},{job_type},{timestamp}\n"
     )
 
 

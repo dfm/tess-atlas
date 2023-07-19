@@ -17,6 +17,14 @@ def setup_jobs(
     submit: bool,
     clean: bool,
 ) -> None:
+    """
+    Generate slurm files for analysing TOIs:
+    TODO: automation of getting new TOI list for analysis?
+    - TOI number of parallel data generation jobs
+    - TOI number of parallel analysis jobs
+    - 1 job for generating webpages
+    TODO: automation of sending pages to Nectar to host?
+    """
     if not clean:
         toi_numbers = get_unprocessed_toi_numbers(toi_numbers, outdir)
 

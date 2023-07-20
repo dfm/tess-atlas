@@ -38,6 +38,7 @@ INSTALL_REQUIRES = [
     "StrEnum",
     "ipython-autotime",
     "memory_profiler",
+    "click",
 ]
 EXTRA_REQUIRE = {
     "dev": [
@@ -126,6 +127,7 @@ if __name__ == "__main__":
                 "make_slurm_job=tess_atlas.slurm_job_generator.slurm_job_generator:main",
                 "download_toi=tess_atlas.api.download_analysed_toi:main",
                 "update_tic_cache=tess_atlas.data.exofop.update_cache_cli:main",
+                "plot_run_stats=tess_atlas.notebook_controllers.controllers.toi_notebook_controller.toi_run_stats_recorder:cli_plot_run_stats",
             ]
         },
     )

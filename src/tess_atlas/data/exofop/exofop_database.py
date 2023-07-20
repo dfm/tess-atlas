@@ -8,8 +8,8 @@ import pandas as pd
 from numpy import nan
 from tqdm.auto import tqdm
 
+from ...file_management import get_file_timestamp
 from ...logger import LOGGER_NAME, all_logging_disabled
-from ..data_utils import get_file_timestamp
 from ..lightcurve_data.lightcurve_search import LightcurveSearch
 from .constants import (
     LK_AVAIL,
@@ -223,6 +223,10 @@ class ExofopDatabase:
         table.to_csv(TIC_CACHE, index=False)
         self.plot(table, self.load_old_cache())
         return table
+
+    @property
+    def n_tois(self):
+        return len(self.get_toi_list(remove_toi_without_lk=True))
 
 
 def _download_exofop_tic_table() -> pd.DataFrame:

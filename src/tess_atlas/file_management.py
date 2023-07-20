@@ -1,6 +1,8 @@
 import os
 import shutil
 import tarfile
+import time
+from datetime import datetime
 from typing import Optional
 
 # CONSTANT FILENAMES
@@ -64,3 +66,19 @@ def get_filesize(path):
     """Get the size of a file in Mb"""
     bytes = os.path.getsize(path)
     return bytes / 1e6
+
+
+def get_file_timestamp(filepath, as_datetime=False) -> str:
+    """
+    Get the timestamp of a file
+
+    Eg Thu Jul 20 17:37:07 2023
+    date_format = "%a %b %d %H:%M:%S %Y"
+    """
+    if not os.path.isfile(filepath):
+        return f"UNKNOWN TIME ({filepath} unrecognised file)"
+    modified_time = os.path.getmtime(filepath)
+    stamp = time.ctime(modified_time)
+    if as_datetime:
+        return datetime.strptime(stamp, "%a %b %d %H:%M:%S %Y")
+    return stamp

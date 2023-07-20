@@ -1,7 +1,5 @@
 import json
 import os.path
-
-# from pympler.asizeof import asizeof
 import pickle
 import time
 from math import floor, log
@@ -18,13 +16,6 @@ def save_json(fpath: str, data_dict: Dict):
 def load_json(fpath: str) -> Dict:
     with open(fpath, "r") as f:
         return json.load(f)
-
-
-def get_file_timestamp(filepath) -> str:
-    if not os.path.isfile(filepath):
-        return f"UNKNOWN TIME ({filepath} unrecognised file)"
-    modified_time = os.path.getmtime(filepath)
-    return time.ctime(modified_time)
 
 
 def format_bytes_to_human_readable(bytes):

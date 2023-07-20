@@ -15,6 +15,7 @@ from ....tess_atlas_version import __version__
 from ....utils import grep_toi_number
 from ...paths import TOI_TEMPLATE_FNAME, TRANSIT_MODEL
 from ..notebook_controller import NotebookController
+from .toi_run_stats_recorder import TOIRunStatsRecorder
 
 
 class TOINotebookCore(NotebookController):
@@ -117,31 +118,14 @@ class TOINotebookCore(NotebookController):
         else:
             execution_successful = toi_nb_processor.execute(quickrun=quickrun)
             runtime = toi_nb_processor.execution_time
-        _record_run_stats(
-            toi_number, execution_successful, runtime, job_type, outdir
+        TOIRunStatsRecorder.save_stats(
+            toi=toi_number,
+            success=execution_successful,
+            runtime=runtime,
+            job_type=job_type,
+            notebook_dir=outdir,
         )
         return execution_successful, runtime
-
-
-def _record_run_stats(
-    toi_number: int,
-    execution_successful: bool,
-    run_duration: float,
-    job_type: str,
-    outdir: str,
-):
-    """Creates/Appends to a CSV the runtime and status of the TOI analysis.
-    #TODO: ask ozstar admin if this is ok to do (multiple parallel jobs writing to same file)
-    """
-    fname = os.path.join(outdir, "run_stats.csv")
-    if not os.path.isfile(fname):
-        open(fname, "w").write(
-            "toi,execution_complete,duration_in_s,job_type,timestamp\n"
-        )
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    open(fname, "a").write(
-        f"{toi_number},{execution_successful},{run_duration},{job_type},{timestamp}\n"
-    )
 
 
 def _quickrun_replacements(txt) -> str:

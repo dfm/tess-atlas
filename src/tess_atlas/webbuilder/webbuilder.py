@@ -11,11 +11,12 @@ import subprocess
 from glob import glob
 from typing import Optional
 
-from ..file_management import copy_tree, make_tarfile
-from ..logger import LOGGER_NAME, setup_logger
-from ..notebook_controllers.controllers.menu_notebook_controller import (
+from tess_atlas.notebook_controllers.controllers.menu_notebook_controller import (
     run_menu_page,
 )
+
+from ..file_management import copy_tree, make_tarfile
+from ..logger import LOGGER_NAME, setup_logger
 
 logger = setup_logger(LOGGER_NAME, clean=True)
 

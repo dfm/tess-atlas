@@ -1,5 +1,6 @@
 """Module to parse the metadata from the TOI notebooks"""
 import json
+import logging
 import os
 from typing import Dict, Union
 
@@ -212,17 +213,23 @@ class TOINotebookMetadata(object):
 
     @property
     def meta_dict(self):
-        meta_dict = {
-            "TOI": self.toi,
-            "TOI html": self.__toi_html,
-            "Thumbnail html": self.__thumbnail_html,
-            "Status": self.analysis_status.value,
-            "Category": self.toi_category,
-            "Classification": self.classification,
-            "Runtime [Hr]": self.runtime,
-            "Memory [Mb]": self.memory,
-            "Log lines": self.get_log_lines(),
-        }
+        try:
+            meta_dict = {
+                "TOI": self.toi,
+                "TOI html": self.__toi_html,
+                "Thumbnail html": self.__thumbnail_html,
+                "Status": self.analysis_status.value,
+                "Category": self.toi_category,
+                "Classification": self.classification,
+                "Runtime [Hr]": self.runtime,
+                "Memory [Mb]": self.memory,
+                "Log lines": self.get_log_lines(),
+            }
+        except Exception as e:
+            logging.warning(
+                f"Failed to get meta data for {self.notebook_path}: {e}"
+            )
+            meta_dict = {k: np.nan for k in META_DATA_KEYS}
         if len(set(meta_dict.keys()) - set(META_DATA_KEYS)) > 0:
             raise ValueError(
                 f"Invalid metadata keys: {meta_dict.keys()}, expected: {META_DATA_KEYS}"

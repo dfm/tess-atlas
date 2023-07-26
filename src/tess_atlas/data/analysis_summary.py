@@ -6,10 +6,11 @@ import pandas as pd
 from tqdm.auto import tqdm
 from tqdm.contrib.concurrent import process_map as parallel_tqdm
 
-from ..notebook_controllers.controllers.toi_notebook_controller import (
+from tess_atlas.notebook_controllers.controllers.toi_notebook_controller import (
     Status,
     TOINotebookController,
 )
+
 from .exofop import EXOFOP_DATA
 
 warnings.filterwarnings("ignore", category=UserWarning)

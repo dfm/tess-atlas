@@ -145,6 +145,11 @@ class TOINotebookMetadata(object):
         cls_ids = self.tic_data.get("TFOPWG Disposition", [])
         if len(cls_ids) == 0:
             return "U"
+
+        # if cls_ids is a number, convert to string
+        if isinstance(cls_ids, (int, float)):
+            cls_ids = [str(cls_ids)]
+
         return ", ".join(cls_ids)
 
     def __load_profiling_data(self) -> pd.DataFrame:

@@ -42,8 +42,8 @@ INSTALL_REQUIRES = [
 ]
 EXTRA_REQUIRE = {
     "dev": [
-        "pytest>=3.6",
-        "pytest-cov",
+        "pytest>=7.2.2",
+        "pytest-cov>=4.1.0",
         "testbook>=0.2.3",
         "pre-commit",
         "flake8",

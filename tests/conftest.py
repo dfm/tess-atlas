@@ -54,8 +54,8 @@ def get_fake_notebook_dir(
 
 
 @pytest.fixture
-def fake_notebook_dir(n_toi=5) -> str:
-    notebooks = glob.glob(f"{TMP_OUTDIR}/toi_*.ipynb")
+def fake_notebook_dir(tmp_path, n_toi=5) -> str:
+    notebooks = glob.glob(f"{tmp_path}/toi_*.ipynb")
     if len(notebooks) >= n_toi:
         return os.path.dirname(notebooks[0])
     else:

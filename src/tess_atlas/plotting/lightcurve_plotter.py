@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from ..data.tic_entry import TICEntry
+from tess_atlas.data.tic_entry import TICEntry
+
 from ..logger import LOGGER_NAME
 from .labels import FLUX_LABEL, LIGHTCURVE_PLOT, TIME_LABEL
 from .plotting_utils import get_colors, get_longest_unbroken_section_of_data

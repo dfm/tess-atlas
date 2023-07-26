@@ -8,10 +8,7 @@ import pandas as pd
 from numpy import nan
 from tqdm.auto import tqdm
 
-from ...file_management import get_file_timestamp
-from ...logger import LOGGER_NAME, all_logging_disabled
-from ..lightcurve_data.lightcurve_search import LightcurveSearch
-from .constants import (
+from tess_atlas.data.exofop.constants import (
     LK_AVAIL,
     MULTIPLANET,
     NORMAL,
@@ -26,6 +23,10 @@ from .constants import (
     TOI,
     TOI_INT,
 )
+
+from ...file_management import get_file_timestamp
+from ...logger import LOGGER_NAME, all_logging_disabled
+from ..lightcurve_data.lightcurve_search import LightcurveSearch
 from .plotting import plot_lk_status
 
 logger = logging.getLogger(LOGGER_NAME)
@@ -46,44 +47,52 @@ class ExofopDatabase:
 
     """
 
-    def __init__(self, clean=False, update=False):
+    def __init__(self, clean=False, update=False, fname=TIC_CACHE):
         self._db = pd.DataFrame()
+        self.fname = fname
+        self.previous_fname = fname + ".old"
         self.load(clean)
         if update:
             self.update()
 
     def load(self, clean=False):
-        if not self.cache_present():
+        if not self.cache_present:
             clean = True  # if no cache, we must clean-load from exofop
         if clean:
             self._clean_cache()
             self.update()
-        cache_time = get_file_timestamp(TIC_CACHE)
-        logger.debug(f"Loading cached TIC list (last modified {cache_time})")
-        self._db = pd.read_csv(TIC_CACHE)
+        logger.debug(
+            f"Loading cached TIC list (last modified {self.cache_timestamp})"
+        )
+        self._db = pd.read_csv(self.fname)
+        return self
 
-    @staticmethod
-    def cache_present():
-        return os.path.isfile(TIC_CACHE)
+    @property
+    def cache_timestamp(self):
+        return get_file_timestamp(self.fname)
+
+    @property
+    def cache_present(self):
+        return os.path.isfile(self.fname)
 
     def _clean_cache(self):
-        if self.cache_present():
-            os.rename(TIC_CACHE, TIC_OLD_CACHE)
+        if self.cache_present:
+            os.rename(self.fname, self.previous_fname)
 
     def load_old_cache(self):
-        if os.path.isfile(TIC_OLD_CACHE):
-            return pd.read_csv(TIC_OLD_CACHE)
+        if os.path.isfile(self.previous_fname):
+            return pd.read_csv(self.previous_fname)
         return pd.DataFrame()
 
     @property
     def cached_tic_lk_dict(self):
-        if self.cache_present():
-            cached = pd.read_csv(TIC_CACHE)
+        if self.cache_present:
+            cached = pd.read_csv(self.fname)
             tics, lk_avail = cached[TIC_ID], cached[LK_AVAIL]
             return dict(zip(tics, lk_avail))
         return {}
 
-    def update(self, only_nans=True):
+    def update(self, save_name=TIC_CACHE):
         """Update the TIC cache from the exofop database
 
         Queries Lightkurve to check if lightcurve data is available for each TIC.
@@ -99,7 +108,7 @@ class ExofopDatabase:
         tic_lk_dict.update(self.cached_tic_lk_dict)
 
         self._clean_cache()  # after extracting cache data, we can clean cache
-        self._save_table_with_lk_status(new_table, tic_lk_dict)
+        self._save_table_with_lk_status(new_table, tic_lk_dict, save_name)
 
         # Get the subset of TICs with no lightcurve data
         nan_lk_dict = {tic: lk for tic, lk in tic_lk_dict.items() if isnan(lk)}
@@ -123,12 +132,15 @@ class ExofopDatabase:
                 logger.debug(
                     f"Updating TIC cache at {100 * (i / num_nan):.2f}%"
                 )
-                self._save_table_with_lk_status(new_table, nan_lk_dict)
+                self._save_table_with_lk_status(
+                    new_table, nan_lk_dict, save_name
+                )
 
-        self._save_table_with_lk_status(new_table, nan_lk_dict)
+        self._save_table_with_lk_status(new_table, nan_lk_dict, save_name)
         logger.info(
             f"Updated database from {len(self.load_old_cache())}-->{len(new_table)} TICs"
         )
+        self.fname = save_name
         self.load()
 
     def get_df(
@@ -196,7 +208,7 @@ class ExofopDatabase:
         """ExoFop Url"""
         return TIC_SEARCH.format(tic_id=tic_id)
 
-    def plot(self, new=None, old=None) -> None:
+    def plot(self, new=None, old=None) -> "plt.Figure":
         """Plot if the TOI has lightcurve data using the old and new TIC caches"""
         if new is None:
             new = self._db
@@ -214,19 +226,25 @@ class ExofopDatabase:
         )
 
     def _save_table_with_lk_status(
-        self, table: pd.DataFrame, lk_status_dict: Dict[int, bool]
+        self,
+        table: pd.DataFrame,
+        lk_status_dict: Dict[int, bool],
+        save_fn=TIC_CACHE,
     ):
         """Update the table with the lightcurve status"""
         tic_lk_dict = dict(zip(table[TIC_ID], table[LK_AVAIL]))
         tic_lk_dict.update(lk_status_dict)
         table[LK_AVAIL] = table[TIC_ID].map(tic_lk_dict)
-        table.to_csv(TIC_CACHE, index=False)
+        table.to_csv(save_fn, index=False)
         self.plot(table, self.load_old_cache())
         return table
 
     @property
     def n_tois(self):
         return len(self.get_toi_list(remove_toi_without_lk=True))
+
+    def __repr__(self):
+        return f"<Exofop Table ({self.n_tois} TOIs)>"
 
 
 def _download_exofop_tic_table() -> pd.DataFrame:

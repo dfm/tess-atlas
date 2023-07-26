@@ -14,8 +14,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
+          persist-credentials: false
           fetch-depth: 0
       - name: Set up Python 3.8
         uses: actions/setup-python@v1
@@ -40,7 +41,34 @@ jobs:
       - name: pre-commit
         run: pre-commit run --all-files --verbose --show-diff-on-failure
 
-#      # Run all test other than ones marked as "slow"
-#      - name: pytest
-#        run: python -m pytest -vv $TEST_FILE -k "not slow"
-#        if: always()
+      # Run all test other than ones marked as "slow"
+      - name: pytest
+        run: |
+          pytest tests/ --cov=src/tess_atlas --cov-report=xml --cov-report=term-missing:skip-covered --junitxml=pytest.xml | tee pytest-coverage.txt
+        if: always()
+
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml
+
+      - name: Pytest coverage comment
+        if: ${{ github.ref == 'refs/heads/main' }}
+        id: coverageComment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          hide-comment: false
+          pytest-coverage-path: ./pytest-coverage.txt
+
+      - name: Update Readme with Coverage Html
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          sed -i '/<!-- Pytest Coverage Comment:Begin -->/,/<!-- Pytest Coverage Comment:End -->/c\<!-- Pytest Coverage Comment:Begin -->\n\${{ steps.summary_report.outputs.content }}\n<!-- Pytest Coverage Comment:End -->' ./README.md
+
+      - name: Commit & Push changes to Readme
+        if: ${{ github.ref == 'refs/heads/main' }}
+        uses: actions-js/push@master
+        with:
+          message: Update coverage on Readme
+          github_token: ${{ secrets.GITHUB_TOKEN }}

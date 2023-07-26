@@ -7,7 +7,8 @@ import numpy as np
 from arviz import InferenceData
 from scipy.interpolate import interp1d
 
-from ...data.inference_data_tools import get_samples_dataframe
+from tess_atlas.data.inference_data_tools import get_samples_dataframe
+
 from ...logger import LOGGER_NAME
 from ..extra_plotting.ci import plot_xy_binned
 from ..labels import (

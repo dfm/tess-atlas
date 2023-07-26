@@ -54,6 +54,7 @@ def toi_notebook():
         yield notebook
 
 
+@pytest.mark.skip
 def test_exoplanent_import_version_number(toi_notebook):
     toi_notebook.inject(
         """

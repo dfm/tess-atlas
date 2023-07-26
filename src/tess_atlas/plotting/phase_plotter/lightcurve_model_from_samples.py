@@ -4,12 +4,13 @@ import arviz as az
 import numpy as np
 from pymc3 import Model
 
-from ...analysis import compute_variable, get_untransformed_varnames
-from ...data.inference_data_tools import (
+from tess_atlas.data.inference_data_tools import (
     get_median_sample,
     get_posterior_samples,
     get_samples_dataframe,
 )
+
+from ...analysis import compute_variable, get_untransformed_varnames
 
 
 def get_lc_and_gp_from_inference_object(

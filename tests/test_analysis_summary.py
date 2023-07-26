@@ -1,9 +1,6 @@
-import glob
-import shutil
-
 import pytest
 
-from tess_atlas.data.analysis_summary.analysis_summary import AnalysisSummary
+from tess_atlas.data.analysis_summary import AnalysisSummary
 
 N_TOI_NOTEBOOKS = 5
 

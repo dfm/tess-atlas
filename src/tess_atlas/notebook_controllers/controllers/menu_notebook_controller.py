@@ -3,8 +3,9 @@ from __future__ import annotations
 import logging
 import os
 
-from ...data.analysis_summary import AnalysisSummary
-from ...data.exofop import EXOFOP_DATA
+from tess_atlas.data.analysis_summary import AnalysisSummary
+from tess_atlas.data.exofop import EXOFOP_DATA
+
 from ...logger import LOGGER_NAME
 from ..paths import MENU_PAGE_TEMPLATE_FNAME
 from .notebook_controller import NotebookController

@@ -1,5 +1,9 @@
 [![](https://img.shields.io/badge/Paper-Download-orange)](https://nightly.link/dfm/tess-atlas/workflows/build_paper/paper/main.pdf.zip)
 
+<!-- Pytest Coverage Comment:Begin -->
+<!-- Pytest Coverage Comment:End -->
+
+
 <p align="center">
   <img width = "450" src="src/tess_atlas/webbuilder/template/_static/atlas_logo.png" />
   <br>

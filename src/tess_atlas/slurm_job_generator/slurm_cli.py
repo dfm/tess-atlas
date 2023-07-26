@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import pandas as pd
 
-from ..data.exofop import EXOFOP_DATA
+from tess_atlas.data.exofop import EXOFOP_DATA
 
 
 def read_csv_toi_numbers(toi_csv: str):

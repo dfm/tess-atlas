@@ -1,7 +1,7 @@
 [![](https://img.shields.io/badge/Paper-Download-orange)](https://nightly.link/dfm/tess-atlas/workflows/build_paper/paper/main.pdf.zip)
 
 <!-- Pytest Coverage Comment:Begin -->
-<!-- Pytest Coverage Comment:End -->
+\n<!-- Pytest Coverage Comment:End -->
 
 
 <p align="center">

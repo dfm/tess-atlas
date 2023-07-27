@@ -11,6 +11,8 @@ import tabulate
 
 from .file_management import mkdir
 
+CWD = os.getcwd()
+
 
 def set_ipython_backend():
     from IPython import get_ipython
@@ -23,7 +25,7 @@ def set_ipython_backend():
         ipy.magic("autoreload 2")
 
 
-def notebook_initalisations(default="."):
+def notebook_initalisations(default=CWD):
     """Initialise the notebook environment."""
     set_global_environ_vars(default)
 
@@ -75,7 +77,7 @@ def set_plotting_style():
     plt.rcParams["image.cmap"] = "inferno"
 
 
-def set_global_environ_vars(default="."):
+def set_global_environ_vars(default=CWD):
     # Don't use the schmantzy progress bar
     os.environ["EXOPLANET_NO_AUTO_PBAR"] = "true"
     # Turn off ploomber stats
@@ -91,7 +93,7 @@ def set_global_environ_vars(default="."):
     )
 
 
-def get_theano_cache(default=".") -> Tuple[str, str]:
+def get_theano_cache(default=CWD) -> Tuple[str, str]:
     # make sure that THEANO has cache dir for each thread (prevent locking issues)
     base_dir = mkdir(os.path.join(get_cache_dir(default), "theano_basedir"))
     compile_dir = mkdir(
@@ -100,7 +102,7 @@ def get_theano_cache(default=".") -> Tuple[str, str]:
     return base_dir, compile_dir
 
 
-def get_cache_dir(default=".") -> str:
+def get_cache_dir(default=CWD) -> str:
     # JOBFS: ozstar specific scratch space
     cache_base = os.environ.get("JOBFS", default=default)
     cache = os.path.join(cache_base, ".tess-atlas-cache", str(os.getpid()))

@@ -44,7 +44,7 @@ jobs:
       # Run all test other than ones marked as "slow"
       - name: pytest
         run: |
-          pytest tests/ --cov=src/tess_atlas --cov-report=xml --cov-report=term-missing:skip-covered | tee pytest-coverage.txt
+          pytest tests/ --cov=tess_atlas --cov-report=xml --cov-report=term-missing:skip-covered | tee pytest-coverage.txt
         if: always()
 
       - name: Pytest coverage comment

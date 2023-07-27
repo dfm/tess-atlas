@@ -57,6 +57,7 @@ def main():
             partition="datamover",
             submit_dir=outdir,
             command=command,
+            email=args.email,
         )
         logger.info(f"To run job:\n>>> sbatch {fn}")
     else:

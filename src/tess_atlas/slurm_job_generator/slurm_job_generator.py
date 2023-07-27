@@ -19,6 +19,7 @@ def setup_jobs(
     module_loads: str,
     submit: bool,
     clean: bool,
+    email: str = "",
 ) -> None:
     """
     Generate slurm files for analysing TOIs
@@ -57,6 +58,7 @@ def setup_jobs(
         outdir=outdir,
         module_loads=module_loads,
         submit_dir=submit_dir,
+        email=email,
     )
 
     generation_fns, analysis_fns = [], []

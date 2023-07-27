@@ -59,6 +59,11 @@ def add_slurm_cli_args(parser: argparse.ArgumentParser):
         action="store_true",  # False by default
         help="Submit once files created",
     )
+    parser.add_argument(
+        "--email",
+        default="",
+        help="email address to send job updates to (default: ''). If not passed, no emails sent.",
+    )
     return parser
 
 
@@ -71,4 +76,5 @@ def main():
         module_loads=args.module_loads,
         submit=args.submit,
         clean=args.clean,
+        email=args.email,
     )

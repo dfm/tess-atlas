@@ -32,6 +32,7 @@ def make_slurm_file(
     array_args: Optional[List[int]] = None,
     array_job: Optional[bool] = False,
     command: Optional[str] = None,
+    email: Optional[str] = "",
 ) -> str:
     """Make a slurm file for submitting a job to the cluster
 
@@ -49,6 +50,7 @@ def make_slurm_file(
         partition=partition,
         array_job=str(array_job),
         command=command,
+        email=email,
     )
     array_kwargs = dict(
         array_end=None,

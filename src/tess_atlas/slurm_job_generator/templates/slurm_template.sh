@@ -11,6 +11,12 @@
 {% endif %}
 {% if array_job=="True" -%}      #SBATCH --array=0-{{array_end}}
 {% endif %}
+{% if email!="" -%}      #SBATCH --mail-user={{email}}
+{% endif %}
+{% if email!="" -%}      #SBATCH --mail-type=ALL
+{% endif %}
+
+
 module load {{module_loads}}
 
 {{load_env}}

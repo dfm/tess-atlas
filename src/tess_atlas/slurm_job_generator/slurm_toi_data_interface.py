@@ -1,5 +1,6 @@
 """This module interfaces with the TOI data."""
 import glob
+import logging
 import os
 import re
 from typing import List, Optional
@@ -7,12 +8,16 @@ from typing import List, Optional
 import pandas as pd
 
 from tess_atlas.data.exofop import EXOFOP_DATA
+from tess_atlas.logger import LOGGER_NAME
+
+logger = logging.getLogger(LOGGER_NAME)
 
 
 def __get_completed_toi_pe_results_paths(outdir: str) -> pd.DataFrame:
     """Get the paths to the netcdf files for all completed TOIs"""
-    search_path = os.path.join(outdir, "*/toi_*_files/*.netcdf")
+    search_path = os.path.join(outdir, "toi_*_files/*.netcdf")
     netcdf_files = glob.glob(search_path)
+    logger.info(f"Searching {search_path} --> {len(netcdf_files)} files found")
     regex = "toi_(\d+)_files"
     tois = [int(re.search(regex, f).group(1)) for f in netcdf_files]
     return pd.DataFrame(dict(TOI=tois, path=netcdf_files))

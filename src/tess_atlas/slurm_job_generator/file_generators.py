@@ -12,7 +12,7 @@ SUBMIT_TEMPLATE = "submit_template.sh"
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
 
 
-def load_template(template_file: str) -> Template:
+def __load_template(template_file: str) -> Template:
     template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
     template_env = jinja2.Environment(loader=template_loader)
     template = template_env.get_template(template_file)
@@ -33,7 +33,11 @@ def make_slurm_file(
     array_job: Optional[bool] = False,
     command: Optional[str] = None,
 ) -> str:
-    log_dir = mkdir(outdir, f"log_{jobname}")
+    """Make a slurm file for submitting a job to the cluster
+
+    :param outdir: Base output directory (will generate {outdir}/log_{jobname}, {outdir}/submit))
+    """
+    log_dir = os.path.abspath(mkdir(outdir, f"log_{jobname}"))
     common_kwargs = dict(
         jobname=f"toi_{jobname}",
         time=time,
@@ -49,7 +53,7 @@ def make_slurm_file(
     array_kwargs = dict(
         array_end=None,
         array_args=None,
-        log_file=mkdir(log_dir, f"{jobname}_%j.log"),
+        log_file=os.path.abspath(mkdir(log_dir, f"{jobname}_%j.log")),
     )
     if array_job:
         array_kwargs = dict(
@@ -58,7 +62,7 @@ def make_slurm_file(
             log_file=mkdir(log_dir, f"{jobname}_%A_%a.log"),
         )
 
-    file_contents = load_template(SLURM_TEMPLATE).render(
+    file_contents = __load_template(SLURM_TEMPLATE).render(
         **common_kwargs, **array_kwargs
     )
 
@@ -72,7 +76,8 @@ def make_slurm_file(
 
 
 def make_main_submitter(generation_fns, analysis_fns, webgen_fn, submit_dir):
-    template = load_template(SUBMIT_TEMPLATE)
+    """Make a submit.sh file which submits all the jobs"""
+    template = __load_template(SUBMIT_TEMPLATE)
     file_contents = template.render(
         generation_fns=to_str_list(generation_fns),
         analysis_fns=to_str_list(analysis_fns),

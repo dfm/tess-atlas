@@ -7,9 +7,15 @@ from tess_atlas.notebook_controllers.controllers.toi_notebook_controller import 
     TOINotebookController,
 )
 
+PROG = "run_toi"
+
 
 def __get_cli_args():
-    parser = argparse.ArgumentParser(prog="run_toi")
+    parser = argparse.ArgumentParser(
+        prog=PROG,
+        description="Run TOI notebook",
+        usage=f"{PROG} <toi_number> [--outdir <outdir>] [--quickrun] [--setup]",
+    )
     default_outdir = os.path.join(os.getcwd(), "notebooks")
     parser.add_argument(
         "toi_number", type=int, help="The TOI number to be analysed (e.g. 103)"

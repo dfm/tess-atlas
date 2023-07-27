@@ -1,31 +1,38 @@
 import argparse
 import os
 
-from tess_atlas.slurm_job_generator import add_slurm_cli_args, make_slurm_file
+from tess_atlas.cli.make_slurm_job_cli import add_slurm_cli_args
+from tess_atlas.data.exofop.exofop_database import ExofopDatabase
+from tess_atlas.logger import setup_logger
+from tess_atlas.slurm_job_generator import make_slurm_file
 
-from .exofop_database import ExofopDatabase
+logger = setup_logger()
+
+
+PROG = "update_tic_cache"
 
 
 def get_cli_args():
     parser = argparse.ArgumentParser(
-        prog="update_tic_cache",
+        prog=PROG,
         description=(
             "Update TIC cache from ExoFOP database. "
-            "Lightkurve is queried for each TIC ID to "
-            "verify that the correct data is availible."
+            "NOTE: Lightkurve is queried for each TIC ID to "
+            "verify that the correct data is available."
         ),
+        usage=f"{PROG} [--clean] [--slurm]",
     )
     parser.add_argument(
         "--clean",
         action="store_true",  # False by default
         help="Update cache from scratch",
     )
-    parser = add_slurm_cli_args(parser)
     parser.add_argument(
         "--slurm",
         action="store_true",  # false by default
         help="true if you want to make a slurm job file",
     )
+    parser = add_slurm_cli_args(parser)
     args = parser.parse_args()
     return args
 
@@ -51,9 +58,9 @@ def main():
             submit_dir=outdir,
             command=command,
         )
-        print(f"To run job:\n>>> sbatch {fn}")
+        logger.info(f"To run job:\n>>> sbatch {fn}")
     else:
-        print(f"UPDATING TIC CACHE... clean={args.clean}")
+        logger.info(f"UPDATING TIC CACHE... clean={args.clean}")
         db = ExofopDatabase(update=True, clean=args.clean)
         db.plot()
-        print("UPDATE COMPLETE!!")
+        logger.info("UPDATE COMPLETE!!")

@@ -5,23 +5,31 @@ import argparse
 
 from tess_atlas.webbuilder import build_website
 
+PROG = "make_webpages"
+
 
 def get_cli_args():
     """Get the TOI number from the CLI and return it"""
-    parser = argparse.ArgumentParser(prog="build webpages")
+    parser = argparse.ArgumentParser(
+        prog=PROG,
+        description="Build webpages for TOIs",
+        usage=f"{PROG} --notebooks <notebookdir> --webdir <webdir>",
+    )
     parser.add_argument("--webdir", type=str, help="The weboutdir")
     parser.add_argument(
-        "--notebooks", type=str, help="Directory with analysed notebooks"
+        "--notebooks",
+        type=str,
+        help="Directory with analysed notebooks (`{dir}/toi_*.ipynb` files)",
     )
     parser.add_argument(
         "--rebuild",
         action="store_true",  # False by default
-        help="""flag to rebuild from scratch (even if some webpages exist).""",
+        help="flag to rebuild from scratch (even if some webpages exist).",
     )
     parser.add_argument(
         "--add-api",
         action="store_true",  # False by default
-        help="""flag to copy over files for API""",
+        help="flag to copy over files for API",
     )
     args = parser.parse_args()
 

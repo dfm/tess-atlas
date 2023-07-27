@@ -4,11 +4,9 @@ from unittest.mock import patch
 
 import pandas as pd
 
+from tess_atlas.cli.make_slurm_job_cli import get_cli_args
 from tess_atlas.slurm_job_generator import slurm_job_generator
-from tess_atlas.slurm_job_generator.slurm_job_generator import (
-    get_cli_args,
-    setup_jobs,
-)
+from tess_atlas.slurm_job_generator.slurm_job_generator import setup_jobs
 
 CLEAN_AFTER = True
 

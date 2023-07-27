@@ -6,16 +6,16 @@ import argparse
 import os
 import sys
 
-from tess_atlas.slurm_job_generator.slurm_job_generator import setup_jobs
-from tess_atlas.slurm_job_generator.slurm_toi_data_interface import (
-    parse_toi_numbers,
-)
+from tess_atlas.slurm_job_generator import parse_toi_numbers, setup_jobs
+
+PROG = "make_slurm_jobs"
 
 
 def get_cli_args(cli_data):
     parser = argparse.ArgumentParser(
         description="Create slurm job for analysing TOIs (needs either toi-csv or toi-number)",
-        prog="make_slurm_jobs",
+        prog=PROG,
+        usage=f"{PROG} [--toi_csv <csv>] [--toi_number <toi_number>]",
     )
     parser.add_argument(
         "--toi_csv",
@@ -38,6 +38,18 @@ def get_cli_args(cli_data):
         default="tess_atlas_catalog",
     )
     parser.add_argument(
+        "--clean",
+        action="store_true",  # False by default
+        help="Run all TOIs (even those that have completed analysis)",
+    )
+    parser = add_slurm_cli_args(parser)
+    args = parser.parse_args(cli_data)
+    os.makedirs(args.outdir, exist_ok=True)
+    return args
+
+
+def add_slurm_cli_args(parser: argparse.ArgumentParser):
+    parser.add_argument(
         "--module_loads",
         default="git/2.18.0 gcc/9.2.0 openmpi/4.0.2 python/3.8.5",
         help="String containing all module loads in one line (each module separated by a space)",
@@ -47,14 +59,7 @@ def get_cli_args(cli_data):
         action="store_true",  # False by default
         help="Submit once files created",
     )
-    parser.add_argument(
-        "--clean",
-        action="store_true",  # False by default
-        help="Run all TOIs (even those that have completed analysis)",
-    )
-    args = parser.parse_args(cli_data)
-    os.makedirs(args.outdir, exist_ok=True)
-    return args
+    return parser
 
 
 def main():

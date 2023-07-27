@@ -3,7 +3,7 @@ import shutil
 import tarfile
 import time
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 # CONSTANT FILENAMES
 SAMPLES_FNAME = "samples.csv"
@@ -30,7 +30,7 @@ def shutil_logpath(path, names):
     return []  # nothing will be ignored
 
 
-def copy_tree(src, dst, verbose: Optional[bool] = True):
+def copy_tree(src, dst, verbose: Optional[bool] = True) -> None:
     ignore = shutil_logpath if verbose else None
     try:
         shutil.copytree(src, mkdir(dst), ignore=ignore, dirs_exist_ok=True)
@@ -38,12 +38,13 @@ def copy_tree(src, dst, verbose: Optional[bool] = True):
         print(f"Error copying {src}->{dst}: {e}")
 
 
-def make_tarfile(output_filename: str, source_dir: str):
+def make_tarfile(output_filename: str, source_dir: str) -> str:
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
+    return output_filename
 
 
-def read_last_n_lines(file_path, n):
+def read_last_n_lines(file_path: str, n: int = 10) -> str:
     with open(file_path, "rb") as file:
         file.seek(0, 2)  # Move the file pointer to the end of the file
         file_size = file.tell()  # Get the current position (file size)
@@ -62,13 +63,13 @@ def read_last_n_lines(file_path, n):
         return "\n".join(lines)
 
 
-def get_filesize(path):
+def get_filesize(path: str) -> float:
     """Get the size of a file in Mb"""
     bytes = os.path.getsize(path)
     return bytes / 1e6
 
 
-def get_file_timestamp(filepath, as_datetime=False) -> str:
+def get_file_timestamp(filepath, as_datetime=False) -> Union[str, datetime]:
     """
     Get the timestamp of a file
 

@@ -16,7 +16,8 @@ from corner.arviz_corner import (
 )
 from matplotlib.ticker import MaxNLocator, NullLocator
 
-from ...logger import LOGGER_NAME
+from tess_atlas.logger import LOGGER_NAME
+
 from ..plotting_utils import (
     exception_catcher,
     format_hist_axes_label_string_with_offset,

@@ -3,7 +3,6 @@ It replaces some bits of code specific to the TOI notebooks, such as the TOI num
 """
 from __future__ import annotations
 
-import datetime
 import os
 import re
 import time
@@ -12,7 +11,7 @@ from typing import Optional, Tuple
 from ....data import TICEntry
 from ....file_management import PROFILING_CSV, TOI_DIR
 from ....tess_atlas_version import __version__
-from ....utils import grep_toi_number
+from ....utils import grep_toi_number, notebook_initalisations
 from ...paths import TOI_TEMPLATE_FNAME, TRANSIT_MODEL
 from ..notebook_controller import NotebookController
 from .toi_run_stats_recorder import TOIRunStatsRecorder
@@ -108,6 +107,7 @@ class TOINotebookCore(NotebookController):
             run_duration: float
                 Time of analysis (in seconds)
         """
+        notebook_initalisations(outdir)
         toi_nb_processor = TOINotebookCore.from_toi_number(toi_number, outdir)
         job_type = "setup" if setup else "execution"
         if setup:

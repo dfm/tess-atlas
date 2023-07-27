@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 from arviz import InferenceData
 from pymc3 import Model
 
-from ...logger import LOGGER_NAME
+from tess_atlas.logger import LOGGER_NAME
+
 from .core import _preprocess_phase_plot_data, add_phase_data_to_ax
 
 if TYPE_CHECKING:

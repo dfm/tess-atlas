@@ -21,8 +21,10 @@ def test_grep_toi_number():
 
 def test_notebook_initialisation(tmp_path):
     os.chdir(tmp_path)
-    notebook_initalisations()
-    assert (tmp_path / "theano_cache").is_dir()
+    utils.notebook_initalisations()
+    base_theano, compile_theano = utils.get_theano_cache()
+    assert os.path.isdir(base_theano)
+    assert str(tmp_path) in base_theano
 
 
 def test_read_last_n_lines(tmp_path):

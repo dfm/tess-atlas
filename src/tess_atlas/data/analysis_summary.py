@@ -84,6 +84,9 @@ class AnalysisSummary:
         df = df.rename(
             columns=lambda x: x.split(" html")[0] if "html" in x else x
         )
+        # set logs to ' ' for all successful analyses
+        df.loc[df["Status"] == Status.PASS.value, "Log lines"] = " "
+        print("Num passed:", len(df[df["Status"] == Status.PASS.value]))
         return df
 
     def save_to_csv(self, csv_path: str):

@@ -10,8 +10,8 @@ import pandas as pd
 
 from tess_atlas.data.inference_data_tools import get_samples_dataframe
 from tess_atlas.data.tic_entry import TICEntry
+from tess_atlas.logger import LOGGER_NAME
 
-from ...logger import LOGGER_NAME
 from ..labels import ECCENTRICITY_PLOT, LATEX, POSTERIOR_PLOT, PRIOR_PLOT
 from ..plotting_utils import (
     exception_catcher,
@@ -47,7 +47,8 @@ def plot_priors(
     fig = plot_corner(prior_samples.values, extras=dict(truths=init_params))
     fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
     logger.debug(f"Saving {fname}")
-    fig.savefig(fname, bbox_inches="tight")
+    if fig is not None:
+        fig.savefig(fname, bbox_inches="tight")
 
 
 @exception_catcher
@@ -76,7 +77,8 @@ def plot_eccentricity_posteriors(
         if title:
             plt.suptitle(f"Planet {n}", x=0.85, y=0.85, va="top", ha="right")
         logger.debug(f"Saving {fname.format(n + 1)}")
-        fig.savefig(fname.format(n + 1), bbox_inches="tight")
+        if fig is not None:
+            fig.savefig(fname.format(n + 1), bbox_inches="tight")
 
 
 @exception_catcher
@@ -140,4 +142,5 @@ def plot_posteriors(
                 f"TOI {tic_entry.toi_number}\nPlanet {n + 1} Posterior"
             )
         logger.debug(f"Saving {fname.format(n + 1)}")
-        fig.savefig(fname.format(n + 1), bbox_inches="tight")
+        if fig is not None:
+            fig.savefig(fname.format(n + 1), bbox_inches="tight")

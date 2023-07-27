@@ -23,6 +23,11 @@ except ModuleNotFoundError:
 
 notebook_initalisations()
 
+# + tags=["exe", "hide-cell"]
+import theano
+
+print(theano.config)
+
 # + [markdown] tags=["def"]
 # # TESS Atlas fit for TOI {{{TOINUMBER}}}
 #
@@ -76,8 +81,10 @@ import numpy as np
 import pymc3_ext as pmx
 from arviz import InferenceData
 
-from tess_atlas.analysis import (
+from tess_atlas.analysis.eccenticity_reweighting import (
     calculate_eccentricity_weights,
+)
+from tess_atlas.analysis.model_tools import (
     compute_variable,
     get_untransformed_varnames,
     sample_prior,

@@ -39,6 +39,7 @@ INSTALL_REQUIRES = [
     "ipython-autotime",
     "memory_profiler",
     "click",
+    "tabulate",
 ]
 EXTRA_REQUIRE = {
     "dev": [
@@ -59,6 +60,7 @@ EXTRA_REQUIRE = {
         "pympler",
         "psutil",
         "ploomber-engine>=0.0.30",
+        "ploomber-core==0.2.12",  # https://github.com/ploomber/core/issues/74
         "pretty-jupyter",
         "itables",
         "interruptingcow",

@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import re
 from typing import Dict, Union
 
 import numpy as np
@@ -187,9 +188,11 @@ class TOINotebookMetadata(object):
         return self.__memory
 
     def get_log_lines(self, n=5) -> str:
+        """Get the last n lines of the log file"""
+        txt = ""
         if os.path.exists(self.log_fname):
-            return read_last_n_lines(self.log_fname, n)
-        return " "
+            txt = read_last_n_lines(self.log_fname, n)
+        return re.sub(r"(\[(.*?)m)", "", txt)
 
     @property
     def url(self) -> str:
@@ -230,6 +233,7 @@ class TOINotebookMetadata(object):
                 f"Failed to get meta data for {self.notebook_path}: {e}"
             )
             meta_dict = {k: np.nan for k in META_DATA_KEYS}
+            meta_dict["Log lines"] = f"Metadata extraction failed: {e}"
         if len(set(meta_dict.keys()) - set(META_DATA_KEYS)) > 0:
             raise ValueError(
                 f"Invalid metadata keys: {meta_dict.keys()}, expected: {META_DATA_KEYS}"

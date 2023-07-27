@@ -41,7 +41,9 @@ def test_tess_atlas_model_checker(model):
 
 def test_imports_are_valid():
     """Test that all imports are valid (I was getting some circular import errors)"""
-    from tess_atlas.analysis import calculate_eccentricity_weights
+    from tess_atlas.analysis.eccenticity_reweighting import (
+        calculate_eccentricity_weights,
+    )
     from tess_atlas.logger import get_notebook_logger
     from tess_atlas.plotting import plot_diagnostics
 

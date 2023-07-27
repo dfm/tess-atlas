@@ -66,7 +66,7 @@ logger = get_notebook_logger(OUTDIR)
 #
 # Alternatively, you can also load the results of a TOI (eg TOI 174) in a notebook that you have open with the following:
 
-from tess_atlas.data import TICEntry
+from tess_atlas.data.tic_entry import TICEntry
 
 toi_174 = TICEntry.load(174, load_from_catalog=True)
 toi_174

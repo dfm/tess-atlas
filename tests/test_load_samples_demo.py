@@ -11,7 +11,7 @@ import pandas as pd
 import pymc3 as pm
 import pytest
 
-from tess_atlas.data import TICEntry
+from tess_atlas.data.tic_entry import TICEntry
 
 # from tess_atlas.notebook_controllers import run_load_samples_demo
 

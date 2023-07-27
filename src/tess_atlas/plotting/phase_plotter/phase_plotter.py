@@ -12,7 +12,7 @@ from tess_atlas.logger import LOGGER_NAME
 from .core import _preprocess_phase_plot_data, add_phase_data_to_ax
 
 if TYPE_CHECKING:
-    from ...data import TICEntry
+    from tess_atlas.data.tic_entry import TICEntry
 
 logger = logging.getLogger(LOGGER_NAME)
 

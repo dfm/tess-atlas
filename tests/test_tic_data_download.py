@@ -1,6 +1,6 @@
 import pandas as pd
 
-import tess_atlas.data as tess_data
+import tess_atlas.data.tic_entry as tess_data
 from tess_atlas.logger import LOGGER_NAME, setup_logger
 
 

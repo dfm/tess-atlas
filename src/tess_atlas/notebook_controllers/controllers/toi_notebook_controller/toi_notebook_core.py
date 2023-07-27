@@ -8,10 +8,11 @@ import re
 import time
 from typing import Optional, Tuple
 
-from ....data import TICEntry
-from ....file_management import PROFILING_CSV, TOI_DIR
-from ....tess_atlas_version import __version__
-from ....utils import grep_toi_number, notebook_initalisations
+from tess_atlas.data.tic_entry import TICEntry
+from tess_atlas.file_management import PROFILING_CSV, TOI_DIR
+from tess_atlas.tess_atlas_version import __version__
+from tess_atlas.utils import grep_toi_number, notebook_initalisations
+
 from ...paths import TOI_TEMPLATE_FNAME, TRANSIT_MODEL
 from ..notebook_controller import NotebookController
 from .toi_run_stats_recorder import TOIRunStatsRecorder

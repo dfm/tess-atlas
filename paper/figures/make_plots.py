@@ -477,7 +477,7 @@ atlas.columns
 # ! download_toi 103 --outdir toi_174_files
 
 # +
-from tess_atlas.data import TICEntry
+from tess_atlas.data.tic_entry import TICEntry
 import os
 import aesara_theano_fallback.tensor as tt
 import exoplanet as xo

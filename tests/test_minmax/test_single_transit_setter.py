@@ -5,7 +5,7 @@ import unittest
 import pandas as pd
 import pytest
 
-from tess_atlas.data import TICEntry
+from tess_atlas.data.tic_entry import TICEntry
 
 CLEAN_AFTER_TEST = False
 

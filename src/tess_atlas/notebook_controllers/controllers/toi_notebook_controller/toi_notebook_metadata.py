@@ -8,11 +8,14 @@ from typing import Dict, Union
 import numpy as np
 import pandas as pd
 
-from .... import __website__
-from ....data.exofop import EXOFOP_DATA
-from ....data.exofop.constants import MULTIPLANET, NORMAL, SINGLE_TRANSIT
-from ....data.planet_candidate import CLASSIFICATION_SHORTHAND
-from ....file_management import (
+from tess_atlas import __website__
+from tess_atlas.data.exofop import EXOFOP_DATA
+from tess_atlas.data.exofop.constants import (
+    MULTIPLANET,
+    NORMAL,
+    SINGLE_TRANSIT,
+)
+from tess_atlas.file_management import (
     INFERENCE_DATA_FNAME,
     LC_DATA_FNAME,
     PROFILING_CSV,
@@ -20,9 +23,10 @@ from ....file_management import (
     TOI_DIR,
     read_last_n_lines,
 )
-from ....logger import LOG_FNAME
-from ....plotting.labels import THUMBNAIL_PLOT
-from ....utils import grep_toi_number
+from tess_atlas.logger import LOG_FNAME
+from tess_atlas.plotting.labels import THUMBNAIL_PLOT
+from tess_atlas.utils import grep_toi_number
+
 from .analysis_status import Status
 
 URL_BASE = f"{__website__}/content/toi_notebooks"

@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 from arviz import InferenceData
 
-from ..data.tic_entry import TICEntry
-from ..logger import LOGGER_NAME
+from tess_atlas.data.tic_entry import TICEntry
+from tess_atlas.logger import LOGGER_NAME
 
 logger = logging.getLogger(LOGGER_NAME)
 

@@ -89,12 +89,12 @@ from tess_atlas.analysis.model_tools import (
     get_untransformed_varnames,
     sample_prior,
 )
-from tess_atlas.data import TICEntry
 from tess_atlas.data.inference_data_tools import (
     get_optimized_init_params,
     summary,
     test_model,
 )
+from tess_atlas.data.tic_entry import TICEntry
 from tess_atlas.logger import get_notebook_logger
 from tess_atlas.plotting import (
     plot_diagnostics,

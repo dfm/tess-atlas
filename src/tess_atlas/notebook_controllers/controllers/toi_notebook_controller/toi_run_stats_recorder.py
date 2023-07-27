@@ -3,7 +3,6 @@ import logging
 import os
 from datetime import datetime, timedelta
 
-import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -11,9 +10,9 @@ import seaborn as sns
 from matplotlib.dates import DateFormatter
 from matplotlib.patches import Rectangle
 
-from ....data.exofop import EXOFOP_DATA
-from ....file_management import get_file_timestamp
-from ....logger import LOGGER_NAME
+from tess_atlas.data.exofop import EXOFOP_DATA
+from tess_atlas.file_management import get_file_timestamp
+from tess_atlas.logger import LOGGER_NAME
 
 logger = logging.getLogger(LOGGER_NAME)
 
@@ -71,9 +70,9 @@ class TOIRunStatsRecorder:
             self._data = self._data.rename(
                 columns={"timestamp": "end_time", "duration_in_s": "runtime"}
             )
-            self._data["start_time"] = self._data[
-                "end_time"
-            ] - pd.to_timedelta(self._data["runtime"], unit="s")
+            t1 = self._data["end_time"]
+            t0 = t1 - pd.to_timedelta(self._data["runtime"], unit="s")
+            self._data["start_time"] = t0
         return self._data
 
     def plot(self, savefig: bool = True):
@@ -190,11 +189,3 @@ class TOIRunStatsRecorder:
         ax.set_xlim(d["start_time"].min(), d["end_time"].max())
         # use datetime for x-axis
         ax.xaxis.set_major_formatter(DateFormatter("%H:%M"))
-
-
-@click.command()
-@click.argument(
-    "filename", type=click.Path(exists=True), default=RUN_STATS_FILENAME
-)
-def cli_plot_run_stats(filename: str):
-    TOIRunStatsRecorder(filename).plot()

@@ -39,7 +39,7 @@ def get_notebook_logger(outdir=""):
 
 
 def setup_logger(
-    logger_name: str,
+    logger_name: str = LOGGER_NAME,
     outdir: Union[Optional[str], Path] = "",
     level=logging.INFO,
     clean=False,

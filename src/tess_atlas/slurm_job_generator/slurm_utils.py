@@ -2,7 +2,7 @@ import glob
 import os
 import re
 import shutil
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 
@@ -10,7 +10,19 @@ STATS_COMMAND = "sacct -S {start} -E {end} -u {user} {extra_args} -o 'jobname%-4
 
 
 def create_slurm_stats_file(start: str, end: str, user: str, store_mem: bool):
-    """
+    """This function creates a file called jobstats.txt in the current directory
+    which contains the job stats for the given user between the given dates.
+
+    Useful for debugging/checking job stats.
+
+    The file is created by running the following command:
+    sacct -S {start} -E {end} -u {user} {extra_args} -o \
+    'jobname%-40,cputimeraw,State,MaxRSS' --parsable2 > jobstats.txt
+
+    - cputimeraw is the total CPU time used by the job in seconds.
+    - MaxRSS is the maximum resident set size of all tasks in the job.
+    - State is the current state of the job (e.g. COMPLETED, FAILED, TIMEOUT).
+
     :param start: Date in YYYY-MM-DD format
     :param end: Date in YYYY-MM-DD format (must be greater than start)
     :param user: username
@@ -31,17 +43,3 @@ def get_python_source_command():
 
 def to_str_list(li):
     return " ".join([str(i) for i in li])
-
-
-def get_completed_toi_pe_results_paths(outdir: str):
-    search_path = os.path.join(outdir, "*/toi_*_files/*.netcdf")
-    netcdf_files = glob.glob(search_path)
-    regex = "toi_(\d+)_files"
-    tois = [int(re.search(regex, f).group(1)) for f in netcdf_files]
-    return pd.DataFrame(dict(TOI=tois, path=netcdf_files))
-
-
-def get_unprocessed_toi_numbers(toi_numbers: List, outdir: str):
-    processed_tois = set(get_completed_toi_pe_results_paths(outdir).TOI.values)
-    tois = set(toi_numbers)
-    return list(tois.difference(processed_tois))

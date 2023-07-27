@@ -1,11 +1,14 @@
+import logging
 import os
-import sys
 from typing import List
 
-from ..file_management import mkdir
+from tess_atlas.file_management import mkdir
+from tess_atlas.logger import setup_logger
+
 from .file_generators import make_main_submitter, make_slurm_file
-from .slurm_cli import get_cli_args
-from .slurm_utils import get_unprocessed_toi_numbers
+from .slurm_toi_data_interface import get_unprocessed_toi_numbers
+
+logger = setup_logger()
 
 MAX_ARRAY_SIZE = 2048
 
@@ -18,15 +21,32 @@ def setup_jobs(
     clean: bool,
 ) -> None:
     """
-    Generate slurm files for analysing TOIs:
-    TODO: automation of getting new TOI list for analysis?
+    Generate slurm files for analysing TOIs
     - TOI number of parallel data generation jobs
     - TOI number of parallel analysis jobs
     - 1 job for generating webpages
+
+    TODO: automation of getting new TOI list for analysis?
+        To run on new TOIs
+        1) run `update_tic_cache` (this will get the latest TOI list)
+        2) run `make_slurm_jobs --submit` (this will generate the slurm files for the new TOIs + submit)
     TODO: automation of sending pages to Nectar to host?
     """
+
+    logger.info(f"Generating slurm files for TESS ATLAS")
+
+    initial_num, new_num = len(toi_numbers), len(toi_numbers)
     if not clean:
+        # only run jobs for TOIs that have not been processed (ie no netcdf files)
         toi_numbers = get_unprocessed_toi_numbers(toi_numbers, outdir)
+        new_num = len(toi_numbers)
+
+    if new_num != initial_num:
+        logger.info(
+            f"TOIs to be processed: {new_num} (not analysing {initial_num - new_num})"
+        )
+    else:
+        logger.info(f"_ALL_ TOIs to be processed: {initial_num}")
 
     submit_dir = mkdir(outdir, "submit")
     toi_batches = [
@@ -88,13 +108,6 @@ def setup_jobs(
 
     if submit:
         os.system(f"bash {submit_file}")
+        logger.info("All submitted!")
     else:
-        print(f"To run job:\n>>> bash {submit_file}")
-
-
-def main():
-    setup_jobs(*get_cli_args(sys.argv[1:]))
-
-
-if __name__ == "__main__":
-    main()
+        logger.info(f"To run job:\n>>> bash {submit_file}")

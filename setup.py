@@ -89,6 +89,10 @@ def find_meta(meta, meta_file=read(META_PATH)):
     raise RuntimeError("Unable to find __{meta}__ string.".format(meta=meta))
 
 
+def get_cli_entry_point(cmd, pkg=NAME):
+    return f"{cmd}={pkg}.cli.{cmd}_cli:main"
+
+
 if __name__ == "__main__":
     setup(
         name=NAME,
@@ -125,12 +129,12 @@ if __name__ == "__main__":
         zip_safe=True,
         entry_points={
             "console_scripts": [
-                "run_toi=tess_atlas.notebook_controllers.cli:cli_run_toi",
-                "make_webpages=tess_atlas.webbuilder.web_cli:main",
-                "make_slurm_job=tess_atlas.slurm_job_generator.slurm_job_generator:main",
-                "download_toi=tess_atlas.api.download_analysed_toi:main",
-                "update_tic_cache=tess_atlas.data.exofop.update_cache_cli:main",
-                "plot_run_stats=tess_atlas.notebook_controllers.controllers.toi_notebook_controller.toi_run_stats_recorder:cli_plot_run_stats",
+                get_cli_entry_point("run_toi"),
+                get_cli_entry_point("make_webpages"),
+                get_cli_entry_point("make_slurm_job"),
+                get_cli_entry_point("download_toi"),
+                get_cli_entry_point("update_tic_cache"),
+                get_cli_entry_point("plot_run_stats"),
             ]
         },
     )

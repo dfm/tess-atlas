@@ -2,6 +2,7 @@ import os
 from typing import List, Optional
 
 import jinja2
+from jinja2 import Template
 
 from ..file_management import mkdir
 from .slurm_utils import get_python_source_command, to_str_list
@@ -11,7 +12,7 @@ SUBMIT_TEMPLATE = "submit_template.sh"
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
 
 
-def load_template(template_file: str):
+def load_template(template_file: str) -> Template:
     template_loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
     template_env = jinja2.Environment(loader=template_loader)
     template = template_env.get_template(template_file)
@@ -31,7 +32,7 @@ def make_slurm_file(
     array_args: Optional[List[int]] = None,
     array_job: Optional[bool] = False,
     command: Optional[str] = None,
-):
+) -> str:
     log_dir = mkdir(outdir, f"log_{jobname}")
     common_kwargs = dict(
         jobname=f"toi_{jobname}",

@@ -3,7 +3,7 @@ make_webpages --notebooks <notebookdir> --webdir <webdir>
 """
 import argparse
 
-from .webbuilder import build_website
+from tess_atlas.webbuilder import build_website
 
 
 def get_cli_args():
@@ -25,16 +25,17 @@ def get_cli_args():
     )
     args = parser.parse_args()
 
-    return dict(
+    return args
+
+
+def main():
+    args = get_cli_args()
+    build_website(
         builddir=args.webdir,
         notebook_dir=args.notebooks,
         rebuild=args.rebuild,
         update_api_files=args.add_api,
     )
-
-
-def main():
-    build_website(**get_cli_args())
 
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ def get_path(toi: int):
     return paths[0]
 
 
-def download(toi: int):
+def download_toi(toi: int):
     urls = get_urls(toi)
     try:
         for url in urls:
@@ -44,20 +44,3 @@ def download(toi: int):
         logger.info(f"Notebook and data saved: {get_path(toi)}")
     except subprocess.CalledProcessError:
         logger.error(ERROR.format(toi=toi))
-
-
-def get_cli_args():
-    """Get the TOI number from the CLI and return it"""
-    parser = argparse.ArgumentParser(prog="download_toi")
-    parser.add_argument(
-        "toi_number",
-        type=int,
-        help="The TOI number to download data for (e.g. 103)",
-    )
-    args = parser.parse_args()
-    return args.toi_number
-
-
-def main():
-    toi = get_cli_args()
-    download(toi)

@@ -91,6 +91,8 @@ class TICEntry(DataObject):
             except Exception as e:
                 logger.info(f"Error loading fom cache: ''{e}''")
 
+        # TODO: check if this has been stored in the TESS-Atlas database
+
         return cls.from_database(toi)
 
     @classmethod

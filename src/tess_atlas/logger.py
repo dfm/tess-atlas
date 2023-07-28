@@ -75,9 +75,7 @@ def setup_logger(
 
 class DeltaTimeFormatter(logging.Formatter):
     def format(self, record):
-        duration = datetime.datetime.utcfromtimestamp(
-            record.relativeCreated / 1000
-        )
+        duration = datetime.utcfromtimestamp(record.relativeCreated / 1000)
         record.delta = duration.strftime("%H:%M:%S")
         return super().format(record)
 

@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from tess_atlas.data.analysis_summary import AnalysisSummary
@@ -23,13 +25,11 @@ def test_summary(fake_notebook_dir, tmpdir, monkeypatch):
         lambda remove_toi_without_lk=False: list(range(101, 110)),
     )
 
-    summary = AnalysisSummary.from_dir(
-        notebook_dir=fake_notebook_dir, n_threads=1
-    )
+    summary = AnalysisSummary.load(notebook_dir=fake_notebook_dir, n_threads=1)
     assert summary.n_total > 0
     assert summary.n_successful_analyses == n_successful_analyses
     assert summary.n_analysed == n_started_analyses
-    summary.save_to_csv(tmpdir.join("summary.csv"))
-    assert tmpdir.join("summary.csv").exists()
-    loaded_summary = AnalysisSummary.load_from_csv(tmpdir.join("summary.csv"))
+    summary.save(tmpdir)
+    assert os.path.exists(summary.fname(tmpdir))
+    loaded_summary = AnalysisSummary.load(tmpdir)
     assert loaded_summary.n_total == summary.n_total

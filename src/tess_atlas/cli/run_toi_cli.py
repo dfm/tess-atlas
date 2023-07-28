@@ -2,7 +2,7 @@ import argparse
 import os
 
 from tess_atlas.file_management import TOI_DIR
-from tess_atlas.logger import LOGGER_NAME, setup_logger
+from tess_atlas.logger import LOGGER_NAME, setup_logger, timestamp
 from tess_atlas.notebook_controllers.controllers.toi_notebook_controller import (
     TOINotebookController,
 )
@@ -45,9 +45,8 @@ def main():
         LOGGER_NAME,
         outdir=os.path.join(args.outdir, TOI_DIR.format(toi=args.toi_number)),
     )
-    logger.info(
-        f"run_toi({args.toi_number}) {'quick' if args.quickrun else ''} {'setup' if args.setup else ''}"
-    )
+    stmt = f"run_toi({args.toi_number}) {'quick' if args.quickrun else ''} {'setup' if args.setup else ''}"
+    logger.info(stmt + f" [{timestamp()}]")
     success, runtime = TOINotebookController.run_toi(
         toi_number=args.toi_number,
         outdir=args.outdir,
@@ -56,5 +55,5 @@ def main():
     )
     job_str = "setup" if args.setup else "execution"
     logger.info(
-        f"TOI {args.toi_number} {job_str} complete: {success} ({runtime:.2f}s)"
+        f"TOI {args.toi_number} {job_str} complete: {success} ({runtime:.2f}s) [{timestamp()}]"
     )

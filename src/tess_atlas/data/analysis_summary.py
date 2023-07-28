@@ -1,4 +1,5 @@
 import logging
+import os
 import warnings
 from typing import Dict, List, Union
 
@@ -37,6 +38,18 @@ class AnalysisSummary:
         return f"AnalysisSummary(Started[{self.n_analysed}], Pass[{self.n_successful_analyses}] + Failed[{self.n_failed_analyses}] = {self.n_total})"
 
     @classmethod
+    def load(
+        cls, notebook_dir: str, n_threads=1, clean=True
+    ) -> "AnalysisSummary":
+        fname = AnalysisSummary.fname(notebook_dir)
+        if os.path.exists(fname) and not clean:
+            analysis_summary = cls.from_csv(fname)
+        else:
+            analysis_summary = cls.from_dir(notebook_dir, n_threads=n_threads)
+            analysis_summary.save(notebook_dir)
+        return analysis_summary
+
+    @classmethod
     def from_dir(self, notebook_dir: str, n_threads=1) -> "AnalysisSummary":
         """Load the metadata from the output directory.
         returns: a pandas DataFrame with the metadata
@@ -58,7 +71,7 @@ class AnalysisSummary:
         return AnalysisSummary(df)
 
     @classmethod
-    def load_from_csv(self, csv_path: str) -> "AnalysisSummary":
+    def from_csv(self, csv_path: str) -> "AnalysisSummary":
         return AnalysisSummary(pd.read_csv(csv_path))
 
     @property
@@ -89,9 +102,21 @@ class AnalysisSummary:
         print("Num passed:", len(df[df["Status"] == Status.PASS.value]))
         return df
 
-    def save_to_csv(self, csv_path: str):
+    def save(self, notebook_dir: str):
+        csv_path = self.fname(notebook_dir)
+        os.makedirs(notebook_dir, exist_ok=True)
         self._data.to_csv(csv_path, index=False)
         return csv_path
+
+    @staticmethod
+    def fname(notebook_dir: str) -> str:
+        # make sure notebook dir does not have a file extension
+        my_dir, fname = os.path.splitext(notebook_dir)
+        if fname:
+            raise ValueError(
+                "notebook_dir should not have a file extension: {notebook_dir}"
+            )
+        return os.path.join(notebook_dir, "analysis_summary.csv")
 
 
 def _get_toi_metadict(fn: str) -> Dict[str, Union[str, bool, int, float]]:

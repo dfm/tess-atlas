@@ -1,3 +1,4 @@
+import logging
 import multiprocessing as mp
 import os
 import re
@@ -42,27 +43,20 @@ def notebook_initalisations(default=CWD):
 
     set_ipython_backend()
     set_plotting_style()
-    print_global_environ_vars()
 
 
-def print_global_environ_vars():
-    """Print the global environment variables."""
-    from IPython import display, get_ipython
-
-    data = [
-        ["Python version", sys.version],
-        ["Current working directory", Path.cwd()],
-        ["JOBFS", os.environ.get("JOBFS", "None")],
-        ["THEANO_FLAGS", os.environ.get("THEANO_FLAGS")],
-        ["OMP_NUM_THREADS", os.environ.get("OMP_NUM_THREADS")],
-        ["IPYTHONDIR", os.environ.get("IPYTHONDIR")],
-    ]
-
-    if get_ipython() is not None:
-        table = tabulate.tabulate(data, tablefmt="html")
-        display.display(display.HTML(table))
-    else:
-        print(tabulate.tabulate(data, tablefmt="simple"))
+def tabulate_global_environ_vars():
+    """tabulate the global environment variables (useful for debugging)."""
+    return tabulate.tabulate(
+        [
+            ["Python version", sys.version],
+            ["Current working directory", Path.cwd()],
+            ["JOBFS", os.environ.get("JOBFS", "None")],
+            ["THEANO_FLAGS", os.environ.get("THEANO_FLAGS")],
+            ["OMP_NUM_THREADS", os.environ.get("OMP_NUM_THREADS")],
+            ["IPYTHONDIR", os.environ.get("IPYTHONDIR")],
+        ]
+    )
 
 
 def set_plotting_style():

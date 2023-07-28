@@ -33,10 +33,28 @@ def make_slurm_file(
     array_job: Optional[bool] = False,
     command: Optional[str] = None,
     email: Optional[str] = "",
+    tmp: Optional[str] = "",
+    account: Optional[str] = "",
 ) -> str:
     """Make a slurm file for submitting a job to the cluster
 
-    :param outdir: Base output directory (will generate {outdir}/log_{jobname}, {outdir}/submit))
+    :param outdir: Base output directory (will generate {outdir}/log_{jobname})
+    :param module_loads: Module loads to include in the slurm file
+    :param jobname: Name of the job
+    :param cpu_per_task: Number of CPUs per task
+    :param time: Time limit for the job
+    :param mem: Memory limit for the job
+    :param submit_dir: Directory to save the slurm file to
+    :param partition: Partition to submit the job on
+    :param jobid: Job ID (for array jobs)tail
+    :param array_args: Array arguments (for array jobs)
+    :param array_job: Whether the job is an array job
+    :param command: Command to run
+    :param email: Email address to send notifications to
+    :param tmp: Temporary mem (tmp dir accessible via $JOBFS) (eg 1000M, or 1G)
+    :param account: Account to charge the job to
+
+
     """
     log_dir = os.path.abspath(mkdir(outdir, f"log_{jobname}"))
     common_kwargs = dict(
@@ -51,6 +69,8 @@ def make_slurm_file(
         array_job=str(array_job),
         command=command,
         email=email,
+        tmp=tmp,
+        account="",
     )
     array_kwargs = dict(
         array_end=None,

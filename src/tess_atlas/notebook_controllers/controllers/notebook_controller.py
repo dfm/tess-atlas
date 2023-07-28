@@ -13,8 +13,8 @@ class NotebookController:
 
     def __init__(self, notebook_path):
         self.notebook_path = notebook_path
-        self.execution_time = np.nan  # TODO: read this from the notebook
-        self.execution_success = False  # TODO: read this from the notebook
+        self.execution_time = np.nan
+        self.execution_success = False
         os.makedirs(self.notebook_dir, exist_ok=True)
 
     def generate(self, *args, **kwargs):

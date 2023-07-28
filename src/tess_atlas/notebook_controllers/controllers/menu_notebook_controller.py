@@ -18,7 +18,7 @@ class MenuPageController(NotebookController):
 
     def _get_templatized_text(self, **kwargs):
         summary_path = kwargs["summary_path"]
-        summary = AnalysisSummary.load_from_csv(summary_path)
+        summary = AnalysisSummary.from_csv(summary_path)
         n_exofop_toi = len(
             EXOFOP_DATA.get_toi_list(remove_toi_without_lk=False)
         )
@@ -40,13 +40,10 @@ class MenuPageController(NotebookController):
 
 
 def run_menu_page(notebook_dir):
-    summary = AnalysisSummary.from_dir(notebook_dir)
-    summary_path = summary.save_to_csv(
-        os.path.join(notebook_dir, "summary.csv")
-    )
+    summary = AnalysisSummary.load(notebook_dir)
     menu_notebook_fn = os.path.join(notebook_dir, "menu.ipynb")
     processor = MenuPageController(menu_notebook_fn)
-    processor.generate(summary_path=summary_path)
+    processor.generate(summary_path=summary.fname(notebook_dir))
     processor.execute()
     logger.info(
         f"Menu page generated [{processor.execution_success}]: {processor.notebook_path}"

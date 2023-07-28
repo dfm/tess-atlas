@@ -12,21 +12,17 @@ from matplotlib.patches import Rectangle
 
 from tess_atlas.data.exofop import EXOFOP_DATA
 from tess_atlas.file_management import get_file_timestamp
-from tess_atlas.logger import LOGGER_NAME
+from tess_atlas.logger import LOGGER_NAME, timestamp
 
 logger = logging.getLogger(LOGGER_NAME)
 
 RUN_STATS_FILENAME = "run_stats.csv"
 
 
-def timestamp() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-
 class TOIRunStatsRecorder:
     def __init__(self, fname: str):
-        self.fname = fname
-        self.outdir = os.path.dirname(fname)
+        self.fname = os.path.abspath(fname)
+        self.outdir = os.path.dirname(self.fname)
         if not os.path.isfile(self.fname):
             self.__init_file()
         self.file_timestamp: datetime = get_file_timestamp(
@@ -59,6 +55,7 @@ class TOIRunStatsRecorder:
         file_last_modified = runstats.file_timestamp
         runstats.__append(toi, success, job_type, runtime)
         # if the filetimestamp is older than 30 minutes, then make a new plot
+        # TODO: does this actually work??
         if (datetime.now() - file_last_modified) > timedelta(30 * 60):
             runstats.plot()
 

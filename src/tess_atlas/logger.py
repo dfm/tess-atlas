@@ -1,8 +1,8 @@
-import datetime
 import logging
 import os
 import sys
 from contextlib import contextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 
@@ -100,3 +100,7 @@ def all_logging_disabled(highest_level=logging.CRITICAL):
         yield
     finally:
         logging.disable(previous_level)
+
+
+def timestamp() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")

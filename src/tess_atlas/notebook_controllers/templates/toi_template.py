@@ -23,11 +23,6 @@ except ModuleNotFoundError:
 
 notebook_initalisations()
 
-# + tags=["exe", "hide-cell"]
-import theano
-
-print(theano.config)
-
 # + [markdown] tags=["def"]
 # # TESS Atlas fit for TOI {{{TOINUMBER}}}
 #
@@ -111,6 +106,14 @@ from tess_atlas.plotting import (
 
 TOI_NUMBER = {{{TOINUMBER}}}
 logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")
+
+# + tags=["exe", "hide-cell"]
+import theano
+
+from tess_atlas.utils import tabulate_global_environ_vars
+
+logger.info("GLOBAL ENVS:\n" + tabulate_global_environ_vars())
+logger.info(f"THEANO Config:\n{theano.config}")
 
 # + [markdown] tags=["def"]
 # ## Downloading Data

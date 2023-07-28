@@ -8,7 +8,7 @@ from tess_atlas.cli.make_slurm_job_cli import get_cli_args
 from tess_atlas.slurm_job_generator import slurm_job_generator
 from tess_atlas.slurm_job_generator.slurm_job_generator import setup_jobs
 
-CLEAN_AFTER = True
+CLEAN_AFTER = False
 
 TEST_ARRAY_SIZE = 15
 

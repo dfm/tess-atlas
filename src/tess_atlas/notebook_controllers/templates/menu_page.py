@@ -32,7 +32,7 @@ from itables import init_notebook_mode, show
 from tess_atlas.data.analysis_summary import AnalysisSummary
 
 init_notebook_mode(all_interactive=True)
-summary_df = AnalysisSummary.load_from_csv(
+summary_df = AnalysisSummary.from_csv(
     "{{{SUMMARY_PATH}}}"
 ).generate_summary_table()
 

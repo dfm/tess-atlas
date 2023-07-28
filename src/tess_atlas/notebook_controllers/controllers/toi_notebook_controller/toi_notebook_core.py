@@ -117,6 +117,8 @@ class TOINotebookCore(NotebookController):
             execution_successful = toi_nb_processor.notebook_exists
             runtime = time.time() - t0
         else:
+            # generate the notebook once again (in case some changes made to the template)
+            toi_nb_processor.generate(quickrun=quickrun)
             execution_successful = toi_nb_processor.execute(quickrun=quickrun)
             runtime = toi_nb_processor.execution_time
         TOIRunStatsRecorder.save_stats(

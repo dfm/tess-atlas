@@ -20,4 +20,5 @@ module load {{module_loads}}
 {% if array_job=="True" %}
 ARRAY_ARGS=({{array_args}})
 {% endif %}
+echo "Job tmp path: $JOBFS"
 {{command}}

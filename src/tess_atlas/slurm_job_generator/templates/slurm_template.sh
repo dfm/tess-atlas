@@ -21,4 +21,6 @@ module load {{module_loads}}
 ARRAY_ARGS=({{array_args}})
 {% endif %}
 echo "Job tmp path: $JOBFS"
+export THEANO_FLAGS="base_compiledir=$JOBFS/.theano_base,compiledir=$JOBFS/.theano_compile"
+export IPYTHONDIR=$JOBFS/.ipython
 {{command}}

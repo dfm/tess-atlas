@@ -112,8 +112,8 @@ import theano
 
 from tess_atlas.utils import tabulate_global_environ_vars
 
-logger.info("\n" + tabulate_global_environ_vars())
-logger(theano.config)
+logger.info("GLOBAL ENVS:\n" + tabulate_global_environ_vars())
+logger.info(f"THEANO Config:\n{theano.config}")
 
 # + [markdown] tags=["def"]
 # ## Downloading Data

@@ -1,5 +1,6 @@
 .pytest_cache
 tmp
+test_jobgen
 *.tar.gz
 .virtual_documents
 .DS_Store

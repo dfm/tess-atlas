@@ -38,6 +38,9 @@ def setup_jobs(
 
     initial_num, new_num = len(toi_numbers), len(toi_numbers)
     if not clean:
+        # TODO: atm this only checks if the analysis outputs aare present.
+        #       so, even if the generation job completed,
+        #       this still re-runs the generation job, wasting resources
         # only run jobs for TOIs that have not been processed (ie no netcdf files)
         toi_numbers = get_unprocessed_toi_numbers(toi_numbers, outdir)
         new_num = len(toi_numbers)

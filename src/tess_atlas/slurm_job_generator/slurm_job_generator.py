@@ -91,7 +91,7 @@ def setup_jobs(
                 jobname=f"pe",
                 mem="1500MB",
                 command=cmd,
-                tmp="500M",
+                tmp_mem="500M",
             )
         )
 

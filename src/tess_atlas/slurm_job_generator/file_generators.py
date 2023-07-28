@@ -33,7 +33,7 @@ def make_slurm_file(
     array_job: Optional[bool] = False,
     command: Optional[str] = None,
     email: Optional[str] = "",
-    tmp: Optional[str] = "",
+    tmp_mem: Optional[str] = "",
     account: Optional[str] = "",
 ) -> str:
     """Make a slurm file for submitting a job to the cluster
@@ -51,7 +51,7 @@ def make_slurm_file(
     :param array_job: Whether the job is an array job
     :param command: Command to run
     :param email: Email address to send notifications to
-    :param tmp: Temporary mem (tmp dir accessible via $JOBFS) (eg 1000M, or 1G)
+    :param tmp_mem: Temporary mem (tmp dir accessible via $JOBFS) (eg 1000M, or 1G)
     :param account: Account to charge the job to
 
 
@@ -69,8 +69,8 @@ def make_slurm_file(
         array_job=str(array_job),
         command=command,
         email=email,
-        tmp=tmp,
-        account="",
+        tmp_mem=tmp_mem,
+        account=account,
     )
     array_kwargs = dict(
         array_end=None,

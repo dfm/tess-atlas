@@ -3,16 +3,12 @@ import logging
 import os
 from datetime import datetime, timedelta
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-import seaborn as sns
-from matplotlib.dates import DateFormatter
-from matplotlib.patches import Rectangle
 
 from tess_atlas.data.exofop import EXOFOP_DATA
 from tess_atlas.file_management import get_file_timestamp
 from tess_atlas.logger import LOGGER_NAME, timestamp
+from tess_atlas.plotting.runtime_plotter import plot_runtimes_histogram
 
 logger = logging.getLogger(LOGGER_NAME)
 
@@ -73,18 +69,8 @@ class TOIRunStatsRecorder:
         return self._data
 
     def plot(self, savefig: bool = True):
-        """Plot the run stats
-        ax0: bar of number of successful 'setup' and 'execution' jobs (where total number is total number of TOIs)
-        ax1: log-binned histogram of runtimes (in hours) coloured by success/failure ('setup' jobs only)
-        ax2: log-binned histogram of runtimes (in hours) coloured by success/failure ('execution' jobs only)
-        ax3: start-end time of each job (coloured by success/failure)
-        """
-        fig, axs = plt.subplots(4, 1, figsize=(10, 10))
-        self._plot_counts_execution_complete_per_job_type(ax=axs[0])
-        self._plot_runtime_hist(ax=axs[1], job_type="setup")
-        self._plot_runtime_hist(ax=axs[2], job_type="execution")
-        self._plot_start_end_time(ax=axs[3])
-        fig.tight_layout()
+        """Plot the run stats"""
+        fig, axs = plot_runtimes_histogram(self.data)
         if savefig:
             fname = (
                 f"{self.outdir}/{RUN_STATS_FILENAME.replace('.csv', '.png')}"
@@ -112,77 +98,3 @@ class TOIRunStatsRecorder:
             total = sum(v.values())
             counts[k]["Remaining"] = EXOFOP_DATA.n_tois - total
         return pd.DataFrame(counts)
-
-    def _plot_counts_execution_complete_per_job_type(self, ax=None):
-        """Plot the number of execution_complete per job type"""
-        if ax is None:
-            fig, ax = plt.subplots()
-        counts = self._get_counts_execution_complete_per_job_type().T
-        # plot stacked bar chart, "Pass":tab:green, "Fail":tab:red, "Remaining":tab:orange
-        # pass on the bottom, then fail, then remaining
-        ax.bar(counts.index, counts["Pass"], color="tab:green", label="Pass")
-        ax.bar(
-            counts.index,
-            counts["Fail"],
-            bottom=counts["Pass"],
-            color="tab:red",
-            label="Fail",
-        )
-        ax.bar(
-            counts.index,
-            counts["Remaining"],
-            bottom=counts["Pass"] + counts["Fail"],
-            color="tab:orange",
-            label="Remaining",
-        )
-        ax.set_ylabel("Number of TOIs")
-        ax.set_xlabel("")
-        # add one additional tick to the x-axis to make room for the legend
-        ax.set_xticks(np.arange(len(counts.index) + 2))
-        # add axes tucj labels
-        ax.set_xticklabels(list(counts.index) + ["", ""])
-        # remove axes splines but keep ticks
-        sns.despine(ax=ax, left=True, bottom=True)
-        ax.legend(frameon=False, loc="upper right", bbox_to_anchor=(0.9, 1))
-
-    def _get_unique_data_per_job_type(self, job_type: str) -> pd.DataFrame:
-        """Returns a dataframe of the unique TOIs for a given job type"""
-        d = self.data[self.data["job_type"] == job_type]
-        d = d.sort_values(by="runtime")
-        d = d.drop_duplicates(subset=["toi"], keep="last")
-        return d
-
-    def _plot_runtime_hist(self, ax=None, job_type: str = "execution"):
-        """Plot the runtime histogram (in hours)"""
-        if ax is None:
-            fig, ax = plt.subplots()
-        d = self._get_unique_data_per_job_type(job_type)
-        d["runtime"] = d["runtime"] / 3600  # convert to hours
-        bins = np.linspace(d["runtime"].min(), d["runtime"].max(), 20)
-        d_true = d[d["execution_complete"] == True]["runtime"]
-        d_false = d[d["execution_complete"] == False]["runtime"]
-        ax.hist(d_true, bins=bins, alpha=0.5, color="tab:green")
-        ax.hist(d_false, bins=bins, alpha=0.5, color="tab:red")
-        ax.set_xlabel("Runtime (hours)")
-        ax.set_ylabel("Number of TOIs")
-        ax.set_title(f"Runtime histogram ({job_type} jobs only)")
-
-    def _plot_start_end_time(self, ax=None):
-        """Plot the start-end time of each job (rectangles), x-axis is time, no-yaxis (just for visualisation)"""
-        if ax is None:
-            fig, ax = plt.subplots()
-        d = self._get_unique_data_per_job_type("execution")
-        # plot rectangles for each TOI
-        for i, row in d.iterrows():
-            t0, t1 = row["start_time"], row["end_time"]
-            ax.add_patch(
-                Rectangle((t0, 0), t1 - t0, 1, color=f"C{i}", alpha=0.1)
-            )
-        ax.set_xlabel("Time")
-        ax.set_title("Timeline of execution jobs")
-        ax.set_yticks([])
-        ax.set_yticklabels([])
-        ax.set_ylim(0, 1)
-        ax.set_xlim(d["start_time"].min(), d["end_time"].max())
-        # use datetime for x-axis
-        ax.xaxis.set_major_formatter(DateFormatter("%H:%M"))

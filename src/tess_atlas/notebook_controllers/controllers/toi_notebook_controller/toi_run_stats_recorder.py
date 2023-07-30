@@ -16,6 +16,12 @@ RUN_STATS_FILENAME = "run_stats.csv"
 
 
 class TOIRunStatsRecorder:
+    """Class to record the run stats of the TOI notebooks"""
+
+    # TODO: deprecate in place of the AnalysisSummary class
+    # (this makes each slurm job write to the same file)
+    # (AnalysisSummary makes each slurm job write to a different file)
+
     def __init__(self, fname: str):
         self.fname = os.path.abspath(fname)
         self.outdir = os.path.dirname(self.fname)

@@ -7,6 +7,7 @@ html_title = project
 html_logo = "_static/atlas_logo.png"
 html_favicon = "_static/atlas_logo.png"
 release = "1"
+# templates_path = ["_templates"]
 extensions = [
     "myst_nb",
     "sphinx_comments",
@@ -29,13 +30,16 @@ html_theme_options = dict(
     show_prev_next=False,
     home_page_in_toc=True,
     toc_title=project,
-    # navbar_end= ["paperbutton.html"],
+    # navbar_end=["paperbutton.html", "navbar-icon-links"],
+    navbar_end=["navbar-icon-links"],
+    launch_buttons=dict(colab_url="https://colab.research.google.com"),
 )
-# templates_path = ["_templates"]
+
 
 html_sidebars = {"**": ["navbar-logo.html", "sbt-sidebar-nav.html"]}
 html_static_path = ["_static"]
-
+html_css_files = ["custom.css"]
+html_js_files = ["custom.js"]
 html_permalinks = True
 html_sourcelink_suffix = ""
 numfig = True
@@ -43,5 +47,12 @@ panels_add_bootstrap_css = True
 suppress_warnings = ["myst.domains"]
 html_copy_source = False
 remove_from_toctrees = ["content/toi_notebooks/toi_*.ipynb"]
+comments_config = {
+    "utterances": {
+        "repo": "avivajpeyi/tess-atlas",  # as https://utteranc.es/ not installed in dfm/tess-atlas atm
+        "optional": "config",
+        "label": "comment",
+    }
+}
 
 # https://stackoverflow.com/questions/55297443/including-notebook-with-nbsphinx-fails/70474616#70474616

@@ -2,7 +2,7 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: ipynb,py:light
+#     formats: ipynb,py:light,md
 #     text_representation:
 #       extension: .py
 #       format_name: light
@@ -26,7 +26,7 @@
 #
 # Each TOI’s analysis has its own page. Access them from the table below.
 #
-# + tags=[ "remove-input"]
+# + tags=["remove-input"]
 from itables import init_notebook_mode, show
 
 from tess_atlas.data.analysis_summary import AnalysisSummary
@@ -36,7 +36,7 @@ summary_df = AnalysisSummary.from_csv(
     "{{{SUMMARY_PATH}}}"
 ).generate_summary_table()
 
-# + tags=[ "remove-input"]
+# + tags=["remove-input"]
 show(
     summary_df,
     caption="TESS Atlas Catalog Summary",
@@ -68,3 +68,16 @@ show(
 # [1]: https://exoplanetarchive.ipac.caltech.edu/docs/API_toi_columns.html
 # [2]: https://exofop.ipac.caltech.edu/tess/view_toi.php#
 #
+# -
+
+# <!--COMMENTS WITH Utterance.es-->
+# <!--FIXME: dont seem to be working atm :(-->
+# ```{raw} html
+# <script src="https://utteranc.es/client.js"
+#         repo="avivajpeyi/tess-atlas"
+#         issue-term="title"
+#         theme="github-light"
+#         crossorigin="anonymous"
+#         async>
+# </script>
+# ```

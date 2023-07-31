@@ -9,9 +9,9 @@ html_favicon = "_static/atlas_logo.png"
 release = "1"
 extensions = [
     "myst_nb",
-    "sphinx_comments",
+    "sphinx_comments",  # use
     "sphinx_external_toc",
-    "sphinx.ext.intersphinx",
+    "sphinx.ext.intersphinx",  # link up to another doc
     "sphinx_design",
     "sphinx_book_theme",
     "sphinx_remove_toctrees",

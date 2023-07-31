@@ -64,7 +64,6 @@ EXTRA_REQUIRE = {
         "pretty-jupyter",
         "itables",
         "interruptingcow",
-        "jupyter-book",
         "myst-nb",
     ]
 }

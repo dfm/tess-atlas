@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.10.3
+#       jupytext_version: 1.14.5
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -363,3 +363,16 @@ citations.print_bibliography()
 
 # + pycharm={"name": "#%%\n"} tags=["exe", "output_scroll"]
 citations.print_packages()
+# -
+
+# <!--## Comments-->
+# <!--FIXME: dont seem to be working atm :(-->
+# ```{raw} html
+# <script src="https://utteranc.es/client.js"
+#         repo="avivajpeyi/tess-atlas"
+#         issue-term="title"
+#         theme="github-light"
+#         crossorigin="anonymous"
+#         async>
+# </script>
+# ```

@@ -60,3 +60,5 @@ theano_cache
 .coverage*
 *.xml
 *.txt
+src/tess_atlas/notebook_controllers/templates/*.ipybn
+src/tess_atlas/notebook_controllers/templates/*.md

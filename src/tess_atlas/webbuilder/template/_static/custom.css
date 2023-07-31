@@ -1,0 +1,23 @@
+/*Prevent scrollbar on left sidebar*/
+#sidebar {
+    overflow: hidden;
+}
+
+/* Sidebar */
+.wy-nav-side {
+  background: #ff0000;
+}
+
+
+body {
+    /* ... */
+}
+
+/*Test to see if this is actually being picked up anything works*/
+/*h1 {*/
+/*    color: #003B71 !important;*/
+/*}*/
+/*^Above _does_ seem to work*/
+
+
+/*At the bottom add javascript */

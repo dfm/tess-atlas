@@ -37,7 +37,6 @@ def plot_thumbnail(
         legend_fs=0,
         annotate_with_period=False,
         legend=0,
-        save=False,
         lc_alpha=0.5,
         lc_fill_alpha=0.25,
     )

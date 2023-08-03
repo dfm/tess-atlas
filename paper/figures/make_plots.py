@@ -677,7 +677,7 @@ def plot_toi_phase_subplots(tic_entry, planet_transit_model):
     n = tic_entry.planet_count
     fig, axes = plt.subplots(n,1, figsize=(6.5, 3*n), sharex=True)
     kwgs.update(dict(
-        save=False, legend=2, annotate_with_period=False, default_fs=20, legend_fs = 16
+        legend=2, annotate_with_period=False, default_fs=20, legend_fs = 16
     ))
     for i in range(tic_entry.planet_count):
         ax = axes[i]

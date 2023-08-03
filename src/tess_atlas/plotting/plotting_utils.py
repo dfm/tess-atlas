@@ -223,14 +223,35 @@ def get_one_dimensional_median_and_error_bar(
     return f"${med}{unc}$"
 
 
-def get_longest_unbroken_section_of_data(t, min_break_len=10):
-    """Get longest chain of data without a break of longer than min_break_len"""
+def get_longest_unbroken_section_of_data(
+    t, min_break_len=10
+) -> Tuple[np.ndarray, np.ndarray, int]:
+    """Get the longest chain of data without a break of longer than min_break_len
+    Parameters
+    ==========
+    t: np.1d array
+        The time array
+    min_break_len: int, (10)
+        The minimum length of a break in the data to be considered a break
+    percent_data: int
+        The percentage of data that is in the longest unbroken section
+
+    Returns
+    =======
+    idx: np.ndarray
+        The indices of the longest unbroken section of data
+    longest_t: np.ndarray
+        The time array of the longest unbroken section of datas
+    percent_data: int
+        The percentage of data that is in the longest unbroken section
+    """
     td = np.array([t2 - t1 for t2, t1 in zip(t[1:], t)])
     t_split = np.split(t, np.where(td >= min_break_len)[0])
     split_lens = [len(ts) for ts in t_split]
     longest_t = t_split[split_lens.index(max(split_lens))][1:-1]
     idx = np.searchsorted(t, longest_t)
-    return idx, longest_t
+    percent_data = int(100 * (len(idx) / len(t)))
+    return idx, longest_t, percent_data
 
 
 def exception_catcher(func):

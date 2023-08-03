@@ -1,10 +1,10 @@
 # PLOT FILE NAMES
-LIGHTCURVE_PLOT = "flux_vs_time.png"
+LC_PLOT = "flux_vs_time.png"
 PHASE_PLOT = "phase_plot.png"
 POSTERIOR_PLOT = "posteriors.png"
 ECCENTRICITY_PLOT = "eccentricity_posteriors.png"
 PRIOR_PLOT = "priors.png"
-DIAGNOSTIC_LIGHTCURVE_PLOT = "diagnostic_flux_vs_time.png"
+DIAGNOSTIC_LC_PLOT = "diagnostic_flux_vs_time.png"
 DIAGNOSTIC_TRACE_PLOT = "diagnostic_trace_plot.png"
 DIAGNOSTIC_RAW_LC_PLOT = "diagnostic_raw_lc_plot.png"
 THUMBNAIL_PLOT = "thumbnail.png"  # TODO: save a thumbnail of the phase plot

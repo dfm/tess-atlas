@@ -177,7 +177,7 @@ def get_optimized_init_params(
     stellar_params,
     period_params,
     theta=None,
-    verbose=False,
+    verbose=True,
     return_all=False,
     quick=False,
 ):

@@ -126,8 +126,6 @@ def add_phase_data_to_ax(
     plot_error_bars: Optional[bool] = False,
     plot_all_datapoints: Optional[bool] = False,
     zoom_y_axis: Optional[bool] = False,
-    plot_label: Optional[str] = "",
-    num_lc: Optional[int] = 12,
     default_fs: Optional[int] = 16,
     period_fs: Optional[int] = 12,
     legend_fs: Optional[int] = 10,
@@ -135,8 +133,6 @@ def add_phase_data_to_ax(
     lc_alpha: Optional[float] = 1,
     lc_fill_alpha: Optional[float] = 0.5,
     annotate_with_period: Optional[bool] = True,
-    savekwgs=dict(transparent=False, dpi=150),
-    save=True,
     legend=1,
     **kwgs,
 ):
@@ -278,6 +274,7 @@ def add_phase_data_to_ax(
         if initial_line:
             handles.append(initial_line)
             labels.append("ExoFOP")
+            # TODO: wait, is this actually the ExoFOP fit, or the initial fit?
         if model_line:
             handles.append(model_line)
             labels.append("Atlas")
@@ -293,17 +290,6 @@ def add_phase_data_to_ax(
         l._legend_box.align = "left"
         l.get_frame().set_linewidth(0.0)
 
-    if not save:
-        return plt.gcf()
-
-    plt.title(f"TOI {toi}: Planet {i + 1}", fontsize=default_fs)
-
+    ax.set_title(f"TOI {toi}: Planet {i + 1}", fontsize=default_fs)
     plt.tight_layout()
-
-    fname = PHASE_PLOT.replace(".", f"_TOI{toi}_{i + 1}.")
-    if plot_label:
-        fname = f"{plot_label}_{fname}"
-
-    fname = os.path.join(tic_entry.outdir, fname)
-    logger.debug(f"Saving {fname}")
-    plt.savefig(fname, **savekwgs)
+    return ax.get_figure()

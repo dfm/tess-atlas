@@ -38,17 +38,20 @@ def plot_priors(
     samples_table[f"Planet Params"] = get_samples_from_param_regexs(
         prior_samples, PARAMS_CATEGORIES["PLANET PARAMS"]
     )
+    fig = __plot_histograms(samples_table, init_params, LATEX)
+    fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
+    fig.savefig(fname)
+    logger.info(f"Saved {fname}")
 
-    try:
-        fig = __plot_histograms(
-            samples_table, trues=init_params, latex_label=LATEX
-        )
-
-        fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
-        logger.debug(f"Saving {fname}")
-        fig.savefig(fname)
-    except Exception as e:
-        logger.error(f"Cant plot priors: {e}")
+    # try:
+    #     fig = __plot_histograms(
+    #         samples_table, trues=init_params, latex_label=LATEX
+    #     )
+    #     fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
+    #     fig.savefig(fname)
+    #     logger.info(f"Saved {fname}")
+    # except Exception as e:
+    #     logger.error(f"Cant plot priors: {e}, {e.__traceback__}")
 
 
 def get_samples_from_param_regexs(samples, param_regex):
@@ -63,7 +66,6 @@ def get_samples_from_param_regexs(samples, param_regex):
 
 def __plot_histograms(
     samples_table: Dict[str, Dict[str, np.array]],
-    fname: Optional[str] = "",
     trues: Optional[Dict] = {},
     latex_label: Optional[Dict] = {},
 ) -> plt.Figure:
@@ -84,8 +86,6 @@ def __plot_histograms(
             )
             format_hist_axes_label_string_with_offset(axes[row_i, col_i], "x")
     plt.tight_layout()
-    if fname:
-        fig.savefig(fname)
     return fig
 
 

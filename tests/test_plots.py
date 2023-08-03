@@ -26,7 +26,7 @@ def test_static_phase_plot(tic_entry):
 
 @pytest.mark.skip("No test data (data deleted).")
 def test_histogram_plot():
-    from tess_atlas.plotting.histogram_plotter import plot_histograms
+    from tess_atlas.plotting.histogram_plotter import __plot_histograms
 
     trues = dict(a=0, b=5, c=2, d=-1)
     n = 5000
@@ -41,12 +41,12 @@ def test_histogram_plot():
         "Type 2": dict(b=samples["b"], c=samples["c"]),
         "Type 3": dict(d=samples["d"]),
     }
-    plot_histograms(
+    __plot_histograms(
         samples_table=samples_table, trues=trues, fname=f"./hist.png"
     )
 
     latex_label = dict(a=r"$\alpha$", b=r"$\beta$", c=r"$c$", d="d")
-    plot_histograms(
+    __plot_histograms(
         samples_table=samples_table,
         fname=f"./hist_latex.png",
         latex_label=latex_label,

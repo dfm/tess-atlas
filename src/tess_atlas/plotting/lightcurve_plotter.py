@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,9 +24,9 @@ def plot_lightcurve(
     save: Optional[bool] = True,
     zoom_in: Optional[bool] = False,
     observation_periods: Optional[np.ndarray] = None,
-) -> plt.Figure:
+) -> Tuple[plt.Figure, None]:
     """Plot lightcurve data"""
-    # todo truncate region of missing data on axes
+    # TODO: truncate region of missing data on axes
 
     if model_lightcurves is None:
         model_lightcurves = []
@@ -37,7 +37,7 @@ def plot_lightcurve(
         observation_periods = []
 
     colors = get_colors(tic_entry.planet_count)
-    fig, ax = plt.subplots(1, figsize=(7, 5))
+    fig, ax = plt.subplots(1, figsize=(9, 5))
 
     lc = tic_entry.lightcurve
 
@@ -90,9 +90,11 @@ def plot_lightcurve(
         ax.axvspan(period[0], period[1], facecolor=c, alpha=0.1)
 
     fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
+    plt.tight_layout()
     if save:
-        logger.debug(f"Saving {fname}")
+        logger.info(f"Saving {fname}")
         fig.savefig(fname)
+        plt.close(fig)
     else:
         return fig
 

@@ -40,7 +40,7 @@ def plot_priors(
     )
 
     try:
-        fig = plot_histograms(
+        fig = __plot_histograms(
             samples_table, trues=init_params, latex_label=LATEX
         )
 
@@ -61,12 +61,12 @@ def get_samples_from_param_regexs(samples, param_regex):
     return data
 
 
-def plot_histograms(
+def __plot_histograms(
     samples_table: Dict[str, Dict[str, np.array]],
     fname: Optional[str] = "",
     trues: Optional[Dict] = {},
     latex_label: Optional[Dict] = {},
-) -> None:
+) -> plt.Figure:
     nrows = len(samples_table.keys())
     ncols = __get_longest_row_length(samples_table)
     fig, axes = __create_fig(nrows, ncols)
@@ -86,8 +86,7 @@ def plot_histograms(
     plt.tight_layout()
     if fname:
         fig.savefig(fname)
-    else:
-        return fig
+    return fig
 
 
 def __plot_hist1d(ax, x):

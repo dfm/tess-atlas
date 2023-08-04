@@ -206,6 +206,7 @@ def plot_lightcurve_gp_and_residuals(
         if zoom_in:
             fname = fname.replace(".png", "_zoom.png")
         fig.savefig(fname, bbox_inches="tight")
+        logger.info(f"Saved {fname}")
         plt.close(fig)
     else:
         return fig
@@ -229,8 +230,8 @@ def plot_inference_trace(tic_entry, save=True):
             return plt.gcf()
 
 
-def plot_diagnostics(tic_entry, model, init_params):
-    plot_lightcurve_gp_and_residuals(tic_entry, model)
+def plot_diagnostics(tic_entry, model, init_params, save=True):
+    plot_lightcurve_gp_and_residuals(tic_entry, model, save=save)
     plot_thumbnail(
         tic_entry,
         model,

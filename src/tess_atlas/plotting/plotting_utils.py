@@ -92,6 +92,7 @@ def format_hist_axes_label_string_with_offset(ax, axis="both") -> None:
         plt.draw()  # Update the text
         offset_text = axi.get_offset_text().get_text()
         label = axi.get_label().get_text()
+
         new_label, new_offset = __update_label(label, offset_text)
         axi.offsetText.set_visible(False)
         kwg = dict(
@@ -124,24 +125,28 @@ def __parse_matplotlib_sf(v: str) -> Tuple[str, str]:
     if UNREADABLE_MINUS in v:
         v = v.replace(UNREADABLE_MINUS, READABLE_MINUS)
 
-    v = v.strip("$")
-    v = v.replace(r"\times\mathdefault", r"\times")
-    v = v.replace(r"}\mathdefault", "};")
-    v = v.split(";")
-    multiplyer = v[0]  # latex code
-    offset = v[1]
-    offset = offset.replace(r"\times", "*").replace("^", "**")
-    offset = offset.replace(r"{", "(").replace(r"}", ")")
-    offset = eval(offset)
-    if isinstance(offset, float):
-        if offset > 100:
-            offset = f"{int(offset):+}"
+    if "\times\mathdefault" in v:
+        v = v.strip("$")
+        v = v.replace(r"\times\mathdefault", r"\times")
+        v = v.replace(r"}\mathdefault", "};")
+        v = v.split(";")
+        multiplyer = v[0]  # latex code
+        offset = v[1]
+        offset = offset.replace(r"\times", "*").replace("^", "**")
+        offset = offset.replace(r"{", "(").replace(r"}", ")")
+        offset = eval(offset)
+        if isinstance(offset, float):
+            if offset > 100:
+                offset = f"{int(offset):+}"
+            else:
+                offset = f"{offset:+.2f}"
+                if offset[-2] == "00":
+                    offset = offset[:-3]
         else:
-            offset = f"{offset:+.2f}"
-            if offset[-2] == "00":
-                offset = offset[:-3]
+            offset = ""
     else:
-        offset = ""
+        offset = v
+        multiplyer = ""
 
     return offset, multiplyer
 
@@ -151,6 +156,7 @@ def __update_label(old_label, offset_text):
         return old_label, ""
 
     offset, multiplyer = __parse_matplotlib_sf(offset_text)
+
     try:
         units = old_label[old_label.index("[") + 1 : old_label.rindex("]")]
     except ValueError:
@@ -171,7 +177,10 @@ def __update_label(old_label, offset_text):
         brac_str = f"\, [{brac_str}]"
 
     new_label = f"${label}{brac_str}$"
-    new_multiplyer_offset = f"${multiplyer}$"
+    new_multiplyer_offset = f"${multiplyer}$" if len(multiplyer) > 0 else ""
+    logger.debug(
+        f"{old_label}, {offset_text} --> {new_label} {new_multiplyer_offset}"
+    )
     return new_label, new_multiplyer_offset
 
 
@@ -258,8 +267,7 @@ def exception_catcher(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception as e:
-            logger.warning(f"Skipping {func}({args}, {kwargs}): {e}")
-            pass
+        except Exception as err:
+            logger.exception(err)
 
     return wrapper

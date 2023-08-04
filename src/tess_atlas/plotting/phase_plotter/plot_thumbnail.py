@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Dict, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 from arviz import InferenceData
@@ -25,6 +25,7 @@ def plot_thumbnail(
     model: Model,
     inference_data: Optional[InferenceData] = None,
     initial_params: Optional[Dict] = None,
+    save=Union[bool, str],
     **kwgs,
 ):
     kwgs = _preprocess_phase_plot_data(
@@ -54,7 +55,12 @@ def plot_thumbnail(
     plt.xlabel("")
     plt.ylabel("")
     plt.axis("tight")
-    fname = os.path.join(tic_entry.outdir, THUMBNAIL_PLOT)
-    fig.savefig(
-        fname, transparent=True, dpi=80, bbox_inches="tight", pad_inches=0
-    )
+    if save:
+        fname = os.path.join(tic_entry.outdir, THUMBNAIL_PLOT)
+        fig.savefig(
+            fname, transparent=True, dpi=80, bbox_inches="tight", pad_inches=0
+        )
+        plt.close(fig)
+        logger.info(f"Saved {fname}")
+    else:
+        return fig

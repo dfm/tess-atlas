@@ -18,7 +18,7 @@ from ..logger import LOGGER_NAME
 logger = logging.getLogger(LOGGER_NAME)
 
 
-def sample_prior(model: Model, size: Optional[int] = 10000):
+def sample_prior(model: Model, size: Optional[int] = 50000):
     varnames = get_untransformed_varnames(model)
     try:
         samples = draw_values([model[v] for v in varnames], size=size)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import List, Optional, Tuple
+from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,10 +21,10 @@ logger = logging.getLogger(LOGGER_NAME)
 def plot_lightcurve(
     tic_entry: TICEntry,
     model_lightcurves: Optional[np.ndarray] = None,
-    save: Optional[Tuple[bool, str]] = True,
+    save: Optional[Union[bool, str]] = False,
     zoom_in: Optional[bool] = False,
     observation_periods: Optional[np.ndarray] = None,
-) -> Tuple[plt.Figure, None]:
+) -> Union[plt.Figure, None]:
     """Plot lightcurve data"""
     # TODO: truncate region of missing data on axes
 

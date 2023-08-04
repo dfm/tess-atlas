@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 from arviz import InferenceData
@@ -25,7 +25,7 @@ def plot_phase(
     model: Model,
     inference_data: Optional[InferenceData] = None,
     initial_params: Optional[Dict] = None,
-    save=Tuple[bool, str],
+    save=Union[bool, str],
     **kwgs,
 ):
     """Adapted from exoplanet tutorials

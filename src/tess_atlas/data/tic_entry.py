@@ -156,6 +156,9 @@ class TICEntry(DataObject):
             self.optimized_params.save_data(self.outdir)
         logger.info(f"Saved data in {self.outdir}")
 
+    def __repr__(self):
+        return f"<TICEntry[{self.toi_number}]>"
+
 
 def _get_tic_id_from_table(tic_data: pd.DataFrame) -> int:
     return int(tic_data[TIC_ID].iloc[0])

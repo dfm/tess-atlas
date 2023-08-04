@@ -19,42 +19,37 @@ logger = logging.getLogger(LOGGER_NAME)
 
 @exception_catcher
 def plot_priors(
-    tic_entry: "TICEntry", prior_samples: Dict, init_params: Dict
+    tic_entry: "TICEntry", prior_samples: Dict, init_params: Dict, save=True
 ) -> None:
+    logger.info("Plotting priors")
     prior_samples, init_params = format_prior_samples_and_initial_params(
         prior_samples, init_params
     )
 
     samples_table = {}
-    samples_table["Noise Params"] = get_samples_from_param_regexs(
+    samples_table["Noise Params"] = __get_samples_from_param_regexs(
         prior_samples, PARAMS_CATEGORIES["NOISE PARAMS"]
     )
-    samples_table["Stellar Params"] = get_samples_from_param_regexs(
+    samples_table["Stellar Params"] = __get_samples_from_param_regexs(
         prior_samples, PARAMS_CATEGORIES["STELLAR PARAMS"]
     )
-    samples_table[f"Period Params"] = get_samples_from_param_regexs(
+    samples_table[f"Period Params"] = __get_samples_from_param_regexs(
         prior_samples, PARAMS_CATEGORIES["PERIOD PARAMS"]
     )
-    samples_table[f"Planet Params"] = get_samples_from_param_regexs(
+    samples_table[f"Planet Params"] = __get_samples_from_param_regexs(
         prior_samples, PARAMS_CATEGORIES["PLANET PARAMS"]
     )
     fig = __plot_histograms(samples_table, init_params, LATEX)
     fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
-    fig.savefig(fname)
-    logger.info(f"Saved {fname}")
-
-    # try:
-    #     fig = __plot_histograms(
-    #         samples_table, trues=init_params, latex_label=LATEX
-    #     )
-    #     fname = os.path.join(tic_entry.outdir, f"{PRIOR_PLOT}")
-    #     fig.savefig(fname)
-    #     logger.info(f"Saved {fname}")
-    # except Exception as e:
-    #     logger.error(f"Cant plot priors: {e}, {e.__traceback__}")
+    if save:
+        fig.savefig(fname)
+        plt.close(fig)
+        logger.info(f"Saved {fname}")
+    else:
+        return fig
 
 
-def get_samples_from_param_regexs(samples, param_regex):
+def __get_samples_from_param_regexs(samples, param_regex):
     samples_keys = samples.columns.values
     data = {}
     for s in samples_keys:
@@ -91,7 +86,9 @@ def __plot_histograms(
 
 def __plot_hist1d(ax, x):
     range = np.quantile(x, [0.01, 0.99])
-    ax.hist(x, density=True, bins=20, range=range, histtype="step", color="C0")
+    ax.hist(
+        x, density=True, bins=100, range=range, histtype="step", color="C0"
+    )
     ax.set_xlim(min(range), max(range))
 
 

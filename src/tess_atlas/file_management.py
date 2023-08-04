@@ -7,6 +7,7 @@ from typing import Optional, Union
 
 # CONSTANT FILENAMES
 SAMPLES_FNAME = "samples.csv"
+INFERENCE_SUMMARY_FNAME = "inference_summary.csv"
 INFERENCE_DATA_FNAME = "inference_data.netcdf"
 TOI_DIR = "toi_{toi}_files"
 TIC_CSV = "tic_data.csv"

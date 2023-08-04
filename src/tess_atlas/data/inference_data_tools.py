@@ -1,13 +1,18 @@
 import logging
 import os
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import arviz as az
 import numpy as np
 import pandas as pd
 import pymc3_ext as pmx
 
-from ..file_management import INFERENCE_DATA_FNAME, SAMPLES_FNAME, get_filesize
+from ..file_management import (
+    INFERENCE_DATA_FNAME,
+    INFERENCE_SUMMARY_FNAME,
+    SAMPLES_FNAME,
+    get_filesize,
+)
 from ..logger import LOGGER_NAME
 
 logger = logging.getLogger(LOGGER_NAME)
@@ -37,11 +42,24 @@ def save_inference_data(inference_data: az.InferenceData, outdir: str):
         filename=fname, groups=["posterior", "log_likelihood", "sample_stats"]
     )
     save_samples(inference_data, outdir)
+    save_inference_summary(inference_data, outdir)
     logger.info(f"Saved inference data [{get_filesize(fname)} MB]")
 
 
+def get_max_rhat(inference_data: az.InferenceData) -> float:
+    rhat = summary(inference_data, print_warnings=False)["r_hat"]
+    return rhat.max()
+
+
+def save_inference_summary(inference_data: az.InferenceData, outdir: str):
+    fname = os.path.join(outdir, INFERENCE_SUMMARY_FNAME)
+    summary(inference_data).to_csv(fname, index=False)
+
+
 def summary(
-    inference_data: az.InferenceData, just_planet_params=False
+    inference_data: az.InferenceData,
+    just_planet_params=False,
+    print_warnings=True,
 ) -> pd.DataFrame:
     """Returns a dataframe with the mean+sd of each candidate's p, b, r"""
     df = az.summary(
@@ -57,25 +75,49 @@ def summary(
         df["parameter"] = df.index
         df.set_index(["parameter"], inplace=True, append=False, drop=True)
 
-    RHAT_THRESHOLD = 1.1
-    bogus_params = []
-    for param, row in df.iterrows():
-        if row["r_hat"] >= RHAT_THRESHOLD:
-            bogus_params.append(param)
-
-    if len(bogus_params) > 0:
-        logger.warning(
-            f"Sampler may not have converged! r-hat > {RHAT_THRESHOLD} for {bogus_params}"
-        )
-
-    # TODO
-    """
-    for each b_param in all_params:
-        if median(b_param) > 0.8:
-            logger.warning("b[i] > 0.8 --> may be a grazing system!")
-    """
+    if print_warnings:
+        rhat_check(df)
+        grazing_check(df)
 
     return df
+
+
+def rhat_check(summary_df, rhat_threshold=1.05, print_warnings=True):
+    bogus_params = []
+    check_passed = True
+    for param, row in summary_df.iterrows():
+        if row["r_hat"] >= rhat_threshold:
+            bogus_params.append(param)
+    if len(bogus_params) > 0:
+        check_passed = False
+        if print_warnings:
+            logger.warning(
+                f"Sampler may not have converged! r-hat > {rhat_threshold} for {bogus_params}"
+            )
+    return check_passed
+
+
+def grazing_check(
+    summary_df=None, inference_data=None, b_threshold=0.8, print_warnings=True
+):
+    """Check for grazing systems
+
+    If summary_df contains rows with "b[]", then this function will check if any of the rows
+    have a median value > b_threshold. If so, a warning will be logged.
+    """
+    if inference_data is not None:
+        summary_df = summary(
+            inference_data, just_planet_params=True, print_warnings=False
+        )
+
+    check_passed = True
+    b_parms = [p for p in summary_df.index if "b[" in p]
+    for b_param in b_parms:
+        if summary_df.loc[b_param, "mean"] > b_threshold:
+            check_passed = False
+            if print_warnings:
+                logger.warning(f"{b_param} > 0.8 --> may be a grazing system!")
+    return check_passed
 
 
 def get_samples_dataframe(inference_data: az.InferenceData) -> pd.DataFrame:

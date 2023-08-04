@@ -9,6 +9,8 @@ from ..logger import LOGGER_NAME
 
 logger = logging.getLogger(LOGGER_NAME)
 
+from tess_atlas.data.inference_data_tools import get_max_rhat, grazing_check
+
 from ..data.data_utils import residual_rms
 from .labels import (
     DIAGNOSTIC_LC_PLOT,
@@ -197,7 +199,7 @@ def plot_lightcurve_gp_and_residuals(
 
     if total_outliers > 100:
         logger.warning(
-            "Large number of outliers in residuals after fitting model."
+            f"Large number of outliers in residuals after fitting model: {total_outliers}"
         )
 
     fig.subplots_adjust(hspace=0, wspace=0)
@@ -210,6 +212,8 @@ def plot_lightcurve_gp_and_residuals(
         plt.close(fig)
     else:
         return fig
+
+    return fig, total_outliers
 
 
 def plot_inference_trace(tic_entry, save=True):
@@ -231,7 +235,9 @@ def plot_inference_trace(tic_entry, save=True):
 
 
 def plot_diagnostics(tic_entry, model, init_params, save=True):
-    plot_lightcurve_gp_and_residuals(tic_entry, model, save=save)
+    _, total_number_outliers = plot_lightcurve_gp_and_residuals(
+        tic_entry, model, save=save
+    )
     plot_thumbnail(
         tic_entry,
         model,
@@ -242,3 +248,10 @@ def plot_diagnostics(tic_entry, model, init_params, save=True):
     # would be nice to plot the maximum posterior params on the phase plot
     # would be nice to plot the corner with the initial params / maximum posterior params
     # would be nice to plot the median posterior params + uncertainties on the EXOFOP Radius Ratio vs Period plot
+
+    # print some metadata
+    logger.info(f"Total number of outliers: {total_number_outliers}")
+    logger.info(f"Max rhat: {get_max_rhat(tic_entry.inference_data)}")
+    logger.info(
+        f"Grazing check passed: {grazing_check(inference_data=tic_entry.inference_data)}"
+    )

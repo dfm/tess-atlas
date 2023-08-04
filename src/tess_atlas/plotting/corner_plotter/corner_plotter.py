@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,6 +12,7 @@ from tess_atlas.data.inference_data_tools import get_samples_dataframe
 from tess_atlas.data.tic_entry import TICEntry
 from tess_atlas.logger import LOGGER_NAME
 
+from ..image_utils import vertical_image_concat
 from ..labels import ECCENTRICITY_PLOT, LATEX, POSTERIOR_PLOT, PRIOR_PLOT
 from ..plotting_utils import (
     exception_catcher,
@@ -53,14 +54,14 @@ def plot_priors(
 
 @exception_catcher
 def plot_eccentricity_posteriors(
-    tic_entry: TICEntry, ecc_samples: pd.DataFrame, title=True, fname=""
+    tic_entry: TICEntry, ecc_samples: pd.DataFrame, title=True, save=""
 ) -> None:
     params = ["e", "omega"]
     colors = get_colors(tic_entry.planet_count)
-    if len(fname) == 0:
-        fname = os.path.join(
-            tic_entry.outdir, f"planet_{'{}'}_{ECCENTRICITY_PLOT}"
-        )
+    flabel = os.path.join(
+        tic_entry.outdir, f"planet_{'{}'}_{ECCENTRICITY_PLOT}"
+    )
+    fnames = []
     for n in range(tic_entry.planet_count):
         planet_params = [f"{p}[{n}]" for p in params]
         planet_n_samples = ecc_samples[planet_params]
@@ -75,10 +76,20 @@ def plot_eccentricity_posteriors(
             ),
         )
         if title:
-            plt.suptitle(f"Planet {n}", x=0.85, y=0.85, va="top", ha="right")
-        logger.debug(f"Saving {fname.format(n + 1)}")
+            plt.suptitle(f"Planet {n+1}", x=0.85, y=0.85, va="top", ha="right")
+
         if fig is not None:
-            fig.savefig(fname.format(n + 1), bbox_inches="tight")
+            fname = flabel.format(n + 1)
+            fig.savefig(flabel.format(n + 1), bbox_inches="tight")
+            logger.info(f"Saved {fname}")
+            fnames.append(fname)
+        plt.close(fig)
+
+    if save:
+        savefname = save if isinstance(save, str) else ECCENTRICITY_PLOT
+        savefname = os.path.join(tic_entry.outdir, savefname)
+        vertical_image_concat(fnames, savefname)
+        logger.info(f"Saved {savefname}")
 
 
 @exception_catcher
@@ -88,7 +99,7 @@ def plot_posteriors(
     initial_params: Optional[Dict] = {},
     plot_params=[],
     title=True,
-    fname="",
+    save=Union[bool, str],
 ) -> None:
     """Plots 1 posterior corner plot for each planet"""
     valid_params = [
@@ -113,11 +124,9 @@ def plot_posteriors(
 
     posterior_samples = get_samples_dataframe(inference_data)
 
-    if len(fname) == 0:
-        fname = os.path.join(
-            tic_entry.outdir, f"planet_{'{}'}_{POSTERIOR_PLOT}"
-        )
+    flabel = os.path.join(tic_entry.outdir, f"planet_{'{}'}_{POSTERIOR_PLOT}")
     colors = get_colors(tic_entry.planet_count)
+    fnames = []
     for n in range(tic_entry.planet_count):
         params = plot_params.copy()
         if tic_entry.candidates[n].has_data_only_for_single_transit:
@@ -141,6 +150,15 @@ def plot_posteriors(
             plt.suptitle(
                 f"TOI {tic_entry.toi_number}\nPlanet {n + 1} Posterior"
             )
-        logger.debug(f"Saving {fname.format(n + 1)}")
         if fig is not None:
-            fig.savefig(fname.format(n + 1), bbox_inches="tight")
+            fname = flabel.format(n + 1)
+            fig.savefig(fname, bbox_inches="tight")
+            logger.info(f"Saved {fname}")
+            fnames.append(fname)
+            plt.close(fig)
+
+    if len(fnames) != 0:
+        fpath = POSTERIOR_PLOT if isinstance(save, bool) else save
+        fpath = os.path.join(tic_entry.outdir, fpath)
+        vertical_image_concat(fnames, fpath)
+        logger.info(f"Saved combined {fpath}")

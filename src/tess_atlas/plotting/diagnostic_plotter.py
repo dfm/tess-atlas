@@ -11,18 +11,18 @@ logger = logging.getLogger(LOGGER_NAME)
 
 from ..data.data_utils import residual_rms
 from .labels import (
-    DIAGNOSTIC_LIGHTCURVE_PLOT,
+    DIAGNOSTIC_LC_PLOT,
     DIAGNOSTIC_RAW_LC_PLOT,
     DIAGNOSTIC_TRACE_PLOT,
 )
-from .phase_plotter import plot_phase, plot_thumbnail
+from .phase_plotter import plot_thumbnail
 from .phase_plotter.lightcurve_model_from_samples import (
     get_lc_and_gp_from_inference_object,
 )
 from .plotting_utils import get_colors, get_longest_unbroken_section_of_data
 
 
-def plot_raw_lightcurve(tic_entry, save=True, zoom_in=False):
+def plot_raw_lightcurve(tic_entry: "TICEntry", save=True, zoom_in=False):
     lc = tic_entry.lightcurve
     ax = lc.raw_lc.scatter(
         label=f"Raw Data ({len(lc.raw_lc):,} pts)",
@@ -50,7 +50,7 @@ def plot_raw_lightcurve(tic_entry, save=True, zoom_in=False):
             **c,
             alpha=1,
             marker="o",
-            label=f"N{pi} transits: {Np+1} (single? {single})",
+            label=f"N{pi} transits: {Np + 1} (single? {single})",
         )
         ax.plot(
             [t0, t1],
@@ -88,8 +88,7 @@ def plot_raw_lightcurve(tic_entry, save=True, zoom_in=False):
         )
 
     if zoom_in:
-        idx, t = get_longest_unbroken_section_of_data(lc.time)
-        perc_data = int(100 * (len(idx) / len(lc.time)))
+        idx, t, perc_data = get_longest_unbroken_section_of_data(lc.time)
         xrange = (min(t), max(t))
         if perc_data > 98:
             minx = lc.time[idx[0]]
@@ -109,18 +108,20 @@ def plot_raw_lightcurve(tic_entry, save=True, zoom_in=False):
         bbox_to_anchor=(1.1, 1),
     )
     l._legend_box.align = "left"
-    # plt.tight_layout()
+    fig = ax.get_figure()
     if save:
-        plt.savefig(
-            os.path.join(tic_entry.outdir, DIAGNOSTIC_RAW_LC_PLOT),
-            bbox_inches="tight",
-        )
+        fname = os.path.join(tic_entry.outdir, DIAGNOSTIC_RAW_LC_PLOT)
+        if zoom_in:
+            fname = fname.replace(".png", "_zoom.png")
+        plt.savefig(fname, bbox_inches="tight")
+        logger.info(f"Saved {fname}")
+        plt.close(fig)
     else:
-        return ax.get_figure()
+        return fig
 
 
 def plot_lightcurve_gp_and_residuals(
-    tic_entry, model, zoom_in=True, num_lc=12
+    tic_entry, model, zoom_in=True, num_lc=12, save=True
 ):
     "Adapted from https://gallery.exoplanet.codes/tutorials/tess/"
     # todo plot the maximum posterior param
@@ -133,12 +134,12 @@ def plot_lightcurve_gp_and_residuals(
     raw_lc = tic_entry.lightcurve.raw_lc
     raw_t, raw_y = raw_lc.time.value, 1e3 * (raw_lc.flux.value - 1)
 
+    fig, axes = plt.subplots(3, 1, figsize=(10, 7), sharex=True)
     if zoom_in:
-        idx, _ = get_longest_unbroken_section_of_data(t)
+        idx, _, perc = get_longest_unbroken_section_of_data(t)
+        fig.suptitle(f"{perc}% Data Displayed")
     else:
         idx = [i for i in range(len(t))]
-
-    fig, axes = plt.subplots(3, 1, figsize=(10, 7), sharex=True)
 
     ax = axes[0]
     ax.scatter(raw_t, raw_y, c="gray", label="raw data", s=1, alpha=0.5)
@@ -151,7 +152,7 @@ def plot_lightcurve_gp_and_residuals(
         ax.plot(
             t[idx],
             lc[idx],
-            label=f"Planet {i+1} (SNR {snr:.2f})",
+            label=f"Planet {i + 1} (SNR {snr:.2f})",
             color=colors[i],
         )
 
@@ -199,14 +200,19 @@ def plot_lightcurve_gp_and_residuals(
             "Large number of outliers in residuals after fitting model."
         )
 
-    if zoom_in:
-        perc_data = int(100 * (len(idx) / len(t)))
-        fig.suptitle(f"{perc_data}% Data Displayed")
     fig.subplots_adjust(hspace=0, wspace=0)
-    fig.savefig(os.path.join(tic_entry.outdir, DIAGNOSTIC_LIGHTCURVE_PLOT))
+    if save:
+        fname = os.path.join(tic_entry.outdir, DIAGNOSTIC_LC_PLOT)
+        if zoom_in:
+            fname = fname.replace(".png", "_zoom.png")
+        fig.savefig(fname, bbox_inches="tight")
+        logger.info(f"Saved {fname}")
+        plt.close(fig)
+    else:
+        return fig
 
 
-def plot_inference_trace(tic_entry):
+def plot_inference_trace(tic_entry, save=True):
     with az.style.context("default", after_reset=True):
         az.plot_trace(
             tic_entry.inference_data,
@@ -215,11 +221,17 @@ def plot_inference_trace(tic_entry):
             show=False,
         )
         plt.tight_layout()
-        plt.savefig(os.path.join(tic_entry.outdir, DIAGNOSTIC_TRACE_PLOT))
+        if save:
+            fpath = os.path.join(tic_entry.outdir, DIAGNOSTIC_TRACE_PLOT)
+            plt.savefig(fpath)
+            logger.info(f"Saved {fpath}")
+            plt.close()
+        else:
+            return plt.gcf()
 
 
-def plot_diagnostics(tic_entry, model, init_params):
-    plot_lightcurve_gp_and_residuals(tic_entry, model)
+def plot_diagnostics(tic_entry, model, init_params, save=True):
+    plot_lightcurve_gp_and_residuals(tic_entry, model, save=save)
     plot_thumbnail(
         tic_entry,
         model,

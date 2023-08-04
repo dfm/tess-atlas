@@ -1,10 +1,10 @@
 # PLOT FILE NAMES
-LIGHTCURVE_PLOT = "flux_vs_time.png"
+LC_PLOT = "flux_vs_time.png"
 PHASE_PLOT = "phase_plot.png"
 POSTERIOR_PLOT = "posteriors.png"
 ECCENTRICITY_PLOT = "eccentricity_posteriors.png"
 PRIOR_PLOT = "priors.png"
-DIAGNOSTIC_LIGHTCURVE_PLOT = "diagnostic_flux_vs_time.png"
+DIAGNOSTIC_LC_PLOT = "diagnostic_flux_vs_time.png"
 DIAGNOSTIC_TRACE_PLOT = "diagnostic_trace_plot.png"
 DIAGNOSTIC_RAW_LC_PLOT = "diagnostic_raw_lc_plot.png"
 THUMBNAIL_PLOT = "thumbnail.png"  # TODO: save a thumbnail of the phase plot
@@ -34,8 +34,8 @@ LATEX = {
     IMPACT_PARAM: r"$b$",
     MEAN_FLUX: r"$f_0$",
     ORBITAL_PERIOD: r"$P [{\rm days}]$",
-    TIME_START: r"$t_{\rm min}$ [BJD]",
-    TIME_END: r"$t_{\rm max}$ [BJD]",
+    TIME_START: r"$t_{\rm min}\ [{\rm BJD}]$",
+    TIME_END: r"$t_{\rm max}\ [{\rm BJD}]$",
     f"{LIMB_DARKENING_PARAM}_1": r"$u_1$",
     f"{LIMB_DARKENING_PARAM}_2": r"$u_2$",
     DURATION: r"$\tau\, [{\rm days}]$",

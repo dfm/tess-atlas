@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,7 +12,7 @@ from plotly.subplots import make_subplots
 from tess_atlas.data.tic_entry import TICEntry
 
 from ..logger import LOGGER_NAME
-from .labels import FLUX_LABEL, LIGHTCURVE_PLOT, TIME_LABEL
+from .labels import FLUX_LABEL, LC_PLOT, TIME_LABEL
 from .plotting_utils import get_colors, get_longest_unbroken_section_of_data
 
 logger = logging.getLogger(LOGGER_NAME)
@@ -21,12 +21,12 @@ logger = logging.getLogger(LOGGER_NAME)
 def plot_lightcurve(
     tic_entry: TICEntry,
     model_lightcurves: Optional[np.ndarray] = None,
-    save: Optional[bool] = True,
+    save: Optional[Union[bool, str]] = False,
     zoom_in: Optional[bool] = False,
     observation_periods: Optional[np.ndarray] = None,
-) -> plt.Figure:
+) -> Union[plt.Figure, None]:
     """Plot lightcurve data"""
-    # todo truncate region of missing data on axes
+    # TODO: truncate region of missing data on axes
 
     if model_lightcurves is None:
         model_lightcurves = []
@@ -37,13 +37,16 @@ def plot_lightcurve(
         observation_periods = []
 
     colors = get_colors(tic_entry.planet_count)
-    fig, ax = plt.subplots(1, figsize=(7, 5))
+    fig, ax = plt.subplots(1, figsize=(9, 5))
 
     lc = tic_entry.lightcurve
-
+    label = "Data"
     if zoom_in:
-        idx, _ = get_longest_unbroken_section_of_data(lc.time)
-        perc_data = int(100 * (len(idx) / len(lc.time)))
+        idx, _, perc_data = get_longest_unbroken_section_of_data(lc.time)
+        if perc_data > 95:
+            perc_data = 50
+            idx = idx[: int(len(idx) / 2)]
+        label = f"Data ({perc_data:d}% shown)"
         logger.debug(f"{perc_data}% Data Displayed")
     else:
         idx = [i for i in range(len(lc.time))]
@@ -52,18 +55,19 @@ def plot_lightcurve(
         lc.time[idx],
         lc.flux[idx],
         color="k",
-        label="Data",
+        label=label,
         s=0.75,
         alpha=0.5,
     )
     ax.set_ylabel(FLUX_LABEL)
     ax.set_xlabel(TIME_LABEL)
+    ax.set_xlim(min(lc.time[idx]), max(lc.time[idx]))
 
     for i, model_lightcurve in enumerate(model_lightcurves):
         ax.plot(
             lc.time[idx],
             model_lightcurve[idx],
-            label=f"Planet {i} fit",
+            label=f"Planet {i+1} fit",
             c=colors[i],
             alpha=0.75,
         )
@@ -89,10 +93,14 @@ def plot_lightcurve(
             )
         ax.axvspan(period[0], period[1], facecolor=c, alpha=0.1)
 
-    fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
+    plt.tight_layout()
     if save:
-        logger.debug(f"Saving {fname}")
-        fig.savefig(fname)
+        fname = LC_PLOT.replace(".png", "_zoom.png") if zoom_in else LC_PLOT
+        fname = save if isinstance(save, str) else fname
+        fpath = os.path.join(tic_entry.outdir, fname)
+        fig.savefig(fpath)
+        plt.close(fig)
+        logger.info(f"Saved {fpath}")
     else:
         return fig
 
@@ -127,10 +135,10 @@ def plot_interactive_lightcurve(
                 x=lc.time,
                 y=model_lightcurve,
                 mode="lines",
-                name=f"Planet {i}",
+                name=f"Planet {i+1}",
             )
         )
-    fname = os.path.join(tic_entry.outdir, LIGHTCURVE_PLOT)
+    fname = os.path.join(tic_entry.outdir, LC_PLOT)
     logger.debug(f"Saving {fname}")
     fig.write_image(fname)
     return fig

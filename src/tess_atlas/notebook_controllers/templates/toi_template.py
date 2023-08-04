@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.14.5
+#       jupytext_version: 1.14.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -15,11 +15,9 @@
 # ---
 
 # + tags=["exe", "hide-cell"]
-try:
-    from tess_atlas.utils import notebook_initalisations
-except ModuleNotFoundError:
-    # !pip install git+https://github.com/dfm/tess-atlas.git@main
-    from tess_atlas.utils import notebook_initalisations
+# ! pip install tess-atlas -q
+
+from tess_atlas.utils import notebook_initalisations
 
 notebook_initalisations()
 
@@ -63,7 +61,7 @@ notebook_initalisations()
 #
 # To get going, we'll add some _magic_, import some packages, and run some setup steps.
 
-# + pycharm={"name": "#%%\n"} tags=["def", "hide-cell"]
+# + pycharm={"name": "#%%\n"} tags=["def", "hide-cell", "remove-output"]
 # %load_ext autoreload
 # %load_ext memory_profiler
 # %load_ext autotime
@@ -102,9 +100,8 @@ from tess_atlas.plotting import (
     plot_raw_lightcurve,
 )
 
-# + pycharm={"name": "#%%\n"} tags=["exe", "hide-cell"]
-
-TOI_NUMBER = {{{TOINUMBER}}}
+# TOI_NUMBER = {{{TOINUMBER}}}
+TOI_NUMBER = 103
 logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")
 
 # + tags=["exe", "hide-cell"]
@@ -112,6 +109,7 @@ import theano
 
 from tess_atlas.utils import tabulate_global_environ_vars
 
+logger.info("Logging some settings for future reference")
 logger.info("GLOBAL ENVS:\n" + tabulate_global_environ_vars())
 logger.info(f"THEANO Config:\n{theano.config}")
 
@@ -150,11 +148,22 @@ else:
 # Plot of the lightcurve:
 
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_lightcurve(tic_entry)
-# + tags=["exe", "hide-cell"]
-plot_raw_lightcurve(tic_entry)
-plot_raw_lightcurve(tic_entry, zoom_in=True)
+# + pycharm={"name": "#%%\n"} tags=["exe", "remove-output"]
+plot_lightcurve(tic_entry, save=True)
+
+# Some diagnostics
+plot_raw_lightcurve(tic_entry, save=True)
+plot_raw_lightcurve(tic_entry, zoom_in=True, save=True)
+# -
+# ![](toi_{{{TOINUMBER}}}_files/flux_vs_time.png)
+
+# + [markdown] tags=["hide-cell"]
+# Diagnostic plots of the raw lightcurve (not applying sigma clipping/other cleaning methods to remove outliers). Some things to consider:
+# - Do the initial fits from ExoFOP match the transits if visible?
+# - If this is marked as a single-transit event, is there only 1 transit visible?
+#
+# ![](toi_{{{TOINUMBER}}}_files/diagnostic_raw_lc_plot.png)
+# ![](toi_{{{TOINUMBER}}}_files/diagnostic_raw_lc_plot_zoom.png)
 # -
 
 # ## Fitting transit parameters
@@ -209,18 +218,23 @@ test_model(planet_transit_model)
 # ### Optimizing the initial point for sampling
 # We help out the sampler we try to find an optimized set of initial parameters to begin sampling from.
 
-# + tags=["exe"]
+# + tags=["exe", "remove-output"]
 if tic_entry.optimized_params is None:
     init_params = get_optimized_init_params(planet_transit_model, **params)
     tic_entry.save_data(optimized_params=init_params)
 else:
     init_params = tic_entry.optimized_params.to_dict()
+
+# + tags=["exe"]
+# sanity check that none of the right hand column have nans!
 test_model(planet_transit_model, init_params, show_summary=True)
 # -
 
 # Below are plots of our initial model and priors.
+#
+# ### Initial model fit
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
+# + pycharm={"name": "#%%\n"} tags=["exe", "remove-output"]
 initial_lc_models = (
     compute_variable(
         model=planet_transit_model,
@@ -229,22 +243,54 @@ initial_lc_models = (
     )
     * 1e3
 )
-plot_lightcurve(tic_entry, initial_lc_models)
+plot_lightcurve(
+    tic_entry, initial_lc_models, save="lightcurve_with_initial_guess.png"
+)
+plot_lightcurve(
+    tic_entry,
+    initial_lc_models,
+    zoom_in=True,
+    save="lightcurve_with_initial_guess_zoom.png",
+)
+# -
 
-# + tags=["exe"]
+# <!-- Show LC plot with initial guess -->
+# ![](toi_{{{TOINUMBER}}}_files/lightcurve_with_initial_guess.png)
+
+# + [markdown] tags=["hide-cell"]
+# <!-- Show zoomed in LC plot with initial guess -->
+# ![](toi_{{{TOINUMBER}}}_files/lightcurve_with_initial_guess_zoom.png)
+
+# + tags=["exe", "remove-output"]
 params = dict(
     tic_entry=tic_entry, model=planet_transit_model, initial_params=init_params
 )
-plot_phase(**params, thumbnail=True)
-plot_phase(**params, plot_all_datapoints=True)
+plot_phase(**params, save="phase_initial.png")
+plot_phase(
+    **params, plot_all_datapoints=True, save="phase_initial_all_datapoints.png"
+)
+# -
 
-# + tags=["exe"]
+# <!-- SHOW PHASE PLOT -->
+# <img src="toi_{{{TOINUMBER}}}_files/phase_initial.png" style="width:450px;"/>
+#
+
+# + [markdown] tags=["hide-cell"]
+# Diagnostic phase plot
+# <img src="toi_{{{TOINUMBER}}}_files/phase_initial_all_datapoints.png" style="width:450px;"/>
+# -
+
+# ### Histograms of Priors
+
+# + tags=["exe", "remove-output"]
 prior_samples = sample_prior(planet_transit_model)
 if prior_samples:
-    plot_priors(tic_entry, prior_samples, init_params)
+    plot_priors(tic_entry, prior_samples, init_params, save=True)
 
 
 # -
+
+# ![](toi_{{{TOINUMBER}}}_files/priors.png)
 
 #
 # ### Sampling
@@ -255,7 +301,7 @@ if prior_samples:
 def run_inference(model) -> InferenceData:
     np.random.seed(TOI_NUMBER)
     with model:
-        sampling_kwargs = dict(tune=2000, draws=2000, chains=2, cores=2)
+        sampling_kwargs = dict(tune=200, draws=200, chains=1, cores=1)
         logger.info(f"Run sampler with kwargs: {sampling_kwargs}")
         inference_data = pmx.sample(
             **sampling_kwargs, start=init_params, return_inferencedata=True
@@ -280,8 +326,11 @@ inference_data
 
 # + pycharm={"name": "#%%\n"} tags=["exe"]
 summary(inference_data)
-# + tags=["exe", "hide-cell"]
-plot_inference_trace(tic_entry)
+# + tags=["exe", "remove-output"]
+plot_inference_trace(tic_entry, save=True)
+
+# + [markdown] tags=["hide-cell"]
+# ![](toi_{{{TOINUMBER}}}_files/diagnostic_trace_plot.png)
 # -
 
 # ## Results
@@ -290,17 +339,27 @@ plot_inference_trace(tic_entry)
 # ### Posterior plots
 # Below are plots of the posterior probability distributions and the best-fitting light-curve model.
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
-plot_posteriors(tic_entry, inference_data, initial_params=init_params)
-# + pycharm={"name": "#%%\n"} tags=["exe"]
+# + pycharm={"name": "#%%\n"} tags=["exe", "remove-output"]
+plot_posteriors(
+    tic_entry, inference_data, initial_params=init_params, save=True
+)
+# -
+# <!-- SHOW POSTERIOR PLOT -->
+# ![](toi_{{{TOINUMBER}}}_files/posteriors.png)
+
+# + pycharm={"name": "#%%\n"} tags=["exe", "remove-output"]
 # %%memit
 plot_phase(
     tic_entry,
     planet_transit_model,
     inference_data,
     initial_params=init_params,
+    save=True,
 )
 # -
+
+# <!-- SHOW PHASE PLOT -->
+# <img src="toi_{{{TOINUMBER}}}_files/phase_plot.png" style="width:450px;"/>
 
 # ### Eccentricity post-processing
 #
@@ -323,24 +382,38 @@ plot_phase(
 star = tic_entry.stellar_data
 star
 
-# + pycharm={"name": "#%%\n"} tags=["exe"]
+# + tags=["remove-input"]
+if star.density_data_present:
+    logger.info(
+        "Stellar data present for TIC. Continuing with eccentricity calculations."
+    )
+else:
+    logger.info(
+        "Stellar data not present for TIC. Skipping eccentricity calculations."
+    )
+
+# + pycharm={"name": "#%%\n"} tags=["exe", "remove-output"]
 if star.density_data_present:
     ecc_samples = calculate_eccentricity_weights(tic_entry, inference_data)
     ecc_samples.to_csv(
         os.path.join(tic_entry.outdir, "eccentricity_samples.csv"), index=False
     )
-    plot_eccentricity_posteriors(tic_entry, ecc_samples)
-else:
-    logger.info(
-        "Stellar data not present for TIC. Skipping eccentricity calculations."
-    )
+    plot_eccentricity_posteriors(tic_entry, ecc_samples, save=True)
 # -
+# <!-- SHOW ECC POSTERIORS -->
+# ![](toi_{{{TOINUMBER}}}_files/eccentricity_posteriors.png)
+
 # ### Diagnostics
 # Finally, we also generate some diagnostic plots.
 
-# + pycharm={"name": "#%%\n"} tags=["exe", "hide-cell"]
-plot_diagnostics(tic_entry, planet_transit_model, init_params)
+# + pycharm={"name": "#%%\n"} tags=["exe", "remove-output"]
+plot_diagnostics(tic_entry, planet_transit_model, init_params, save=True)
+# + [markdown] tags=["hide-cell"]
+# <!-- SHOW DIAGNOSTICS -->
+#
+# ![](toi_{{{TOINUMBER}}}_files/diagnostic_flux_vs_time_zoom.png)
 # -
+
 # ## Citations
 #
 # We hope this has been helpful! The TESS-Atlas was built using exoplanet, PyMC3, lightkurve, starry, celerite2, ExoFOP, and Sphinx.

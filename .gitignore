@@ -62,3 +62,4 @@ theano_cache
 *.txt
 src/tess_atlas/notebook_controllers/templates/*.ipybn
 src/tess_atlas/notebook_controllers/templates/*.md
+/src/tess_atlas/notebook_controllers/templates/toi_125_files/

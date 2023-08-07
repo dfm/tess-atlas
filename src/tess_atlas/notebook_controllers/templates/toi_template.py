@@ -49,13 +49,6 @@ notebook_initalisations()
 #
 # 3. This notebook was generated automatically without human intervention. Use at your own risk!
 #
-# ## Table of Contents
-#
-# 1. [Getting started](#Getting-started)
-# 2. [Downloading Data](#Downloading-Data)
-# 3. [Fitting transit parameters](#Fitting-transit-parameters)
-# 4. [Results](#Results)
-# 5. [Citations](#Citations)
 #
 # ## Getting started
 #
@@ -437,12 +430,12 @@ citations.print_bibliography()
 citations.print_packages()
 # -
 
-# <!--## Comments-->
-# <!--FIXME: dont seem to be working atm :(-->
+# ## Comments
+# Leave a comment below or in this [issue](https://github.com/avivajpeyi/tess-atlas/issues/new?title=TOI{{{TOINUMBER}}}).
 # ```{raw} html
 # <script src="https://utteranc.es/client.js"
 #         repo="avivajpeyi/tess-atlas"
-#         issue-term="title"
+#         issue-term="TOI{{{TOINUMBER}}}"
 #         theme="github-light"
 #         crossorigin="anonymous"
 #         async>

@@ -100,11 +100,10 @@ from tess_atlas.plotting import (
     plot_raw_lightcurve,
 )
 
-# TOI_NUMBER = {{{TOINUMBER}}}
-TOI_NUMBER = 103
+TOI_NUMBER = {{{TOINUMBER}}}
 logger = get_notebook_logger(outdir=f"toi_{TOI_NUMBER}_files")
 
-# + tags=["exe", "hide-cell"]
+# + tags=["exe", "remove-cell"]
 import theano
 
 from tess_atlas.utils import tabulate_global_environ_vars
@@ -122,7 +121,7 @@ logger.info(f"THEANO Config:\n{theano.config}")
 #
 # - The `TIC Entry` object holds one or more `Planet Candidate`s (each candidate associated with one TOI id number) and a `Lightcurve Data` for associated with the candidates. Note that the `Lightcurve Data` object is initially the same fopr each candidate but may be masked according to the candidate transit's period.
 #
-# - The `Planet Candidate` holds informaiton on the TOI data collected by [SPOC] (eg transit period, etc)
+# - The `Planet Candidate` holds information on the TOI data collected by [SPOC] (eg transit period, etc)
 #
 # - The `Lightcurve Data` holds the lightcurve time and flux data for the planet candidates.
 #
@@ -301,7 +300,7 @@ if prior_samples:
 def run_inference(model) -> InferenceData:
     np.random.seed(TOI_NUMBER)
     with model:
-        sampling_kwargs = dict(tune=200, draws=200, chains=1, cores=1)
+        sampling_kwargs = dict(tune=2000, draws=2000, chains=2, cores=2)
         logger.info(f"Run sampler with kwargs: {sampling_kwargs}")
         inference_data = pmx.sample(
             **sampling_kwargs, start=init_params, return_inferencedata=True

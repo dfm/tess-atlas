@@ -12,6 +12,7 @@
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
+#   orphan: true
 # ---
 
 # + tags=["exe", "hide-cell"]

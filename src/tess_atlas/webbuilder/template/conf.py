@@ -44,7 +44,14 @@ html_permalinks = True
 html_sourcelink_suffix = ""
 numfig = True
 panels_add_bootstrap_css = True
-suppress_warnings = ["myst.domains"]
+suppress_warnings = [
+    "myst.domains",
+    "ref.myst",
+    "myst",
+    "myst.xref_missing",
+    "myst.attribute",
+    "myst.lex",
+]
 html_copy_source = False
 remove_from_toctrees = ["content/toi_notebooks/toi_*.ipynb"]
 comments_config = {

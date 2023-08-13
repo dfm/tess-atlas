@@ -38,6 +38,7 @@ def get_cli_args():
 
 def main():
     args = get_cli_args()
+
     build_website(
         builddir=args.webdir,
         notebook_dir=args.notebooks,

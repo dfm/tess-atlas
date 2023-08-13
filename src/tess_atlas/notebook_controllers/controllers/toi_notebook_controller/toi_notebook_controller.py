@@ -1,3 +1,15 @@
+import os
+
+import numpy as np
+
+from tess_atlas.file_management import (
+    INFERENCE_DATA_FNAME,
+    LC_DATA_FNAME,
+    TIC_CSV,
+)
+from tess_atlas.logger import LOG_FNAME
+from tess_atlas.plotting.labels import THUMBNAIL_PLOT
+
 from .toi_notebook_core import TOINotebookCore
 from .toi_notebook_metadata import TOINotebookMetadata
 
@@ -22,3 +34,27 @@ class TOINotebookController(TOINotebookCore, TOINotebookMetadata):
 
     def __repr__(self):
         return f"<TOI{self.toi} NotebookController>"
+
+    @staticmethod
+    def _generate_test_notebook(
+        toi_int: int, outdir: str, additional_files=True
+    ) -> str:
+        """Generates a test notebook for testing purposes."""
+        controller = TOINotebookController.from_toi_number(toi_int, outdir)
+        controller.generate(quickrun=True)
+        if additional_files:
+            datafiles = f"{outdir}/toi_{toi_int}_files/"
+            os.makedirs(datafiles, exist_ok=True)
+            for fn in [
+                INFERENCE_DATA_FNAME,
+                TIC_CSV,
+                LC_DATA_FNAME,
+                THUMBNAIL_PLOT,
+            ]:
+                open(f"{datafiles}/{fn}", "w").write("test")
+            fake_log = "\n".join(
+                " ".join(np.random.choice([*"abcdefgh "], size=100)).split()
+            )
+            open(f"{datafiles}/{LOG_FNAME}", "w").write(fake_log)
+
+        return controller.notebook_path

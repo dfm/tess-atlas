@@ -136,6 +136,11 @@ def build_website(
         (this will take some time -- requires copying all notebooks/data)
 
     """
+    # Deprecation warning
+    logger.warning(
+        "This function will be deprecated. Use tess_atlas_webbuilder instead."
+    )
+
     p = WebBuilder(
         notebook_src=notebook_dir,
         builddir=builddir,

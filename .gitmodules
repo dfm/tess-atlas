@@ -1,0 +1,3 @@
+[submodule "tess_atlas_webbuilder"]
+	path = tess_atlas_webbuilder
+	url = git@github.com:avivajpeyi/tess_atlas_webbuilder.git

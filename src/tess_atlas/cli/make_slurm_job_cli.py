@@ -49,6 +49,7 @@ def get_cli_args(cli_data):
 
 
 def add_slurm_cli_args(parser: argparse.ArgumentParser):
+    """Addds --module_loads, --submit, and --email args to parser"""
     parser.add_argument(
         "--module_loads",
         default="git/2.18.0 gcc/9.2.0 openmpi/4.0.2 python/3.8.5",

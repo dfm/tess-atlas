@@ -40,6 +40,7 @@ INSTALL_REQUIRES = [
     "memory_profiler",
     "click",
     "tabulate",
+    "jupytext",
 ]
 EXTRA_REQUIRE = {
     "dev": [
@@ -50,21 +51,12 @@ EXTRA_REQUIRE = {
         "flake8",
         "black<=21.9b0",
         "isort",
-        "jupyter_contrib_nbextensions",
-        "sphinx-book-theme>=1.0.0",
-        "sphinx_design",
-        "sphinx-remove-toctrees",
-        "sphinx_togglebutton",
-        "jupytext",
-        "sphinx_external_toc",
         "pympler",
         "psutil",
         "ploomber-engine>=0.0.30",
         "ploomber-core==0.2.12",  # https://github.com/ploomber/core/issues/74
         "pretty-jupyter",
-        "itables",
         "interruptingcow",
-        "myst-nb",
     ]
 }
 
@@ -129,8 +121,6 @@ if __name__ == "__main__":
         entry_points={
             "console_scripts": [
                 get_cli_entry_point("run_toi"),
-                get_cli_entry_point("make_webpages"),
-                get_cli_entry_point("make_slurm_job"),
                 get_cli_entry_point("download_toi"),
                 get_cli_entry_point("update_tic_cache"),
                 get_cli_entry_point("plot_run_stats"),

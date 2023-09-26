@@ -121,8 +121,6 @@ if __name__ == "__main__":
         entry_points={
             "console_scripts": [
                 get_cli_entry_point("run_toi"),
-                get_cli_entry_point("make_webpages"),
-                get_cli_entry_point("make_slurm_job"),
                 get_cli_entry_point("download_toi"),
                 get_cli_entry_point("update_tic_cache"),
                 get_cli_entry_point("plot_run_stats"),

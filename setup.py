@@ -88,9 +88,7 @@ if __name__ == "__main__":
     setup(
         name=NAME,
         use_scm_version={
-            "write_to": os.path.join(
-                "src", NAME, "{0}_version.py".format(NAME)
-            ),
+            "write_to": os.path.join("src", NAME, f"{NAME}_version.py"),
             "write_to_template": '__version__ = "{version}"\n',
         },
         author=find_meta("author"),

@@ -24,6 +24,8 @@ CLASSIFIERS = [
     "Programming Language :: Python :: 3",
 ]
 INSTALL_REQUIRES = [
+    "ploomber-engine>=0.0.30",
+    "ploomber-core==0.2.12",  # https://github.com/ploomber/core/issues/74
     "exoplanet>=0.5.1",
     "pymc3>=3.9",
     "pymc3-ext>=0.1.0",
@@ -51,10 +53,6 @@ EXTRA_REQUIRE = {
         "flake8",
         "black<=21.9b0",
         "isort",
-        "pympler",
-        "psutil",
-        "ploomber-engine>=0.0.30",
-        "ploomber-core==0.2.12",  # https://github.com/ploomber/core/issues/74
         "pretty-jupyter",
         "interruptingcow",
     ]
@@ -124,6 +122,7 @@ if __name__ == "__main__":
                 get_cli_entry_point("download_toi"),
                 get_cli_entry_point("update_tic_cache"),
                 get_cli_entry_point("plot_run_stats"),
+                get_cli_entry_point("tess_atlas_summary"),
             ]
         },
     )

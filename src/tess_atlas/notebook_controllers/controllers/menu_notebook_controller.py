@@ -37,14 +37,3 @@ class MenuPageController(NotebookController):
             "save_profiling_data", False
         )
         return super().execute(**kwargs)
-
-
-def run_menu_page(notebook_dir):
-    summary = AnalysisSummary.load(notebook_dir)
-    menu_notebook_fn = os.path.join(notebook_dir, "menu.ipynb")
-    processor = MenuPageController(menu_notebook_fn)
-    processor.generate(summary_path=summary.fname(notebook_dir))
-    processor.execute()
-    logger.info(
-        f"Menu page generated [{processor.execution_success}]: {processor.notebook_path}"
-    )

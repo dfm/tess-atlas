@@ -1,14 +1,16 @@
-from tess_atlas.data.analysis_summary import AnalysisSummary
 import argparse
 
+from tess_atlas.data.analysis_summary import AnalysisSummary
+
 PROG = "tess_atlas_summary"
+
 
 def __get_cli_args():
     parser = argparse.ArgumentParser(
         prog=PROG,
         description="""
         Gets the latest TESS-Atlas catalog summary (a CSV with all the TOIs and their analysis status).
-        If catalog_dir is provided, it builds a new summary file. 
+        If catalog_dir is provided, it builds a new summary file.
         """,
         usage=f"{PROG} --catalog_dir <dir>",
     )
@@ -16,8 +18,8 @@ def __get_cli_args():
         "--catalog_dir",
         type=str,
         help="The directory with all analyses that you want to summarise "
-             "(directory with the toi_*.ipynb and toi_*_files/)."
-             "If not provided, the latest summary file will be downloaded from the TESS-Atlas website.",
+        "(directory with the toi_*.ipynb and toi_*_files/)."
+        "If not provided, the latest summary file will be downloaded from the TESS-Atlas website.",
         default=None,
     )
     parser.add_argument(

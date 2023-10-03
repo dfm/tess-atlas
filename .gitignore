@@ -1,5 +1,6 @@
 .pytest_cache
 tmp
+*.csv
 test_jobgen
 *.tar.gz
 .virtual_documents

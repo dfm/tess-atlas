@@ -53,7 +53,7 @@ class TOINotebookCore(NotebookController):
         Parameters
         ----------
         setup: bool, optional
-            Whether to download the TOI data. Defaults to False.
+            Whether to __download the TOI data. Defaults to False.
         quickrun: bool, optional
             Whether to make add some 'hacks' to make the notebook run faster. Defaults to False.
         """

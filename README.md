@@ -36,7 +36,7 @@ run_toi <toi id number> --setup
 
 
 ### Downloading results
-You can download completed analyses with
+You can __download completed analyses with
 ```bash
 download_toi 103 --outdir analysed_tois
 ```

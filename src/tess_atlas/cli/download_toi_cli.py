@@ -15,7 +15,7 @@ def __get_cli_args():
     parser.add_argument(
         "toi_number",
         type=int,
-        help="The TOI number to download data for (e.g. 103)",
+        help="The TOI number to __download data for (e.g. 103)",
     )
     args = parser.parse_args()
     return args.toi_number

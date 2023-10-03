@@ -39,12 +39,13 @@ class AnalysisSummary:
 
     @classmethod
     def load(
-        cls, notebook_dir: str=None, outdir=None, n_threads=1, clean=True
+        cls, notebook_dir: str = None, outdir=None, n_threads=1, clean=True
     ) -> "AnalysisSummary":
-
         if notebook_dir is None:
-            # download and return loaded summary
-            raise NotImplementedError("Downloading summary not implemented yet")
+            # __download and return loaded summary
+            raise NotImplementedError(
+                "Downloading summary not implemented yet"
+            )
 
         if outdir is None:
             outdir = notebook_dir if notebook_dir else "."
@@ -120,9 +121,7 @@ class AnalysisSummary:
     def fname(notebook_dir: str) -> str:
         # make sure notebook dir does not have a file extension
         if not os.path.isdir(notebook_dir):
-            raise ValueError(
-                "notebook_dir should be a dir: {notebook_dir}"
-            )
+            raise ValueError("notebook_dir should be a dir: {notebook_dir}")
         return os.path.join(notebook_dir, "analysis_summary.csv")
 
 

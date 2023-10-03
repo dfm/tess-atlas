@@ -49,5 +49,5 @@ def test_update(tmp_path, mock_lighcurve_check, monkeypatch):
     monkeypatch.setattr(exofop_database, "TIC_CACHE", tmp_csv)
 
     fname = str(tmp_path / "test.csv")
-    exo_db = ExofopDatabase(fname=tmp_csv)
+    exo_db = ExofopDatabase(cache_fname=tmp_csv)
     exo_db.update(save_name=fname)

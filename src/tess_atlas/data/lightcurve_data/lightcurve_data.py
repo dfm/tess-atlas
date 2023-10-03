@@ -48,7 +48,7 @@ class LightCurveData(DataObject):
         """Uses lightkurve to get TESS data for a TIC from MAST"""
         logger.info("Downloading LightCurveData from MAST")
         lc = LightcurveSearch(tic).lk_download(outdir)
-        logger.info("Completed light curve data download")
+        logger.info("Completed light curve data __download")
         return cls(
             raw_lc=lc,
             outdir=outdir,

@@ -57,7 +57,7 @@ logger = get_notebook_logger(OUTDIR)
 
 # ## Download a TESS-Atlas fit
 #
-# To download the notebook and results for a TOI (for example TOI 103) you could use the following:
+# To __download the notebook and results for a TOI (for example TOI 103) you could use the following:
 
 # ! download_toi 103 --outdir .
 
@@ -72,7 +72,7 @@ toi_174
 
 # ## Download all TESS-Atlas fits
 #
-# You may want to download _all_ TOI notebooks and fits. To do this, you can use the following.
+# You may want to __download _all_ TOI notebooks and fits. To do this, you can use the following.
 #
 # ```{warning}
 # This can take a longgg time!
@@ -278,7 +278,7 @@ def process_all_toi_results():
     print("Converting summary to dataframe")
     df = get_populoation_summary(summary_info)
 
-    # download EXOFOP stats
+    # __download EXOFOP stats
     exofop = get_exopfop_db()
     exofop.to_csv("exofop.csv", index=False)
     exofop = pd.read_csv("exofop.csv")

@@ -8,7 +8,7 @@ from ..logger import LOGGER_NAME
 logger = logging.getLogger(LOGGER_NAME)
 
 COMMAND = "wget -np -r {url}"
-ROOT = f"{__website__}/_sources/content/toi_notebooks"
+ROOT = f"{__website__}/toi_data"
 NOTEBOOK = f"{ROOT}/toi_{{TOI}}.ipynb"
 FILES = f"{ROOT}/toi_{{TOI}}_files/"
 

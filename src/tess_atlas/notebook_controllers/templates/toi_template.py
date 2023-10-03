@@ -35,7 +35,7 @@ notebook_initalisations()
 # From here, you can
 # - scroll down and take a look at the fit results
 # - open the notebook in Google Colab to run the fit yourself
-# - download the notebook
+# - __download the notebook
 #
 #
 #
@@ -109,7 +109,7 @@ logger.info(f"THEANO Config:\n{theano.config}")
 # + [markdown] tags=["def"]
 # ## Downloading Data
 #
-# Next, we grab some inital guesses for the TOI's parameters from [ExoFOP](https://exofop.ipac.caltech.edu/tess/) and download the TOI's lightcurve with [Lightkurve].
+# Next, we grab some inital guesses for the TOI's parameters from [ExoFOP](https://exofop.ipac.caltech.edu/tess/) and __download the TOI's lightcurve with [Lightkurve].
 #
 # We wrap the information in three objects, a `TIC Entry`, a `Planet Candidate` and finally a `Lightcurve Data` object.
 #

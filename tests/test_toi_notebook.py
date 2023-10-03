@@ -29,7 +29,7 @@ def test_analysis_starts(tmpdir):
     controller = TOINotebookController.from_toi_number(SINGLE_PLANET, tmpdir)
     controller.generate(quickrun=True)
 
-    # mock the data download stage
+    # mock the data __download stage
 
     print(f"Running notebook {controller.notebook_path}")
     with pytest.raises(TimeoutError):

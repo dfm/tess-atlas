@@ -1,5 +1,8 @@
 # All notable changes will be documented in this file
 
+# v1.0.0 : 2023-09-27
+- Refactor into [paper], [slurm], [webpage], [pipeline] repositories
+
 # v0.2.1 : 2020-09-18
 - Remove unused files
 - Refactor code into ./tess_atlas/
@@ -15,3 +18,7 @@
 
 
 [exoplanet-docs]: https://github.com/exoplanet-dev/case-studies/blob/main/docs/notebooks/quick-tess.ipynb
+[paper]: https://github.com/tess-atlas/tess_atlas_paper
+[slurm]: https://github.com/tess-atlas/tess_atlas_slurm_utils
+[webpage]: https://github.com/tess-atlas/tess_atlas_webbbuilder
+[pipeline]: https://github.com/tess-atlas/tess_atlas_pipeline

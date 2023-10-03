@@ -62,6 +62,6 @@ def main():
         logger.info(f"To run job:\n>>> sbatch {fn}")
     else:
         logger.info(f"UPDATING TIC CACHE... clean={args.clean}")
-        db = ExofopDatabase(update=True, clean=args.clean)
+        db = ExofopDatabase(clean=args.clean)
         db.plot()
         logger.info("UPDATE COMPLETE!!")

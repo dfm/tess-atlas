@@ -1,5 +1,6 @@
 .pytest_cache
 tmp
+*.csv
 test_jobgen
 *.tar.gz
 .virtual_documents
@@ -8,7 +9,6 @@ test_jobgen
 *.log
 out_*/
 cached*
-!src/tess_atlas/data/exofop/cached_tic_database.csv
 build
 docs/notebooks/*/*.html
 __pycache__
